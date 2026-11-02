@@ -28,7 +28,9 @@ const fromLocalInput = (v: string) => {
   const ms = new Date(v).getTime();
   return Number.isFinite(ms) ? ms : NaN;
 };
-const when = (ms: number) => new Date(ms).toLocaleString([], { weekday: "short", dateStyle: "medium", timeStyle: "short" });
+// Browsers reject "weekday" combined with dateStyle/timeStyle, so the parts are listed one by one.
+const when = (ms: number) =>
+  new Date(ms).toLocaleString([], { weekday: "short", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 
 /** Tomorrow at 7pm, a sensible starting time for a new event. */
 function defaultStart() {

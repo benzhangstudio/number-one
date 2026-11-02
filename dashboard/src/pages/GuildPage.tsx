@@ -10,6 +10,7 @@ import {
   isUsable,
 } from "../../../src/shared/features";
 import { type GuildDetails, api } from "../api";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 import { featurePanels } from "../features";
 import { navigate } from "../router";
 import { GuildIcon } from "./ServersPage";
@@ -425,7 +426,9 @@ function FeaturePage({
         </div>
       ) : Panel ? (
         <div className="feature-body">
-          <Panel guild={guild} />
+          <ErrorBoundary key={info.id} name={info.name}>
+            <Panel guild={guild} />
+          </ErrorBoundary>
         </div>
       ) : (
         <p className="muted">This feature is on. It has no settings yet.</p>
