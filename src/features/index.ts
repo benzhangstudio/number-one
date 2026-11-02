@@ -4,6 +4,7 @@ import { antiRaid } from "./anti-raid/index.js";
 import { automod } from "./automod/index.js";
 import { channelDesignsBot } from "./channel-designs/index.js";
 import { core } from "./core/index.js";
+import { customCommandsBot } from "./custom-commands/index.js";
 import { embeds } from "./embeds/index.js";
 import { eventsBot } from "./events/index.js";
 import { joinLeave } from "./join-leave/index.js";
@@ -16,4 +17,4 @@ import { serverLogs } from "./server-logs/index.js";
 import { voiceLogs } from "./voice-logs/index.js";
 
 /** Every feature the bot runs. Each one also needs an entry in src/shared/features.ts. */
-export const features: BotFeature[] = [core, moderation, automod, antiRaid, joinLeave, onboarding, reactionRoles, announcementsBot, embeds, eventsBot, channelDesignsBot, messageLogs, memberLogs, serverLogs, voiceLogs];
+export const features: BotFeature[] = [core, moderation, automod, antiRaid, joinLeave, onboarding, reactionRoles, announcementsBot, embeds, eventsBot, channelDesignsBot, messageLogs, memberLogs, serverLogs, voiceLogs, customCommandsBot];

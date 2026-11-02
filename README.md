@@ -27,6 +27,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Logging → Member logs: joins, leaves, nicknames, roles, profiles | ✅ |
 | Logging → Server logs: channels, roles, settings, emojis, invites | ✅ |
 | Logging → Voice logs: joins, leaves, moves, server mutes | ✅ |
+| Custom commands: server-only slash commands with text or embed replies | ✅ |
 | More admin features | Next, one at a time |
 
 ## Running on Wispbyte
@@ -262,6 +263,16 @@ Posts voice activity to a staff channel.
 - **Server mutes and deafens** by staff (not people muting themselves).
 - Bots (by default) and chosen voice channels or categories can be skipped.
 - **Permissions:** View Channel, Send Messages and Embed Links in the log channel.
+
+### Custom commands (Utilities & Automation)
+
+Admins make their own slash commands for their server, like `/faq` or `/ip`.
+
+- Each command has a name, a description (shown in Discord's command list) and a reply: text, an embed (title, description, colour, image, footer), or both. Placeholders: `{user}`, `{username}`, `{server}`, `{channel}`, `{memberCount}`.
+- Replies are public in the channel where the command is used. Only the person who used it can be pinged.
+- Optionally only members with chosen roles can use a command.
+- Commands are registered in that server only and kept in step with the dashboard (on save, when the feature is switched on or off, and on every restart). Number One's own command names can't be reused. Up to 50 per server, with a use count for each.
+- **Permissions:** Send Messages. Number One must have been added with the commands permission (the dashboard's "Add bot" button includes it).
 
 ## How the project is organized
 

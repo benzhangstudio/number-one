@@ -349,3 +349,19 @@ export const channelDesigns = sqliteTable(
   },
   (t) => [index("channel_designs_guild_idx").on(t.guildId)],
 );
+
+/** Custom commands: slash commands admins made for their own server. */
+export const customCommands = sqliteTable(
+  "custom_commands",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    name: text("name").notNull(),
+    /** Description and reply (JSON, validated by customCommandInput in src/shared/customCommands.ts). */
+    details: text("details", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    uses: integer("uses").notNull().default(0),
+    createdBy: text("created_by").notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [uniqueIndex("custom_commands_name_idx").on(t.guildId, t.name)],
+);

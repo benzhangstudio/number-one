@@ -6,6 +6,7 @@ import { EmbedsPanel } from "./EmbedsPanel";
 import { EventsPanel } from "./EventsPanel";
 import { AutomodPanel } from "./AutomodPanel";
 import { ChannelDesignsPanel } from "./ChannelDesignsPanel";
+import { CustomCommandsPanel } from "./CustomCommandsPanel";
 import { JoinLeavePanel } from "./JoinLeavePanel";
 import { MemberLogsPanel } from "./MemberLogsPanel";
 import { MessageLogsPanel } from "./MessageLogsPanel";
@@ -31,4 +32,5 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "member-logs": MemberLogsPanel,
   "server-logs": ServerLogsPanel,
   "voice-logs": VoiceLogsPanel,
+  "custom-commands": CustomCommandsPanel,
 };

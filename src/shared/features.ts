@@ -251,6 +251,16 @@ export const voiceLogsFeature = defineFeature({
   settings: voiceLogSettings,
 });
 
+export const customCommandsFeature = defineFeature({
+  id: "custom-commands",
+  name: "Custom commands",
+  icon: "✨",
+  description: "Make your own slash commands, like /faq or /ip, that reply with your text or an embed.",
+  category: "utility",
+  recommended: true,
+  settings: z.object({}),
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
@@ -267,6 +277,7 @@ export const featureCatalog: FeatureInfo[] = [
   memberLogsFeature,
   serverLogsFeature,
   voiceLogsFeature,
+  customCommandsFeature,
 ];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
@@ -319,3 +330,4 @@ export * from "./messageLogs.js";
 export * from "./memberLogs.js";
 export * from "./serverLogs.js";
 export * from "./voiceLogs.js";
+export * from "./customCommands.js";
