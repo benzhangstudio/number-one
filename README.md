@@ -28,6 +28,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Logging → Server logs: channels, roles, settings, emojis, invites | ✅ |
 | Logging → Voice logs: joins, leaves, moves, server mutes | ✅ |
 | Custom commands: server-only slash commands with text or embed replies | ✅ |
+| Custom commands → Rules: `/rule 1` posts that rule publicly | ✅ |
 | More admin features | Next, one at a time |
 
 ## Running on Wispbyte
@@ -272,6 +273,7 @@ Admins make their own slash commands for their server, like `/faq` or `/ip`.
 - Replies are public in the channel where the command is used. Only the person who used it can be pinged.
 - Optionally only members with chosen roles can use a command.
 - Commands are registered in that server only and kept in step with the dashboard (on save, when the feature is switched on or off, and on every restart). Number One's own command names can't be reused. Up to 50 per server, with a use count for each.
+- **Rules (`/rule`):** admins write up to 25 numbered rules (title and optional description), a heading and a colour on the Rules tab. Anyone can type `/rule 1` to post that rule publicly in the channel, or `/rule` on its own to post the full list. While typing, Discord suggests the rule titles. `/rule` only appears in the server once it's switched on with at least one rule.
 - **Permissions:** Send Messages. Number One must have been added with the commands permission (the dashboard's "Add bot" button includes it).
 
 ## How the project is organized

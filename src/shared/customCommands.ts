@@ -12,10 +12,35 @@ const snowflake = z.string().regex(/^\d{17,20}$/);
 export const MAX_CUSTOM_COMMANDS = 50;
 export const MAX_ALLOWED_ROLES = 10;
 
-/** Names Number One already uses, so a custom command can't hide one of them. */
-export const RESERVED_NAMES = [
-  "setup", "dashboard", "ping", "warn", "timeout", "untimeout", "kick", "ban", "unban", "purge", "case", "raidmode", "rule",
-];
+/** Number One's own commands. Custom commands can't use these names, and syncing never touches them. */
+export const BUILT_IN_NAMES = ["setup", "dashboard", "ping", "warn", "timeout", "untimeout", "kick", "ban", "unban", "purge", "case", "raidmode"];
+/** The Rules command (see `rules` below). */
+export const RULES_COMMAND = "rule";
+/** Names a custom command can't use. */
+export const RESERVED_NAMES = [...BUILT_IN_NAMES, RULES_COMMAND];
+
+/* ------------------------------------------------------------ Rules: /rule <number> */
+
+export const MAX_RULES = 25;
+
+export const ruleItem = z.object({
+  title: z.string().trim().min(1, "Every rule needs a title").max(100),
+  description: z.string().max(1000).default(""),
+});
+export type RuleItem = z.infer<typeof ruleItem>;
+
+/** The server's numbered rules. Anyone can post one with /rule 1, or all of them with /rule. */
+export const rulesSettings = z.object({
+  enabled: z.boolean().default(false),
+  /** Shown above the full list and in each rule's footer. */
+  heading: z.string().trim().max(100).default("Server rules"),
+  color: z.string().regex(/^#[0-9a-f]{6}$/i, "Pick a colour").default("#ff4fa3"),
+  rules: z.array(ruleItem).max(MAX_RULES).default([]),
+});
+export type RulesSettings = z.infer<typeof rulesSettings>;
+
+export const customCommandSettings = z.object({ rules: rulesSettings.prefault({}) });
+export type CustomCommandSettings = z.infer<typeof customCommandSettings>;
 
 const link = z
   .string()
@@ -74,5 +99,6 @@ export interface CustomCommandView extends CustomCommandInput {
 
 export interface CustomCommandsResponse {
   commands: CustomCommandView[];
+  rules: RulesSettings;
   problems: string[];
 }

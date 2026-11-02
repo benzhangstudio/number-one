@@ -3895,3 +3895,85 @@ select.chip-add {
     position: static;
   }
 }
+
+/* Custom commands: tabs and the Rules editor */
+.cc-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.cc-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+.cc-tab.on {
+  color: var(--text);
+  background: var(--accent-soft);
+  border-color: rgba(255, 79, 163, 0.3);
+}
+.custom-commands .cc-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.cc-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+.cc-rule {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  width: 100%;
+}
+.cc-rule-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.cc-rule-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.cc-rule-tools {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.cc-preview-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cc-preview-pick input {
+  width: 64px;
+}
+@media (max-width: 900px) {
+  .custom-commands .cc-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cc-rule {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .cc-rule-tools {
+    grid-column: 2;
+  }
+}

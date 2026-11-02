@@ -6,7 +6,9 @@ import {
   type CustomCommandsResponse,
   MAX_ALLOWED_ROLES,
   MAX_CUSTOM_COMMANDS,
+  MAX_RULES,
   RESERVED_NAMES,
+  type RulesSettings,
   replyProblem,
 } from "../../../src/shared/customCommands";
 import { type GuildDetails, api } from "../api";
@@ -27,6 +29,7 @@ const blank = (): CustomCommandInput => ({
 export function CustomCommandsPanel({ guild }: { guild: Guild }) {
   const [data, setData] = useState<CustomCommandsResponse | null>(null);
   const [editing, setEditing] = useState<{ id: number | null; draft: CustomCommandInput } | null>(null);
+  const [tab, setTab] = useState<"commands" | "rules">("commands");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -63,8 +66,27 @@ export function CustomCommandsPanel({ guild }: { guild: Guild }) {
     }
   };
 
+  const tabs = (
+    <div className="cc-tabs">
+      <button className={`cc-tab ${tab === "commands" ? "on" : ""}`} onClick={() => setTab("commands")}>Commands ({data.commands.length})</button>
+      <button className={`cc-tab ${tab === "rules" ? "on" : ""}`} onClick={() => setTab("rules")}>
+        Rules <code>/rule</code> {data.rules.enabled ? "· on" : ""}
+      </button>
+    </div>
+  );
+
+  if (tab === "rules") {
+    return (
+      <div className="panel custom-commands">
+        {tabs}
+        <RulesEditor guild={guild} initial={data.rules} onSaved={(r) => setData(r)} />
+      </div>
+    );
+  }
+
   return (
     <div className="panel custom-commands">
+      {tabs}
       {data.problems.length > 0 && (
         <div className="notice warning-box">
           <strong>Needs attention</strong>
@@ -258,6 +280,156 @@ function CommandEditor({
               {e.footer && <div className="cc-preview-footer">{e.footer}</div>}
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------ Rules: /rule <number> */
+
+function RulesEditor({ guild, initial, onSaved }: { guild: Guild; initial: RulesSettings; onSaved: (r: CustomCommandsResponse) => void }) {
+  const [saved, setSaved] = useState<RulesSettings>(structuredClone(initial));
+  const [r, setR] = useState<RulesSettings>(structuredClone(initial));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [previewNumber, setPreviewNumber] = useState(1);
+  const set = (fn: (d: RulesSettings) => void) =>
+    setR((d) => {
+      const next = structuredClone(d);
+      fn(next);
+      return next;
+    });
+
+  const dirty = JSON.stringify(r) !== JSON.stringify(saved);
+  const problem =
+    (r.rules.some((x) => !x.title.trim()) ? "Every rule needs a title." : null) ??
+    (r.enabled && !r.rules.length ? "Add at least one rule, or switch /rule off." : null);
+
+  const save = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const res = await api.saveRules(guild.id, r);
+      setSaved(structuredClone(res.rules));
+      setR(structuredClone(res.rules));
+      onSaved(res);
+      setNotice(r.enabled ? "Saved. /rule is ready in Discord (it can take a moment to show up)." : "Saved. /rule is switched off.");
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const move = (i: number, by: number) =>
+    set((d) => {
+      const [x] = d.rules.splice(i, 1);
+      d.rules.splice(i + by, 0, x);
+    });
+
+  const shown = Math.min(Math.max(1, previewNumber), Math.max(1, r.rules.length));
+  const rule = r.rules[shown - 1];
+
+  return (
+    <div className="cc-editor">
+      <div className="cc-form">
+        {notice && (
+          <div className="notice">
+            <span>{notice}</span>
+            <button className="link small" onClick={() => setNotice("")}>Dismiss</button>
+          </div>
+        )}
+        <section className="sub">
+          <Toggle
+            label="📜 /rule command"
+            hint="Anyone can type /rule 1 to post that rule in the channel for everyone to see, or /rule on its own to post them all."
+            checked={r.enabled}
+            onChange={(v) => set((d) => { d.enabled = v; })}
+          />
+          <div className="sub-body cc-embed">
+            <div className="mod-row">
+              <label className="field">
+                <span>Heading</span>
+                <input value={r.heading} maxLength={100} onChange={(e) => set((d) => { d.heading = e.target.value; })} />
+              </label>
+              <label className="field cc-color">
+                <span>Colour</span>
+                <input type="color" value={r.color} onChange={(e) => set((d) => { d.color = e.target.value; })} />
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section className="sub">
+          <div className="sub-head">
+            <strong>Rules</strong>
+            <small className="muted">Numbered in this order. {r.rules.length}/{MAX_RULES}</small>
+          </div>
+          <div className="sub-body cc-rules">
+            {r.rules.map((x, i) => (
+              <div key={i} className="cc-rule">
+                <span className="cc-rule-number">{i + 1}</span>
+                <div className="cc-rule-fields">
+                  <input value={x.title} maxLength={100} placeholder="Be kind" onChange={(e) => set((d) => { d.rules[i].title = e.target.value; })} />
+                  <textarea
+                    rows={2}
+                    maxLength={1000}
+                    value={x.description}
+                    placeholder="What this rule means (optional)"
+                    onChange={(e) => set((d) => { d.rules[i].description = e.target.value; })}
+                  />
+                </div>
+                <div className="cc-rule-tools">
+                  <button className="btn ghost small" disabled={i === 0} onClick={() => move(i, -1)} title="Move up">↑</button>
+                  <button className="btn ghost small" disabled={i === r.rules.length - 1} onClick={() => move(i, 1)} title="Move down">↓</button>
+                  <button className="btn danger small" onClick={() => set((d) => { d.rules.splice(i, 1); })}>Remove</button>
+                </div>
+              </div>
+            ))}
+            <button
+              className="btn ghost small"
+              disabled={r.rules.length >= MAX_RULES}
+              onClick={() => set((d) => { d.rules.push({ title: "", description: "" }); })}
+            >
+              + Add rule
+            </button>
+          </div>
+        </section>
+
+        {error && <p className="error">{error}</p>}
+        {dirty && (
+          <div className="save-bar">
+            <span>You have unsaved changes.</span>
+            <button className="btn ghost small" disabled={saving} onClick={() => { setR(structuredClone(saved)); setError(""); }}>Discard</button>
+            <button className="btn primary small" disabled={saving || Boolean(problem)} title={problem ?? undefined} onClick={save}>
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        )}
+        {problem && dirty && <small className="muted">{problem}</small>}
+      </div>
+
+      <div className="cc-preview-wrap">
+        <div className="muted small cc-preview-pick">
+          Preview of <code>/rule</code>
+          <input type="number" min={1} max={Math.max(1, r.rules.length)} value={shown} onChange={(e) => setPreviewNumber(e.target.valueAsNumber || 1)} />
+        </div>
+        <div className="cc-preview">
+          <div className="cc-preview-used">
+            <span className="cc-preview-dot" /> Someone used <strong>/rule {shown}</strong>
+          </div>
+          <div className="cc-preview-author">
+            <span className="cc-preview-avatar">1</span>
+            <strong>Number One</strong>
+            <span className="cc-preview-bot">APP</span>
+          </div>
+          <div className="cc-preview-embed" style={{ borderLeftColor: r.color }}>
+            <div className="cc-preview-title">📜 Rule {shown}: {rule?.title || "Be kind"}</div>
+            {rule?.description.trim() && <div className="cc-preview-desc">{rule.description}</div>}
+            <div className="cc-preview-footer">{r.heading} · {shown} of {Math.max(1, r.rules.length)}</div>
+          </div>
         </div>
       </div>
     </div>

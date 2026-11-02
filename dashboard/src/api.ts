@@ -10,7 +10,7 @@ import type {
 import type { AnnouncementInput, AnnouncementMessage, AnnouncementView, AnnouncementsResponse, TemplateInput, TemplateView } from "../../src/shared/announcements";
 import type { AntiRaidResponse, AntiRaidSettings } from "../../src/shared/antiRaid";
 import type { ChannelDesignSettings, ChannelDesignsResponse } from "../../src/shared/channelDesigns";
-import type { CustomCommandInput, CustomCommandsResponse } from "../../src/shared/customCommands";
+import type { CustomCommandInput, CustomCommandsResponse, RulesSettings } from "../../src/shared/customCommands";
 import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embeds";
 import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
@@ -179,6 +179,8 @@ export const api = {
     request<CustomCommandsResponse>(`/api/guilds/${guildId}/custom-commands`, { method: "POST", body: JSON.stringify(input) }),
   updateCustomCommand: (guildId: string, id: number, input: CustomCommandInput) =>
     request<CustomCommandsResponse>(`/api/guilds/${guildId}/custom-commands/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  saveRules: (guildId: string, rules: RulesSettings) =>
+    request<CustomCommandsResponse>(`/api/guilds/${guildId}/custom-commands/rules`, { method: "PUT", body: JSON.stringify(rules) }),
   deleteCustomCommand: (guildId: string, id: number) =>
     request<CustomCommandsResponse>(`/api/guilds/${guildId}/custom-commands/${id}`, { method: "DELETE" }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),

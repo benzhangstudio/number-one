@@ -2,6 +2,7 @@ import { z } from "zod";
 import { antiRaidSettings } from "./antiRaid.js";
 import { automodSettings } from "./automod.js";
 import { channelDesignSettings } from "./channelDesigns.js";
+import { customCommandSettings } from "./customCommands.js";
 import { joinLeaveSettings } from "./joinLeave.js";
 import { memberLogSettings } from "./memberLogs.js";
 import { messageLogSettings } from "./messageLogs.js";
@@ -255,10 +256,10 @@ export const customCommandsFeature = defineFeature({
   id: "custom-commands",
   name: "Custom commands",
   icon: "✨",
-  description: "Make your own slash commands, like /faq or /ip, that reply with your text or an embed.",
+  description: "Make your own slash commands, like /faq or /ip, plus /rule to post any of your server's rules.",
   category: "utility",
   recommended: true,
-  settings: z.object({}),
+  settings: customCommandSettings,
 });
 
 export const featureCatalog: FeatureInfo[] = [

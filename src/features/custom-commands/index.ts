@@ -1,4 +1,6 @@
 import {
+  ApplicationCommandOptionType,
+  type ApplicationCommandData,
   type ChatInputCommandInteraction,
   EmbedBuilder,
   Events,
@@ -13,15 +15,20 @@ import { client } from "../../server/bot/discord.js";
 import { type BotFeature, onEvent } from "../../server/bot/types.js";
 import { db } from "../../server/db/client.js";
 import { customCommands } from "../../server/db/schema.js";
-import { getFeatureState, isFeatureEnabled } from "../../server/settings.js";
+import { getFeatureState, isFeatureEnabled, saveFeatureState } from "../../server/settings.js";
 import {
+  BUILT_IN_NAMES,
   type CustomCommandInput,
+  type CustomCommandSettings,
   type CustomCommandView,
   type CustomCommandsResponse,
   MAX_CUSTOM_COMMANDS,
   RESERVED_NAMES,
+  RULES_COMMAND,
+  type RulesSettings,
   customCommandInput,
   replyProblem,
+  rulesSettings,
 } from "../../shared/customCommands.js";
 import { customCommandsFeature } from "../../shared/features.js";
 
@@ -51,25 +58,51 @@ const toView = (r: Row): CustomCommandView => ({ ...detailsOf(r), id: r.id, uses
 
 /* ------------------------------------------------------------ registering with Discord */
 
+async function rulesOf(guildId: string): Promise<RulesSettings> {
+  return ((await getFeatureState(guildId, customCommandsFeature)).settings as CustomCommandSettings).rules;
+}
+
+/** The /rule command as Discord needs it: an optional rule number, with suggestions as people type. */
+function rulesCommand(rules: RulesSettings): ApplicationCommandData {
+  return {
+    name: RULES_COMMAND,
+    description: "Post one of the server's rules, or all of them",
+    contexts: [InteractionContextType.Guild],
+    options: [
+      {
+        type: ApplicationCommandOptionType.Integer,
+        name: "number",
+        description: "Which rule (leave empty for all of them)",
+        required: false,
+        minValue: 1,
+        maxValue: Math.max(1, rules.rules.length),
+        autocomplete: true,
+      },
+    ],
+  };
+}
+
 /**
- * Makes the server's slash commands match its custom commands: adds new ones, updates changed descriptions
- * and removes deleted ones. Number One's own command names are never touched (in a test server they're
- * registered there too).
+ * Makes the server's slash commands match its custom commands (and /rule): adds new ones, updates changed
+ * ones and removes deleted ones. Number One's own command names are never touched (in a test server
+ * they're registered there too).
  */
 async function syncGuild(guild: Guild) {
-  const enabled = await isFeatureEnabled(guild.id, customCommandsFeature);
-  const wanted = enabled ? (await listRows(guild.id)).map(detailsOf) : [];
+  const state = await getFeatureState(guild.id, customCommandsFeature);
+  const rules = (state.settings as CustomCommandSettings).rules;
+  const wanted: ApplicationCommandData[] = state.enabled
+    ? (await listRows(guild.id)).map(detailsOf).map((c) => ({ name: c.name, description: c.description, contexts: [InteractionContextType.Guild] }))
+    : [];
+  if (state.enabled && rules.enabled && rules.rules.length) wanted.push(rulesCommand(rules));
   const existing = await guild.commands.fetch();
   for (const command of existing.values()) {
-    if (RESERVED_NAMES.includes(command.name)) continue;
+    if (BUILT_IN_NAMES.includes(command.name)) continue;
     const match = wanted.find((w) => w.name === command.name);
     if (!match) await command.delete();
-    else if (command.description !== match.description) await command.edit({ description: match.description });
+    else if (command.name === RULES_COMMAND || ("description" in match && command.description !== match.description)) await command.edit(match);
   }
   for (const w of wanted) {
-    if (!existing.some((c) => c.name === w.name)) {
-      await guild.commands.create({ name: w.name, description: w.description, contexts: [InteractionContextType.Guild] });
-    }
+    if (!existing.some((c) => c.name === w.name)) await guild.commands.create(w);
   }
 }
 
@@ -112,9 +145,58 @@ function replyFor(c: CustomCommandInput, i: ChatInputCommandInteraction) {
   return { content: fill(c.content, i).slice(0, 2000) || undefined, embeds, allowedMentions: { users: [i.user.id] } };
 }
 
-/** Answers custom commands. Number One's own commands are answered by the main command router instead. */
+/* ------------------------------------------------------------ /rule */
+
+const ruleColor = (r: RulesSettings) => Number.parseInt(r.color.slice(1), 16);
+
+/** One rule, or the whole list when no number is given. Always public. */
+async function answerRule(interaction: ChatInputCommandInteraction<"cached">) {
+  const r = await rulesOf(interaction.guildId);
+  if (!(await isFeatureEnabled(interaction.guildId, customCommandsFeature)) || !r.enabled || !r.rules.length) {
+    return interaction.reply("This server hasn't set up its rules yet.");
+  }
+  const number = interaction.options.getInteger("number");
+  if (number === null) {
+    const embed = new EmbedBuilder()
+      .setColor(ruleColor(r))
+      .setTitle(`📜 ${r.heading}`.slice(0, 256))
+      .setDescription(
+        r.rules
+          .map((rule, i) => `**${i + 1}. ${rule.title}**${rule.description.trim() ? `\n${rule.description.trim()}` : ""}`)
+          .join("\n\n")
+          .slice(0, 4096),
+      );
+    return interaction.reply({ embeds: [embed], allowedMentions: { parse: [] } });
+  }
+  const rule = r.rules[number - 1];
+  if (!rule) {
+    return interaction.reply(`There's no rule ${number}. This server has ${r.rules.length} rule${r.rules.length === 1 ? "" : "s"}.`);
+  }
+  const embed = new EmbedBuilder()
+    .setColor(ruleColor(r))
+    .setTitle(`📜 Rule ${number}: ${rule.title}`.slice(0, 256))
+    .setFooter({ text: `${r.heading} · ${number} of ${r.rules.length}` });
+  if (rule.description.trim()) embed.setDescription(rule.description);
+  return interaction.reply({ embeds: [embed], allowedMentions: { parse: [] } });
+}
+
+/** Suggestions while typing /rule: "1. Be kind", "2. No spam"… */
+const ruleSuggestions = onEvent(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isAutocomplete() || !interaction.inCachedGuild() || interaction.commandName !== RULES_COMMAND) return;
+  if (interaction.commandGuildId !== interaction.guildId) return;
+  const r = await rulesOf(interaction.guildId);
+  const typed = String(interaction.options.getFocused()).toLowerCase().trim();
+  const choices = r.rules
+    .map((rule, i) => ({ name: `${i + 1}. ${rule.title}`.slice(0, 100), value: i + 1 }))
+    .filter((c) => !typed || c.name.toLowerCase().includes(typed))
+    .slice(0, 25);
+  await interaction.respond(choices).catch(() => {});
+});
+
+/** Answers custom commands and /rule. Number One's own commands are answered by the main command router instead. */
 const commandUsed = onEvent(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand() || !interaction.inCachedGuild() || interaction.commandGuildId !== interaction.guildId) return;
+  if (interaction.commandName === RULES_COMMAND) return answerRule(interaction);
   if (RESERVED_NAMES.includes(interaction.commandName)) return;
   const row = await db
     .select()
@@ -152,7 +234,7 @@ async function respond(guild: Guild): Promise<CustomCommandsResponse> {
   const problems: string[] = [];
   const state = await getFeatureState(guild.id, customCommandsFeature);
   if (state.enabled && !guild.members.me?.permissions.has(PermissionFlagsBits.SendMessages)) problems.push("I need Send Messages to reply to commands.");
-  return { commands: (await listRows(guild.id)).map(toView), problems };
+  return { commands: (await listRows(guild.id)).map(toView), rules: (state.settings as CustomCommandSettings).rules, problems };
 }
 
 async function guarded(reply: FastifyReply, run: () => Promise<unknown>) {
@@ -175,12 +257,14 @@ const guildOf = (request: Req) => client.guilds.cache.get(request.params.guildId
 
 export const customCommandsBot: BotFeature = {
   info: customCommandsFeature,
-  events: [commandUsed],
+  events: [commandUsed, ruleSuggestions],
 
   setup(c) {
     // Bring every server's commands in line after a restart (edits made while offline, or the feature switched off).
     c.once(Events.ClientReady, async () => {
       const guildIds = new Set((await db.selectDistinct({ id: customCommands.guildId }).from(customCommands).all()).map((r) => r.id));
+      // Servers with /rule but no custom commands need syncing too.
+      for (const guild of c.guilds.cache.values()) if ((await rulesOf(guild.id)).enabled) guildIds.add(guild.id);
       for (const id of guildIds) {
         const guild = c.guilds.cache.get(id);
         if (guild) await syncGuild(guild).catch((err) => log(`startup sync failed in ${guild.name}:`, err.message));
@@ -228,6 +312,20 @@ export const customCommandsBot: BotFeature = {
           .set({ name, details, updatedAt: new Date() })
           .where(and(eq(customCommands.guildId, guild.id), eq(customCommands.id, id)))
           .run();
+        await syncOrExplain(guild);
+        return respond(guild);
+      }),
+    );
+
+    api.put("/api/guilds/:guildId/custom-commands/rules", (request: Req, reply) =>
+      guarded(reply, async () => {
+        const guild = guildOf(request);
+        const parsed = rulesSettings.safeParse(request.body);
+        if (!parsed.success) throw new CommandError(parsed.error.issues[0]?.message ?? "Check the form and try again.");
+        if (parsed.data.enabled && !parsed.data.rules.length) throw new CommandError("Add at least one rule, or switch /rule off.");
+        const state = await getFeatureState(guild.id, customCommandsFeature);
+        const settings: CustomCommandSettings = { ...(state.settings as CustomCommandSettings), rules: parsed.data };
+        await saveFeatureState(guild.id, customCommandsFeature, { enabled: state.enabled, settings }, request.session!.userId);
         await syncOrExplain(guild);
         return respond(guild);
       }),
