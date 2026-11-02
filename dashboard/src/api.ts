@@ -15,6 +15,7 @@ import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embed
 import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
+import type { RuleVerificationResponse, RuleVerificationSettings } from "../../src/shared/ruleVerification";
 import type { ServerLogResponse, ServerLogSettings } from "../../src/shared/serverLogs";
 import type { VoiceLogResponse, VoiceLogSettings } from "../../src/shared/voiceLogs";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
@@ -183,6 +184,9 @@ export const api = {
     request<CustomCommandsResponse>(`/api/guilds/${guildId}/custom-commands/rules`, { method: "PUT", body: JSON.stringify(rules) }),
   deleteCustomCommand: (guildId: string, id: number) =>
     request<CustomCommandsResponse>(`/api/guilds/${guildId}/custom-commands/${id}`, { method: "DELETE" }),
+  ruleVerification: (guildId: string) => request<RuleVerificationResponse>(`/api/guilds/${guildId}/rule-verification`),
+  saveRuleVerification: (guildId: string, settings: RuleVerificationSettings) =>
+    request<RuleVerificationResponse>(`/api/guilds/${guildId}/rule-verification`, { method: "PUT", body: JSON.stringify(settings) }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 

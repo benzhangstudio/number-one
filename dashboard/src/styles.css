@@ -3977,3 +3977,119 @@ select.chip-add {
     grid-column: 2;
   }
 }
+
+/* --- Rule verification --- */
+.panel.rule-verification {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.rule-verification .sub {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin: 0;
+}
+.rule-verification .sub > .sub-body {
+  border-top: 1px solid var(--border);
+  margin: 14px -20px 0;
+  padding: 14px 20px 0;
+}
+.rv-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.rv-form,
+.rv-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.rv-color input[type="color"] {
+  width: 56px;
+  height: 36px;
+  padding: 2px;
+}
+.rv-preview-wrap {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.rv-preview {
+  background: #313338;
+  color: #dbdee1;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 0.92rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.rv-preview-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rv-preview-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.rv-preview-bot {
+  background: #5865f2;
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.rv-preview-embed {
+  background: #2b2d31;
+  border-left: 4px solid;
+  border-radius: 4px;
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 520px;
+  width: 100%;
+}
+.rv-preview-title {
+  font-weight: 700;
+  color: #f2f3f5;
+}
+.rv-preview-desc {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rv-preview-image {
+  max-width: 100%;
+  border-radius: 4px;
+}
+.rv-preview-button {
+  color: #fff;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 0.88rem;
+}
+@media (max-width: 900px) {
+  .rv-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rv-preview-wrap {
+    position: static;
+  }
+}

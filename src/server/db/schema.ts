@@ -365,3 +365,10 @@ export const customCommands = sqliteTable(
   },
   (t) => [uniqueIndex("custom_commands_name_idx").on(t.guildId, t.name)],
 );
+
+/** Rule verification: where each server's rules message with the "I agree" button is posted. */
+export const ruleVerificationPosts = sqliteTable("rule_verification_posts", {
+  guildId: text("guild_id").primaryKey(),
+  channelId: text("channel_id").notNull(),
+  messageId: text("message_id").notNull(),
+});

@@ -8,6 +8,7 @@ import { memberLogSettings } from "./memberLogs.js";
 import { messageLogSettings } from "./messageLogs.js";
 import { moderationSettings } from "./moderation.js";
 import { onboardingSettings } from "./onboarding.js";
+import { ruleVerificationSettings } from "./ruleVerification.js";
 import { serverLogSettings } from "./serverLogs.js";
 import { voiceLogSettings } from "./voiceLogs.js";
 
@@ -262,12 +263,23 @@ export const customCommandsFeature = defineFeature({
   settings: customCommandSettings,
 });
 
+export const ruleVerificationFeature = defineFeature({
+  id: "rule-verification",
+  name: "Rule verification",
+  icon: "✅",
+  description: "Post your rules with an \"I agree\" button that gives a role, so only people who accepted the rules get in. Works with or without onboarding.",
+  category: "community",
+  recommended: true,
+  settings: ruleVerificationSettings,
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
   automodFeature,
   antiRaidFeature,
   joinLeaveFeature,
+  ruleVerificationFeature,
   onboardingFeature,
   reactionRolesFeature,
   announcementsFeature,
@@ -332,3 +344,4 @@ export * from "./memberLogs.js";
 export * from "./serverLogs.js";
 export * from "./voiceLogs.js";
 export * from "./customCommands.js";
+export * from "./ruleVerification.js";

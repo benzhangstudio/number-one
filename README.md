@@ -15,6 +15,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Setup categories with recommended features | ✅ |
 | Reaction roles (dashboard) | ✅ |
 | Join & leave messages: welcome, welcome DM, goodbye | ✅ |
+| Rule verification: rules with an "I agree" button that gives a role | ✅ |
 | Member onboarding: join roles, steps, access gate | ✅ |
 | Auto-moderation: blocked words, invites, links, mass mentions, caps, emoji spam, zalgo, repeated messages | ✅ |
 | Anti-spam: message rate, cross-channel posting, attachment and link floods | ✅ |
@@ -93,6 +94,18 @@ Welcomes new members and says goodbye when they leave. Configured on the dashboa
 - Bots are skipped. Nothing is posted while Anti-raid's raid mode is on.
 - The dashboard warns if a chosen channel is gone or the bot can't post there.
 - **Permissions:** View Channel, Send Messages and Embed Links in the chosen channels.
+
+### Rule verification (Community Settings)
+
+Posts the server's rules with an **I agree** button. Works on its own, whether Member onboarding is on or off.
+
+- **The rules message:** channel, title, rules text, colour and an optional image. Button label, emoji and colour. Saving updates the message in place; picking another channel moves it.
+- **Agreeing** gives the verified role and can take an "unverified" role away (verified goes on first, so nobody is left with neither). Pressing it again just says they've already agreed. The reply is only shown to them.
+- **New members** can be given the unverified role when they join.
+- To hide channels until people agree, allow them only for the verified role (or deny them for the unverified role) in Discord's channel settings.
+- The dashboard shows how many have agreed and how many are still unverified, with a live preview of the message.
+- Switching the feature off takes the rules message down. Saving again (or switching it back on) posts it again.
+- **Permissions:** Manage Roles, with Number One's role above both roles; View Channel, Send Messages and Embed Links in the rules channel.
 
 ### Member onboarding (Community Settings)
 

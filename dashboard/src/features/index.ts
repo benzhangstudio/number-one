@@ -13,6 +13,7 @@ import { MessageLogsPanel } from "./MessageLogsPanel";
 import { ModerationPanel } from "./ModerationPanel";
 import { OnboardingPanel } from "./OnboardingPanel";
 import { ReactionRolesPanel } from "./ReactionRolesPanel";
+import { RuleVerificationPanel } from "./RuleVerificationPanel";
 import { ServerLogsPanel } from "./ServerLogsPanel";
 import { VoiceLogsPanel } from "./VoiceLogsPanel";
 
@@ -33,4 +34,5 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "server-logs": ServerLogsPanel,
   "voice-logs": VoiceLogsPanel,
   "custom-commands": CustomCommandsPanel,
+  "rule-verification": RuleVerificationPanel,
 };
