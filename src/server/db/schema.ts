@@ -285,3 +285,50 @@ export const announcements = sqliteTable(
   },
   (t) => [index("announcements_guild_idx").on(t.guildId, t.createdAt), index("announcements_due_idx").on(t.status, t.scheduledAt)],
 );
+
+/** Events: one row per event posted from the dashboard. */
+export const events = sqliteTable(
+  "events",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    channelId: text("channel_id").notNull(),
+    /** The posted event message. */
+    messageId: text("message_id"),
+    /** Everything the admin filled in (JSON, validated by eventInput in src/shared/events.ts). */
+    details: text("details", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    startAt: integer("start_at", { mode: "timestamp_ms" }).notNull(),
+    /** When it counts as over: the end time, or 2 hours after the start when there's none. */
+    endsAt: integer("ends_at", { mode: "timestamp_ms" }).notNull(),
+    /** When to DM reminders, or null for none. Cleared once sent. */
+    remindAt: integer("remind_at", { mode: "timestamp_ms" }),
+    /** upcoming, ended or cancelled. */
+    status: text("status", { enum: ["upcoming", "ended", "cancelled"] }).notNull().default("upcoming"),
+    /** The matching Discord scheduled event (Events tab), if it was added. */
+    discordEventId: text("discord_event_id"),
+    createdBy: text("created_by").notNull(),
+    createdByTag: text("created_by_tag").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [
+    index("events_guild_idx").on(t.guildId, t.startAt),
+    index("events_remind_idx").on(t.remindAt),
+    index("events_status_idx").on(t.status, t.endsAt),
+  ],
+);
+
+/** Events: who answered Going, Maybe or Can't go. */
+export const eventRsvps = sqliteTable(
+  "event_rsvps",
+  {
+    eventId: integer("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    /** going, maybe or no. */
+    choice: text("choice", { enum: ["going", "maybe", "no"] }).notNull(),
+    answeredAt: integer("answered_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.eventId, t.userId] }), index("event_rsvps_guild_idx").on(t.guildId)],
+);

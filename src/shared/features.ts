@@ -180,6 +180,16 @@ export const announcementsFeature = defineFeature({
   settings: z.object({}),
 });
 
+export const eventsFeature = defineFeature({
+  id: "events",
+  name: "Events",
+  icon: "📅",
+  description: "Post events with Going / Maybe / Can't go buttons and reminders, and add them to Discord's Events tab in one click.",
+  category: "engagement",
+  recommended: true,
+  settings: z.object({}),
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
@@ -190,6 +200,7 @@ export const featureCatalog: FeatureInfo[] = [
   reactionRolesFeature,
   announcementsFeature,
   embedsFeature,
+  eventsFeature,
 ];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
@@ -236,3 +247,4 @@ export * from "./antiRaid.js";
 export * from "./joinLeave.js";
 export * from "./embeds.js";
 export * from "./announcements.js";
+export * from "./events.js";

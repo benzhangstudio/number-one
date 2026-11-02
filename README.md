@@ -21,6 +21,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Anti-raid: join-wave detection, raid mode lockdown, new-account filter, `/raidmode` | ✅ |
 | Embed messages: multi-embed builder, post, edit and delete | ✅ |
 | Announcements: templates, embed builder, pings, publishing, scheduling | ✅ |
+| Events: RSVP buttons, reminders, one-click Discord Events tab | ✅ |
 | More admin features (logging…) | Next, one at a time |
 
 ## Running on Wispbyte
@@ -190,6 +191,18 @@ Write announcements on the dashboard, ping who needs to know, and send now or la
 - **Templates:** save announcements with their channel and ping (up to 25), or "Save as template" while writing.
 - **History:** the last 30 sent announcements, with links. Sent ones can be edited (the ping isn't sent again) or deleted. Failed ones show why and can be tried again.
 - **Permissions:** View Channel, Send Messages and Embed Links, plus "Mention @everyone, @here and All Roles" for those pings.
+
+### Events (Engagement & Fun)
+
+Events like sesh.fyi, set up on the dashboard.
+
+- **The post:** name, description, start and optional end time (everyone sees their own time zone, with a countdown), a place or link or a voice/stage channel, cover image and colour. An optional ping when it's posted.
+- **Answers:** ✅ Going, ❔ Maybe and ❌ Can't go buttons, with a live list of who answered. Pressing your answer again takes it back. An optional limit on how many can go; when it's full, people can still pick Maybe.
+- **Reminders:** a DM to everyone going or maybe going, from 10 minutes to a day before (or none).
+- **Afterwards:** the post is marked ended and its buttons are removed. Cancelling marks it cancelled and DMs everyone who was going or maybe going.
+- **Discord's Events tab:** the **Add to Discord Events** button (or a tick when creating) makes a matching Discord event with the same name, time, place, description, cover image and a link back to the post. Nobody has to set it up by hand. Edits are copied to it, cancelling or deleting removes it, and it shows as live when the event starts.
+- The dashboard lists upcoming and past events with answer counts and who's coming, and can edit, copy, cancel or delete them. Up to 50 upcoming events per server.
+- **Permissions:** View Channel, Send Messages and Embed Links in the event channel; Manage Events for Discord's Events tab; "Mention @everyone, @here and All Roles" for those pings. Admins need Manage Events (or Create Events) themselves to add events to the Events tab.
 
 ## How the project is organized
 

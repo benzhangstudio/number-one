@@ -3,6 +3,7 @@ import type { GuildDetails } from "../api";
 import { AnnouncementsPanel } from "./AnnouncementsPanel";
 import { AntiRaidPanel } from "./AntiRaidPanel";
 import { EmbedsPanel } from "./EmbedsPanel";
+import { EventsPanel } from "./EventsPanel";
 import { AutomodPanel } from "./AutomodPanel";
 import { JoinLeavePanel } from "./JoinLeavePanel";
 import { ModerationPanel } from "./ModerationPanel";
@@ -19,4 +20,5 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "reaction-roles": ReactionRolesPanel,
   announcements: AnnouncementsPanel,
   embeds: EmbedsPanel,
+  events: EventsPanel,
 };

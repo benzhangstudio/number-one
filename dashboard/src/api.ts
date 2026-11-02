@@ -10,6 +10,7 @@ import type {
 import type { AnnouncementInput, AnnouncementMessage, AnnouncementView, AnnouncementsResponse, TemplateInput, TemplateView } from "../../src/shared/announcements";
 import type { AntiRaidResponse, AntiRaidSettings } from "../../src/shared/antiRaid";
 import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embeds";
+import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
@@ -60,6 +61,9 @@ export interface OnboardingResponse {
   canManageAccess: boolean;
   warnings: string[];
 }
+
+/** A saved event, plus a warning when adding it to Discord's Events tab didn't work. */
+export type EventResult = { event: EventView; warning: string | null };
 
 export type ReactionRoleSaveResult = { message: ReactionRoleMessageView; warnings: string[] };
 
@@ -139,6 +143,16 @@ export const api = {
     request<TemplateView>(`/api/guilds/${guildId}/announcements/templates/${id}`, { method: "PUT", body: JSON.stringify(input) }),
   deleteAnnouncementTemplate: (guildId: string, id: number) =>
     request<{ ok: true }>(`/api/guilds/${guildId}/announcements/templates/${id}`, { method: "DELETE" }),
+  events: (guildId: string) => request<EventsResponse>(`/api/guilds/${guildId}/events`),
+  eventRsvps: (guildId: string, id: number) => request<RsvpView[]>(`/api/guilds/${guildId}/events/${id}/rsvps`),
+  createEvent: (guildId: string, input: EventInput) =>
+    request<EventResult>(`/api/guilds/${guildId}/events`, { method: "POST", body: JSON.stringify(input) }),
+  updateEvent: (guildId: string, id: number, input: EventInput) =>
+    request<EventResult>(`/api/guilds/${guildId}/events/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  pushEventToDiscord: (guildId: string, id: number) =>
+    request<EventResult>(`/api/guilds/${guildId}/events/${id}/discord`, { method: "POST", body: "{}" }),
+  cancelEvent: (guildId: string, id: number) => request<EventResult>(`/api/guilds/${guildId}/events/${id}/cancel`, { method: "POST", body: "{}" }),
+  deleteEvent: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/events/${id}`, { method: "DELETE" }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 
