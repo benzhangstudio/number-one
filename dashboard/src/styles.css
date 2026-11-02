@@ -5081,3 +5081,41 @@ select.chip-add {
     white-space: normal;
   }
 }
+
+/* Tickets: starter form */
+.tk-form-body {
+  border-left: 3px solid var(--border);
+  padding-left: 12px;
+}
+.tk-question {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.tk-required {
+  flex: 0 0 auto;
+}
+.tk-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+}
+.tk-answers summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.tk-answers dl {
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tk-answers dd {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

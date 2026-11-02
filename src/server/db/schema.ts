@@ -407,6 +407,10 @@ export const tickets = sqliteTable(
     openerId: text("opener_id").notNull(),
     openerTag: text("opener_tag").notNull(),
     reason: text("reason"),
+    /** The starter form's answers, once the opener sent it. Null while it's not sent (or there's no form). */
+    formAnswers: text("form_answers", { mode: "json" }).$type<{ question: string; answer: string }[]>(),
+    /** A copy of the starter form when the ticket opened (so later panel edits don't change it), or null for none. */
+    form: text("form", { mode: "json" }).$type<import("../../shared/tickets.js").TicketForm>(),
     status: text("status", { enum: ["open", "closed"] }).notNull().default("open"),
     claimedById: text("claimed_by_id"),
     claimedByTag: text("claimed_by_tag"),

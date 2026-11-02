@@ -40,7 +40,26 @@ Each type is one button or dropdown option, like "Support", "Report a member" or
 | Category | Server default | Opens this type's tickets in a different category. |
 | Extra staff roles | None | Up to 10 roles that see this type only, on top of the main staff. |
 | First message | Thanks for reaching out, {user}! … | Up to 2,000 characters. |
-| Ask a question first | Off | Shows a pop-up question (like "What do you need help with?") before the ticket opens. The answer is posted in the ticket. |
+| Starter form | Off | Up to 5 questions the opener answers inside their new ticket. See below. |
+
+### Starter form
+
+Each ticket type can have its own form, like "Who are you reporting?" and "What happened?" for a Report type.
+
+| Setting | Default | Notes |
+| --- | --- | --- |
+| Form title | Tell us about your ticket | Shown at the top of the pop-up. Up to 45 characters. |
+| Questions | One: "What do you need help with?" | 1 to 5. Each has a label (up to 45 characters), a **short** (one line) or **long** (paragraph) answer, an optional hint and a **Required** tick box. |
+| Lock the ticket until the form is sent | Off | The opener can read the ticket but can't type or upload until they send the form. Staff can always type. |
+
+How it works:
+
+1. When the ticket opens, the first message **mentions the opener** and has a **Fill in the form** button.
+2. Only the opener can press it. The form opens as a pop-up.
+3. When they send it, the answers are posted in the ticket as **Answers from @opener** (without pinging them again). The button goes away, and if the ticket was locked, the opener can now type.
+4. The answers are kept with the ticket: shown on the dashboard's ticket list and included in the transcript.
+
+Editing a form later doesn't change tickets that are already open. Ticket types that used the old "Ask a question first" option now have a one-question starter form.
 
 ### Placeholders for the first message
 
@@ -70,7 +89,7 @@ Each type is one button or dropdown option, like "Support", "Report a member" or
 When a member presses a button (or picks from the dropdown), Number One:
 
 1. Creates a channel like `ticket-0001`, visible **only** to the member, the staff roles and Number One.
-2. Posts the first message and pins it, with **Close** and **Claim** buttons.
+2. Posts the first message and pins it, mentioning the opener, with **Close** and **Claim** buttons (and **Fill in the form** if the type has a starter form).
 3. Pings the staff roles (if switched on) and logs it.
 
 Double-clicks never open two tickets, and members can't go over the open-ticket limit.
@@ -94,7 +113,7 @@ If a ticket channel is deleted by hand, the ticket is marked closed.
 
 ## The dashboard
 
-Lists the 50 most recent tickets, open and closed, with who opened, claimed and closed each one.
+Lists the 50 most recent tickets, open and closed, with who opened, claimed and closed each one, and their form answers.
 
 ## Switching it off
 

@@ -20,11 +20,41 @@ export const MAX_TICKET_PANELS = 10;
 export const MAX_TICKET_TYPES = 10;
 export const MAX_STAFF_ROLES = 10;
 
+/** Discord's pop-up forms hold at most 5 questions. */
+export const MAX_FORM_QUESTIONS = 5;
+
+export const formQuestion = z.object({
+  /** Short random ID, set by the dashboard. */
+  id: z.string().regex(/^[a-z0-9]{1,12}$/),
+  /** Discord limits pop-up labels to 45 characters. */
+  label: z.string().trim().min(1, "Every question needs a label").max(45),
+  /** Short = one line, long = a paragraph. */
+  style: z.enum(["short", "long"]).default("long"),
+  placeholder: z.string().trim().max(100).default(""),
+  required: z.boolean().default(true),
+});
+export type FormQuestion = z.infer<typeof formQuestion>;
+
+/** The starter form: questions the opener answers inside their new ticket. */
+export const ticketForm = z.object({
+  enabled: z.boolean().default(false),
+  /** Shown at the top of the pop-up (Discord allows 45 characters). */
+  title: z.string().trim().min(1, "Give the form a title").max(45).default("Tell us about your ticket"),
+  questions: z
+    .array(formQuestion)
+    .min(1, "Add at least one question")
+    .max(MAX_FORM_QUESTIONS)
+    .default([{ id: "q1", label: "What do you need help with?", style: "long", placeholder: "", required: true }]),
+  /** The opener can read but not type until they've sent the form. Staff can always type. */
+  lockUntilSubmitted: z.boolean().default(false),
+});
+export type TicketForm = z.infer<typeof ticketForm>;
+
 export const ticketButtonStyles = ["primary", "secondary", "success", "danger"] as const;
 export type TicketButtonStyle = (typeof ticketButtonStyles)[number];
 
 /** One kind of ticket on a panel, like "Support" or "Report a member". */
-export const ticketType = z.object({
+const ticketTypeShape = z.object({
   /** Short random ID, set by the dashboard. Used in button IDs, so it never changes. */
   id: z.string().regex(/^[a-z0-9]{1,12}$/),
   label: z.string().trim().min(1, "Every ticket type needs a name").max(80),
@@ -49,10 +79,19 @@ export const ticketType = z.object({
     .string()
     .max(2000)
     .default("Thanks for reaching out, {user}! Tell us what you need and a staff member will be with you soon."),
-  /** Ask the member a question in a pop-up before opening the ticket. */
-  askReason: z.boolean().default(false),
-  reasonLabel: z.string().trim().min(1, "Write the question to ask").max(45).default("What do you need help with?"),
+  /** Optional starter form, answered inside the ticket. */
+  form: ticketForm.prefault({}),
 });
+/** Older ticket types asked one question before opening; that becomes a one-question starter form. */
+export const ticketType = z.preprocess((raw) => {
+  if (!raw || typeof raw !== "object") return raw;
+  const { askReason, reasonLabel, ...rest } = raw as Record<string, unknown>;
+  if (askReason && !("form" in rest)) {
+    const label = typeof reasonLabel === "string" && reasonLabel.trim() ? reasonLabel.trim().slice(0, 45) : "What do you need help with?";
+    return { ...rest, form: { enabled: true, questions: [{ id: "q1", label, style: "long", required: true }] } };
+  }
+  return rest;
+}, ticketTypeShape);
 export type TicketType = z.infer<typeof ticketType>;
 
 export const ticketPanelInput = z
@@ -70,6 +109,9 @@ export const ticketPanelInput = z
   .superRefine((p, ctx) => {
     const ids = new Set<string>();
     for (const t of p.types) {
+      if (new Set(t.form.questions.map((q) => q.id)).size !== t.form.questions.length) {
+        ctx.addIssue({ code: "custom", message: `${t.label}: two form questions have the same ID. Reload the page and try again.` });
+      }
       if (ids.has(t.id)) ctx.addIssue({ code: "custom", message: "Two ticket types have the same ID. Reload the page and try again." });
       ids.add(t.id);
     }
@@ -120,6 +162,8 @@ export interface TicketView {
   openerId: string;
   openerTag: string;
   reason: string | null;
+  /** The starter form's answers, once sent. */
+  formAnswers: { question: string; answer: string }[] | null;
   claimedByTag: string | null;
   closedByTag: string | null;
   closeReason: string | null;

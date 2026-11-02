@@ -18,6 +18,17 @@ export interface Announcement {
 
 export const announcements: Announcement[] = [
   {
+    id: "2026-11-02-ticket-forms",
+    date: "2026-11-02",
+    title: "Ticket starter forms",
+    tag: "Improved",
+    body: `Each ticket type can now have a **starter form** with up to 5 questions.
+
+- The opener is mentioned with a **Fill in the form** button, and their answers are posted in the ticket.
+- **Lock until sent:** the opener can't type until they send the form. Staff always can.
+- Answers show on the dashboard and in transcripts.`,
+  },
+  {
     id: "2026-11-02-guides",
     date: "2026-11-02",
     title: "Server and staff guides",

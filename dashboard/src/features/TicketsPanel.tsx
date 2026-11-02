@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import {
+  type FormQuestion,
+  MAX_FORM_QUESTIONS,
   MAX_STAFF_ROLES,
   MAX_TICKET_PANELS,
   MAX_TICKET_TYPES,
   TICKET_PLACEHOLDERS,
   type TicketButtonStyle,
+  type TicketForm,
   type TicketPanelInput,
   type TicketPanelView,
   type TicketSettings,
@@ -27,6 +30,10 @@ const styleNames: Record<TicketButtonStyle, { label: string; color: string }> = 
 
 const newId = () => Math.random().toString(36).slice(2, 10);
 
+const blankQuestion = (label = "What do you need help with?"): FormQuestion => ({ id: newId(), label, style: "long", placeholder: "", required: true });
+
+const blankForm = (): TicketForm => ({ enabled: false, title: "Tell us about your ticket", questions: [blankQuestion()], lockUntilSubmitted: false });
+
 const blankType = (label = "Support"): TicketType => ({
   id: newId(),
   label,
@@ -37,8 +44,7 @@ const blankType = (label = "Support"): TicketType => ({
   categoryId: null,
   staffRoleIds: [],
   welcomeMessage: "Thanks for reaching out, {user}! Tell us what you need and a staff member will be with you soon.",
-  askReason: false,
-  reasonLabel: "What do you need help with?",
+  form: blankForm(),
 });
 
 const blankPanel = (): TicketPanelInput & { channelId: string } => ({
@@ -206,6 +212,19 @@ function TicketList({ data }: { data: TicketsResponse }) {
                   {t.closeReason ? ` (${t.closeReason})` : ""}
                 </span>
                 {t.reason && <span className="small tk-reason">“{t.reason}”</span>}
+                {t.formAnswers && (
+                  <details className="tk-answers">
+                    <summary className="small">📝 Form answers</summary>
+                    <dl>
+                      {t.formAnswers.map((a) => (
+                        <div key={a.question}>
+                          <dt className="small muted">{a.question}</dt>
+                          <dd className="small">{a.answer || "—"}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </details>
+                )}
               </div>
               {t.channelUrl && (
                 <div className="cc-actions">
@@ -350,7 +369,8 @@ function PanelEditor({
     (p.types.length === 0 ? "Add at least one ticket type." : null) ??
     (p.types.some((t) => !t.label.trim()) ? "Every ticket type needs a name." : null) ??
     (p.types.some((t) => !/^[a-z0-9-]{1,20}$/.test(t.namePrefix)) ? "Channel name starts can only use lowercase letters, numbers and -." : null) ??
-    (p.types.some((t) => t.askReason && !t.reasonLabel.trim()) ? "Write the question to ask." : null);
+    (p.types.some((t) => t.form.enabled && !t.form.title.trim()) ? "Give each starter form a title." : null) ??
+    (p.types.some((t) => t.form.enabled && t.form.questions.some((q) => !q.label.trim())) ? "Every form question needs a label." : null);
 
   const save = async () => {
     setSaving(true);
@@ -451,18 +471,7 @@ function PanelEditor({
                   <textarea rows={3} maxLength={2000} value={t.welcomeMessage} onChange={(e) => setType(i, (x) => { x.welcomeMessage = e.target.value; })} />
                   <small className="muted">{TICKET_PLACEHOLDERS.map((ph) => `${ph.key} ${ph.means}`).join(" · ")}</small>
                 </label>
-                <Toggle
-                  label="Ask a question first"
-                  hint="Members answer in a pop-up before the ticket opens. The answer is shown in the ticket."
-                  checked={t.askReason}
-                  onChange={(v) => setType(i, (x) => { x.askReason = v; })}
-                />
-                {t.askReason && (
-                  <label className="field">
-                    <span>Question <small className="muted">(up to 45 characters)</small></span>
-                    <input value={t.reasonLabel} maxLength={45} onChange={(e) => setType(i, (x) => { x.reasonLabel = e.target.value; })} />
-                  </label>
-                )}
+                <FormEditor form={t.form} onChange={(fn) => setType(i, (x) => fn(x.form))} />
                 <details className="tk-more">
                   <summary className="small">More options</summary>
                   <div className="rv-fields">
@@ -538,6 +547,76 @@ function PanelEditor({
         </button>
       </div>
       {problem && <small className="muted">{problem}</small>}
+    </div>
+  );
+}
+
+/** The starter form for one ticket type: up to 5 questions the opener answers inside their ticket. */
+function FormEditor({ form, onChange }: { form: TicketForm; onChange: (fn: (f: TicketForm) => void) => void }) {
+  const setQ = (i: number, fn: (q: FormQuestion) => void) => onChange((f) => fn(f.questions[i]));
+  return (
+    <div className="tk-form">
+      <Toggle
+        label="Starter form"
+        hint="The opener is mentioned with a Fill in the form button. Their answers are posted in the ticket."
+        checked={form.enabled}
+        onChange={(v) => onChange((f) => { f.enabled = v; })}
+      />
+      {form.enabled && (
+        <div className="rv-fields tk-form-body">
+          <label className="field">
+            <span>Form title <small className="muted">(up to 45 characters)</small></span>
+            <input value={form.title} maxLength={45} onChange={(e) => onChange((f) => { f.title = e.target.value; })} />
+          </label>
+          {form.questions.map((q, i) => (
+            <div key={q.id} className="tk-question">
+              <div className="mod-row">
+                <label className="field">
+                  <span>Question {i + 1} <small className="muted">(up to 45 characters)</small></span>
+                  <input value={q.label} maxLength={45} onChange={(e) => setQ(i, (x) => { x.label = e.target.value; })} />
+                </label>
+                <label className="field">
+                  <span>Answer</span>
+                  <select value={q.style} onChange={(e) => setQ(i, (x) => { x.style = e.target.value as FormQuestion["style"]; })}>
+                    <option value="short">Short (one line)</option>
+                    <option value="long">Long (paragraph)</option>
+                  </select>
+                </label>
+              </div>
+              <div className="mod-row">
+                <label className="field">
+                  <span>Hint inside the box (optional)</span>
+                  <input value={q.placeholder} maxLength={100} onChange={(e) => setQ(i, (x) => { x.placeholder = e.target.value; })} />
+                </label>
+                <label className="field tk-required">
+                  <span>&nbsp;</span>
+                  <span className="tk-check">
+                    <input type="checkbox" checked={q.required} onChange={(e) => setQ(i, (x) => { x.required = e.target.checked; })} /> Required
+                  </span>
+                </label>
+              </div>
+              <div className="cc-actions">
+                <button className="btn ghost small" disabled={i === 0} onClick={() => onChange((f) => { f.questions.splice(i - 1, 0, ...f.questions.splice(i, 1)); })}>↑</button>
+                <button className="btn ghost small" disabled={i === form.questions.length - 1} onClick={() => onChange((f) => { f.questions.splice(i + 1, 0, ...f.questions.splice(i, 1)); })}>↓</button>
+                <button className="btn danger small" disabled={form.questions.length === 1} onClick={() => onChange((f) => { f.questions.splice(i, 1); })}>Remove</button>
+              </div>
+            </div>
+          ))}
+          <button
+            className="btn ghost small"
+            disabled={form.questions.length >= MAX_FORM_QUESTIONS}
+            onClick={() => onChange((f) => { f.questions.push(blankQuestion(`Question ${f.questions.length + 1}`)); })}
+          >
+            + Add a question ({form.questions.length}/{MAX_FORM_QUESTIONS})
+          </button>
+          <Toggle
+            label="Lock the ticket until the form is sent"
+            hint="The opener can read the ticket but can't type until they send the form. Staff can always type."
+            checked={form.lockUntilSubmitted}
+            onChange={(v) => onChange((f) => { f.lockUntilSubmitted = v; })}
+          />
+        </div>
+      )}
     </div>
   );
 }

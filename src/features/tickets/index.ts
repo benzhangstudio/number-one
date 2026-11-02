@@ -8,12 +8,9 @@ import {
   type Guild,
   type GuildMember,
   MessageFlags,
-  ModalBuilder,
   PermissionFlagsBits,
   SlashCommandBuilder,
   type TextChannel,
-  TextInputBuilder,
-  TextInputStyle,
 } from "discord.js";
 import { and, eq } from "drizzle-orm";
 import type { FastifyReply, FastifyRequest } from "fastify";
@@ -52,6 +49,8 @@ import {
   canClose,
   claimTicket,
   closeTicket,
+  formModal,
+  formPending,
   isStaff,
   markGone,
   openCount,
@@ -60,6 +59,7 @@ import {
   openTicketsOf,
   recentTickets,
   removeFromTicket,
+  submitForm,
   ticketControls,
 } from "./tickets.js";
 
@@ -80,7 +80,7 @@ const channelLink = (guildId: string, channelId: string) => `https://discord.com
 
 /* ------------------------------------------------------------ opening a ticket from a panel */
 
-/** Checks shared by the button, the dropdown and the reason pop-up. Returns a message to show, or the ticket type. */
+/** Checks shared by the panel button and dropdown. Returns a message to show, or the ticket type. */
 async function prepare(guild: Guild, member: GuildMember, panelId: number, typeId: string) {
   if (!(await isFeatureEnabled(guild.id, ticketsFeature))) return { blocked: "Tickets are turned off in this server right now." };
   const row = await panelRow(guild.id, panelId);
@@ -109,20 +109,7 @@ async function startTicket(
   const privately = (content: string) => interaction.reply({ content, flags: MessageFlags.Ephemeral });
   const ready = await prepare(interaction.guild, interaction.member, panelId, typeId);
   if ("blocked" in ready) return privately(ready.blocked!);
-  const type = ready.type;
-
-  if (type.askReason) {
-    const modal = new ModalBuilder()
-      .setCustomId(`tk:reason:${panelId}:${typeId}`)
-      .setTitle(type.label.slice(0, 45))
-      .addComponents(
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder().setCustomId("reason").setLabel(type.reasonLabel).setStyle(TextInputStyle.Paragraph).setMaxLength(1000).setRequired(true),
-        ),
-      );
-    return interaction.showModal(modal);
-  }
-  return create(interaction, panelId, type, null);
+  return create(interaction, panelId, ready.type);
 }
 
 /** Opens the ticket and tells the member where it is (privately). */
@@ -130,13 +117,12 @@ async function create(
   interaction: { guild: Guild; member: GuildMember; deferReply(o: { flags: MessageFlags.Ephemeral }): Promise<unknown>; editReply(c: string): Promise<unknown> },
   panelId: number,
   type: Parameters<typeof openTicket>[2],
-  reason: string | null,
 ) {
   const key = `${interaction.guild.id}:${interaction.member.id}`;
   opening.add(key);
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-    const channel = await openTicket(interaction.member, panelId, type, reason);
+    const channel = await openTicket(interaction.member, panelId, type);
     return interaction.editReply(`🎫 Your ticket is open: ${channel}`);
   } catch (err) {
     if (err instanceof TicketError) return interaction.editReply(err.message);
@@ -209,20 +195,47 @@ const ticketButtons: ComponentHandler = {
       if (!isStaff(interaction.member, found.ticket, found.s)) return privately("Only the staff can claim tickets.");
       if (found.ticket.claimedById) return privately(`${found.ticket.claimedByTag} already claimed this ticket.`);
       await claimTicket(found.ticket, interaction.user);
-      await interaction.update({ components: ticketControls(interaction.user.tag) });
+      await interaction.update({ components: ticketControls(interaction.user.tag, formPending(found.ticket)) });
       await interaction.channel?.send({ content: `🙋 ${interaction.member} claimed this ticket and will help you.`, allowedMentions: { parse: [] } });
+    }
+
+    if (action === "form") {
+      const found = await inTicket(interaction);
+      if (!found) return;
+      const { ticket } = found;
+      if (!ticket.form || !formPending(ticket)) return privately("The form has already been sent.");
+      if (interaction.user.id !== ticket.openerId) return privately(`Only <@${ticket.openerId}> can fill in this form.`);
+      return interaction.showModal(formModal(ticket.form));
     }
   },
 
   async handleModal(interaction) {
     if (!interaction.inCachedGuild()) return;
-    const [, action, a, b] = interaction.customId.split(":");
-    if (action !== "reason") return;
-    // Checked again: things may have changed while the pop-up was open.
-    const ready = await prepare(interaction.guild, interaction.member, Number(a), b);
-    if ("blocked" in ready) return interaction.reply({ content: ready.blocked!, flags: MessageFlags.Ephemeral });
-    const reason = interaction.fields.getTextInputValue("reason").trim() || null;
-    return create(interaction, Number(a), ready.type, reason);
+    const privately = (content: string) => interaction.reply({ content, flags: MessageFlags.Ephemeral });
+    const [, action] = interaction.customId.split(":");
+    // The old one-question pop-up, still open from before an update.
+    if (action === "reason") return privately("This form changed. Please press the button on the panel again.");
+    if (action !== "formsend") return;
+
+    const ticket = await openTicketIn(interaction.channelId!);
+    if (!ticket?.form) return privately("This ticket is already closed.");
+    if (!formPending(ticket)) return privately("The form has already been sent.");
+    if (interaction.user.id !== ticket.openerId) return privately(`Only <@${ticket.openerId}> can fill in this form.`);
+    const channel = interaction.channel as TextChannel;
+    const answers = ticket.form.questions.map((q) => ({
+      question: q.label,
+      answer: (interaction.fields.fields.has(q.id) ? interaction.fields.getTextInputValue(q.id) : "").trim(),
+    }));
+
+    // Swap the welcome message's buttons in place (the form button goes away) once the answers are posted.
+    if (interaction.isFromMessage()) await interaction.deferUpdate();
+    else await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    if (!(await submitForm(channel, ticket, interaction.member, answers))) {
+      if (!interaction.isFromMessage()) await interaction.editReply("The form has already been sent.");
+      return;
+    }
+    if (interaction.isFromMessage()) await interaction.message.edit({ components: ticketControls(ticket.claimedByTag, false) }).catch(() => {});
+    else await interaction.editReply("📝 Thanks! Your answers are posted in the ticket.");
   },
 };
 
@@ -307,6 +320,7 @@ function ticketView(guildId: string, t: TicketRow): TicketView {
     openerId: t.openerId,
     openerTag: t.openerTag,
     reason: t.reason,
+    formAnswers: t.formAnswers ?? null,
     claimedByTag: t.claimedByTag,
     closedByTag: t.closedByTag,
     closeReason: t.closeReason,

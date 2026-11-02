@@ -5,6 +5,9 @@ import {
   ButtonStyle,
   ChannelType,
   EmbedBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
   type Guild,
   type GuildMember,
   type Message,
@@ -13,11 +16,11 @@ import {
   type TextChannel,
   type User,
 } from "discord.js";
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, isNull } from "drizzle-orm";
 import { canReadMessages } from "../../server/bot/discord.js";
 import { db, sqlite } from "../../server/db/client.js";
 import { tickets } from "../../server/db/schema.js";
-import type { TicketSettings, TicketType } from "../../shared/tickets.js";
+import type { TicketForm, TicketSettings, TicketType } from "../../shared/tickets.js";
 import { TicketError, TEXT_TYPES, log, postableChannel, settingsOf } from "./panels.js";
 
 /** Tickets themselves: opening the private channel, claiming, adding people and closing with a transcript. */
@@ -72,17 +75,70 @@ export function isStaff(member: GuildMember, ticket: TicketRow | null, s: Ticket
 export const canClose = (member: GuildMember, ticket: TicketRow, s: TicketSettings) =>
   isStaff(member, ticket, s) || (s.membersCanClose && member.id === ticket.openerId);
 
-/** The Close and Claim buttons at the top of a ticket. */
-export function ticketControls(claimedByTag: string | null) {
+/** The ticket has a starter form the opener hasn't sent yet. */
+export const formPending = (t: Pick<TicketRow, "form" | "formAnswers">) => Boolean(t.form?.enabled && !t.formAnswers);
+
+/** The buttons at the top of a ticket: Fill in the form (while it's waiting), Close and Claim. */
+export function ticketControls(claimedByTag: string | null, showForm = false) {
   const claim = new ButtonBuilder().setCustomId("tk:claim").setStyle(ButtonStyle.Secondary).setEmoji("🙋");
   if (claimedByTag) claim.setLabel(`Claimed by ${claimedByTag}`.slice(0, 80)).setDisabled(true);
   else claim.setLabel("Claim");
-  return [
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("tk:close").setLabel("Close").setStyle(ButtonStyle.Danger).setEmoji("🔒"),
-      claim,
-    ),
-  ];
+  const row = new ActionRowBuilder<ButtonBuilder>();
+  if (showForm) row.addComponents(new ButtonBuilder().setCustomId("tk:form").setLabel("Fill in the form").setStyle(ButtonStyle.Success).setEmoji("📝"));
+  row.addComponents(new ButtonBuilder().setCustomId("tk:close").setLabel("Close").setStyle(ButtonStyle.Danger).setEmoji("🔒"), claim);
+  return [row];
+}
+
+/** The starter form as a Discord pop-up. */
+export function formModal(form: TicketForm) {
+  return new ModalBuilder()
+    .setCustomId("tk:formsend")
+    .setTitle(form.title.slice(0, 45))
+    .addComponents(
+      form.questions.map((q) => {
+        const input = new TextInputBuilder()
+          .setCustomId(q.id)
+          .setLabel(q.label)
+          .setStyle(q.style === "short" ? TextInputStyle.Short : TextInputStyle.Paragraph)
+          .setRequired(q.required)
+          .setMaxLength(1000);
+        if (q.placeholder) input.setPlaceholder(q.placeholder);
+        return new ActionRowBuilder<TextInputBuilder>().addComponents(input);
+      }),
+    );
+}
+
+/**
+ * Saves the opener's answers, posts them in the ticket and lets them type (if the form locked the ticket).
+ * Returns false if the form was already sent.
+ */
+export async function submitForm(channel: TextChannel, ticket: TicketRow, member: GuildMember, answers: { question: string; answer: string }[]) {
+  const saved = await db
+    .update(tickets)
+    .set({ formAnswers: answers })
+    .where(and(eq(tickets.id, ticket.id), isNull(tickets.formAnswers)))
+    .returning({ id: tickets.id })
+    .all();
+  if (!saved.length) return false;
+
+  // The opener is named, not pinged: they just sent it.
+  await channel.send({
+    embeds: [
+      new EmbedBuilder()
+        .setColor(0xff4fa3)
+        .setTitle(`📝 ${ticket.form?.title ?? "Form answers"}`)
+        .setDescription(`Answers from ${member}`)
+        .addFields(answers.map((a) => ({ name: a.question, value: a.answer.slice(0, 1024) || "—" })))
+        .setTimestamp(),
+    ],
+    allowedMentions: { parse: [] },
+  });
+  if (ticket.form?.lockUntilSubmitted) {
+    await channel.permissionOverwrites
+      .edit(member.id, { SendMessages: true, AttachFiles: true }, { reason: "Ticket starter form sent", type: OverwriteType.Member })
+      .catch((err: Error) => log(`couldn't unlock ticket #${ticket.number} in ${channel.guild.name}:`, err.message));
+  }
+  return true;
 }
 
 const fill = (text: string, v: Record<string, string>) => text.replace(/\{(user|username|server|type|number)\}/g, (m, k: string) => v[k] ?? m);
@@ -107,7 +163,7 @@ async function logChannel(guild: Guild, s: TicketSettings) {
 }
 
 /** Opens a ticket: a private channel for the member and the staff, with the welcome message. */
-export async function openTicket(member: GuildMember, panelId: number, type: TicketType, reason: string | null): Promise<TextChannel> {
+export async function openTicket(member: GuildMember, panelId: number, type: TicketType): Promise<TextChannel> {
   const guild = member.guild;
   const s = await settingsOf(guild.id);
   const me = guild.members.me;
@@ -121,6 +177,12 @@ export async function openTicket(member: GuildMember, panelId: number, type: Tic
   const fits = parent?.type === ChannelType.GuildCategory && parent.children.cache.size < CATEGORY_LIMIT;
   if (parent && !fits) log(`ticket category in ${guild.name} is full or missing; opening at the top instead`);
 
+  const form = type.form.enabled ? type.form : null;
+  // Locked: the opener can read, but can't type or upload until they've sent the form.
+  const opener = form?.lockUntilSubmitted
+    ? { id: member.id, type: OverwriteType.Member, allow: MEMBER_PERMS.filter((p) => p !== PermissionFlagsBits.SendMessages && p !== PermissionFlagsBits.AttachFiles), deny: [PermissionFlagsBits.SendMessages, PermissionFlagsBits.AttachFiles] }
+    : { id: member.id, type: OverwriteType.Member, allow: MEMBER_PERMS };
+
   const number = nextNumber(guild.id);
   const channel = await guild.channels
     .create({
@@ -132,7 +194,7 @@ export async function openTicket(member: GuildMember, panelId: number, type: Tic
       permissionOverwrites: [
         { id: guild.id, type: OverwriteType.Role, deny: [PermissionFlagsBits.ViewChannel] },
         { id: me.id, type: OverwriteType.Member, allow: BOT_PERMS },
-        { id: member.id, type: OverwriteType.Member, allow: MEMBER_PERMS },
+        opener,
         ...staff.map((id) => ({ id, type: OverwriteType.Role, allow: STAFF_PERMS })),
       ],
     })
@@ -151,7 +213,7 @@ export async function openTicket(member: GuildMember, panelId: number, type: Tic
       staffRoleIds: staff,
       openerId: member.id,
       openerTag: member.user.tag,
-      reason,
+      form,
       createdAt: new Date(),
     })
     .run();
@@ -162,13 +224,18 @@ export async function openTicket(member: GuildMember, panelId: number, type: Tic
     .setTitle(`🎫 ${type.label} · Ticket #${number}`)
     .setDescription(fill(type.welcomeMessage, vars).trim() || "A staff member will be with you soon.")
     .setFooter({ text: "Press Close when you're done." });
-  if (reason) embed.addFields({ name: type.reasonLabel, value: reason.slice(0, 1024) });
+  if (form) {
+    embed.addFields({
+      name: "📝 Start by filling in the form",
+      value: `${member}, press **Fill in the form** below.${form.lockUntilSubmitted ? " You'll be able to type here once it's sent." : ""}`,
+    });
+  }
   const pings = s.pingStaff ? staff.map((id) => `<@&${id}>`) : [];
   await channel
     .send({
       content: [`${member}`, ...pings].join(" "),
       embeds: [embed],
-      components: ticketControls(null),
+      components: ticketControls(null, Boolean(form)),
       allowedMentions: { users: [member.id], roles: s.pingStaff ? staff : [] },
     })
     .then((m) => m.pin().catch(() => {}))
@@ -185,7 +252,6 @@ export async function openTicket(member: GuildMember, panelId: number, type: Tic
             { name: "Type", value: type.label, inline: true },
             { name: "Opened by", value: `${member} (${member.user.tag})`, inline: true },
             { name: "Channel", value: `${channel}`, inline: true },
-            ...(reason ? [{ name: "Reason", value: reason.slice(0, 1024) }] : []),
           )
           .setTimestamp(),
       ],
@@ -232,6 +298,7 @@ async function buildTranscript(channel: TextChannel, ticket: TicketRow, closedBy
     `Server: ${channel.guild.name}`,
     `Opened by: ${ticket.openerTag} (${ticket.openerId}) on ${stamp(ticket.createdAt)}`,
     ...(ticket.reason ? [`Reason: ${ticket.reason}`] : []),
+    ...(ticket.formAnswers ?? []).map((a) => `${a.question}: ${a.answer}`),
     ...(ticket.claimedByTag ? [`Claimed by: ${ticket.claimedByTag}`] : []),
     `Closed by: ${closedBy.tag} on ${stamp(new Date())}${reason ? ` (${reason})` : ""}`,
     ...(messages.length >= TRANSCRIPT_LIMIT ? [`Only the last ${TRANSCRIPT_LIMIT} messages are included.`] : []),
@@ -242,7 +309,10 @@ async function buildTranscript(channel: TextChannel, ticket: TicketRow, closedBy
   ];
   for (const m of messages) {
     const parts = [m.content];
-    for (const e of m.embeds) parts.push(`[embed] ${[e.title, e.description].filter(Boolean).join(" — ")}`);
+    for (const e of m.embeds) {
+      parts.push(`[embed] ${[e.title, e.description].filter(Boolean).join(" — ")}`);
+      for (const f of e.fields) parts.push(`  ${f.name}: ${f.value}`);
+    }
     for (const a of m.attachments.values()) parts.push(`[file] ${a.url}`);
     lines.push(`[${stamp(m.createdAt)}] ${m.author.tag}: ${parts.filter(Boolean).join("\n    ")}`);
   }
