@@ -22,6 +22,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Embed messages: multi-embed builder, post, edit and delete | ✅ |
 | Announcements: templates, embed builder, pings, publishing, scheduling | ✅ |
 | Events: RSVP buttons, reminders, one-click Discord Events tab | ✅ |
+| Cosmetics → Channel designs: cute channel-name designs in one click | ✅ |
 | More admin features (logging…) | Next, one at a time |
 
 ## Running on Wispbyte
@@ -66,7 +67,7 @@ Every reply is public so staff can see who did what. Only `/setup` and a member'
 
 ### Setup
 
-`/setup` (or the "What will you use Number One for?" card on the dashboard) lets owners pick broad categories: 🛡️ Moderation & Safety, 👥 Community Settings, 🎭 Roles Management, 📋 Logging & Auditing, 🎉 Engagement & Fun, and 🛠️ Utilities & Automation. The recommended features in each picked category switch on.
+`/setup` (or the "What will you use Number One for?" card on the dashboard) lets owners pick broad categories: 🛡️ Moderation & Safety, 👥 Community Settings, 🎭 Roles Management, 📋 Logging & Auditing, 🎉 Engagement & Fun, 🛠️ Utilities & Automation, and 🎀 Cosmetics. The recommended features in each picked category switch on.
 
 - Categories without features yet are marked "coming soon". When a feature ships in a picked category, it switches on automatically for that server.
 - Re-running setup never switches off anything already in use.
@@ -203,6 +204,18 @@ Events like sesh.fyi, set up on the dashboard.
 - **Discord's Events tab:** the **Add to Discord Events** button (or a tick when creating) makes a matching Discord event with the same name, time, place, description, cover image and a link back to the post. Nobody has to set it up by hand. Edits are copied to it, cancelling or deleting removes it, and it shows as live when the event starts.
 - The dashboard lists upcoming and past events with answer counts and who's coming, and can edit, copy, cancel or delete them. Up to 50 upcoming events per server.
 - **Permissions:** View Channel, Send Messages and Embed Links in the event channel; Manage Events for Discord's Events tab; "Mention @everyone, @here and All Roles" for those pings. Admins need Manage Events (or Create Events) themselves to add events to the Events tab.
+
+### Channel designs (Cosmetics)
+
+Adds a cute design around every channel's name in one click, like `general` → `💬・general` or `꒰💬꒱general`.
+
+- **8 designs:** Soft dot, Cloud frame, Sparkle trail, Fairy dust, Corner brackets, Dotted line, Little hearts and Bows. Each picks an emoji that fits the channel (💬 general, 📜 rules, 📢 announcements, 🎮 gaming and about 30 more), with a cute default when nothing fits.
+- **Only the design is added.** The channel's own name and everything else about the channel (permissions, topic, position) stay the same. Each channel's own name is saved, so switching designs never stacks them and removing the design puts every name back exactly.
+- **Which channels:** text channels always; announcement channels and voice/stage channels are options. Channels or whole categories can be left alone, and new channels can get the design too.
+- The dashboard shows every channel's name before and after, and progress while renaming. Discord lets each channel be renamed twice every 10 minutes, so switching designs quickly can take a few minutes.
+- If someone renames a designed channel by hand, that new name becomes its own name.
+- Switching the feature off leaves names as they are (use **Remove design** first). Deleting the server's data puts the original names back.
+- **Permissions:** Manage Channels (the bot and the admin).
 
 ## How the project is organized
 

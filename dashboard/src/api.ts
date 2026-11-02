@@ -9,6 +9,7 @@ import type {
 } from "../../src/shared/features";
 import type { AnnouncementInput, AnnouncementMessage, AnnouncementView, AnnouncementsResponse, TemplateInput, TemplateView } from "../../src/shared/announcements";
 import type { AntiRaidResponse, AntiRaidSettings } from "../../src/shared/antiRaid";
+import type { ChannelDesignSettings, ChannelDesignsResponse } from "../../src/shared/channelDesigns";
 import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embeds";
 import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
@@ -153,6 +154,9 @@ export const api = {
     request<EventResult>(`/api/guilds/${guildId}/events/${id}/discord`, { method: "POST", body: "{}" }),
   cancelEvent: (guildId: string, id: number) => request<EventResult>(`/api/guilds/${guildId}/events/${id}/cancel`, { method: "POST", body: "{}" }),
   deleteEvent: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/events/${id}`, { method: "DELETE" }),
+  channelDesigns: (guildId: string) => request<ChannelDesignsResponse>(`/api/guilds/${guildId}/channel-designs`),
+  applyChannelDesign: (guildId: string, settings: ChannelDesignSettings) =>
+    request<ChannelDesignsResponse>(`/api/guilds/${guildId}/channel-designs/apply`, { method: "POST", body: JSON.stringify(settings) }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 

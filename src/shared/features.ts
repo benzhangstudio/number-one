@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { antiRaidSettings } from "./antiRaid.js";
 import { automodSettings } from "./automod.js";
+import { channelDesignSettings } from "./channelDesigns.js";
 import { joinLeaveSettings } from "./joinLeave.js";
 import { moderationSettings } from "./moderation.js";
 import { onboardingSettings } from "./onboarding.js";
@@ -54,6 +55,12 @@ export const categories = [
     name: "Utilities & Automation",
     emoji: "🛠️",
     description: "Custom commands, tickets, reminders and social feeds",
+  },
+  {
+    id: "cosmetics",
+    name: "Cosmetics",
+    emoji: "🎀",
+    description: "Cute designs for your server, like decorated channel names",
   },
 ] as const;
 
@@ -190,6 +197,16 @@ export const eventsFeature = defineFeature({
   settings: z.object({}),
 });
 
+export const channelDesignsFeature = defineFeature({
+  id: "channel-designs",
+  name: "Channel designs",
+  icon: "🌸",
+  description: "Add a cute design to every channel name in one click, like 💬・general. Names stay the same, and you can switch or remove it anytime.",
+  category: "cosmetics",
+  recommended: true,
+  settings: channelDesignSettings,
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
@@ -201,6 +218,7 @@ export const featureCatalog: FeatureInfo[] = [
   announcementsFeature,
   embedsFeature,
   eventsFeature,
+  channelDesignsFeature,
 ];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
@@ -248,3 +266,4 @@ export * from "./joinLeave.js";
 export * from "./embeds.js";
 export * from "./announcements.js";
 export * from "./events.js";
+export * from "./channelDesigns.js";

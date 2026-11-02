@@ -332,3 +332,20 @@ export const eventRsvps = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.eventId, t.userId] }), index("event_rsvps_guild_idx").on(t.guildId)],
 );
+
+/**
+ * Channel designs: the name each channel had before Number One added a design, and the name it set,
+ * so designs can be swapped or removed without changing the channel's own name.
+ */
+export const channelDesigns = sqliteTable(
+  "channel_designs",
+  {
+    channelId: text("channel_id").primaryKey(),
+    guildId: text("guild_id").notNull(),
+    /** The channel's own name, without the design. */
+    baseName: text("base_name").notNull(),
+    /** The name Number One gave it. If the channel is renamed by hand later, the new name becomes its own name. */
+    appliedName: text("applied_name").notNull(),
+  },
+  (t) => [index("channel_designs_guild_idx").on(t.guildId)],
+);
