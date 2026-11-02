@@ -3668,3 +3668,27 @@ select.chip-add {
   max-width: 420px;
   padding-left: 12px;
 }
+
+/* --- Server logs --- */
+.panel.server-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.server-logs .sub {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin: 0;
+}
+.server-logs .sub > .sub-body {
+  border-top: 1px solid var(--border);
+  margin: 14px -20px 0;
+  padding: 14px 20px 0;
+}
+.srvlog-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

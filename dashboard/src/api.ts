@@ -14,6 +14,7 @@ import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embed
 import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
+import type { ServerLogResponse, ServerLogSettings } from "../../src/shared/serverLogs";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
@@ -165,6 +166,9 @@ export const api = {
   memberLogs: (guildId: string) => request<MemberLogResponse>(`/api/guilds/${guildId}/member-logs`),
   saveMemberLogs: (guildId: string, settings: MemberLogSettings) =>
     request<MemberLogResponse>(`/api/guilds/${guildId}/member-logs`, { method: "PUT", body: JSON.stringify(settings) }),
+  serverLogs: (guildId: string) => request<ServerLogResponse>(`/api/guilds/${guildId}/server-logs`),
+  saveServerLogs: (guildId: string, settings: ServerLogSettings) =>
+    request<ServerLogResponse>(`/api/guilds/${guildId}/server-logs`, { method: "PUT", body: JSON.stringify(settings) }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 

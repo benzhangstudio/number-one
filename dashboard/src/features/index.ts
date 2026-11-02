@@ -12,6 +12,7 @@ import { MessageLogsPanel } from "./MessageLogsPanel";
 import { ModerationPanel } from "./ModerationPanel";
 import { OnboardingPanel } from "./OnboardingPanel";
 import { ReactionRolesPanel } from "./ReactionRolesPanel";
+import { ServerLogsPanel } from "./ServerLogsPanel";
 
 /** Extra dashboard section shown under a feature (keyed by feature ID). */
 export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["guild"] }>> = {
@@ -27,4 +28,5 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "channel-designs": ChannelDesignsPanel,
   "message-logs": MessageLogsPanel,
   "member-logs": MemberLogsPanel,
+  "server-logs": ServerLogsPanel,
 };

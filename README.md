@@ -25,6 +25,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Cosmetics → Channel designs: cute channel-name designs in one click | ✅ |
 | Logging → Message logs: edits, deletes, bulk deletes with transcript | ✅ |
 | Logging → Member logs: joins, leaves, nicknames, roles, profiles | ✅ |
+| Logging → Server logs: channels, roles, settings, emojis, invites | ✅ |
 | More admin features (logging…) | Next, one at a time |
 
 ## Running on Wispbyte
@@ -240,6 +241,17 @@ Posts member activity to a staff channel.
 - **Username, display name and avatar changes**, including server avatars.
 - Bots can be skipped.
 - **Permissions:** View Channel, Send Messages and Embed Links in the log channel; View Audit Log to show who made changes.
+
+### Server logs (Logging & Auditing)
+
+Posts server changes to a staff channel, with who made each one.
+
+- **Channels:** created, deleted, renamed, moved to another category, topic, age restriction, slowmode, voice settings, and whose permissions changed.
+- **Roles:** created, deleted, and changes to name, colour, display, icon, and exactly which permissions were given or taken away.
+- **Server settings:** name, icon, banner, verification level, image filter, notifications, two-factor, system/rules/AFK channels, vanity invite and owner.
+- **Emojis and stickers** added, removed and renamed. **Invites** created (channel, expiry, uses, who made it) and deleted.
+- Changes Number One makes itself (like channel designs) are skipped by default. Just moving channels or roles up and down isn't logged.
+- **Permissions:** View Channel, Send Messages and Embed Links in the log channel; View Audit Log to show who made changes; Manage Server for invites.
 
 ## How the project is organized
 

@@ -7,6 +7,7 @@ import { memberLogSettings } from "./memberLogs.js";
 import { messageLogSettings } from "./messageLogs.js";
 import { moderationSettings } from "./moderation.js";
 import { onboardingSettings } from "./onboarding.js";
+import { serverLogSettings } from "./serverLogs.js";
 
 /**
  * The single definition of every feature: its name, description, category and settings shape.
@@ -229,6 +230,16 @@ export const memberLogsFeature = defineFeature({
   settings: memberLogSettings,
 });
 
+export const serverLogsFeature = defineFeature({
+  id: "server-logs",
+  name: "Server logs",
+  icon: "🗂️",
+  description: "Post changes to channels, roles, server settings, emojis and invites to a staff channel, with who made them.",
+  category: "logging",
+  recommended: true,
+  settings: serverLogSettings,
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
@@ -243,6 +254,7 @@ export const featureCatalog: FeatureInfo[] = [
   channelDesignsFeature,
   messageLogsFeature,
   memberLogsFeature,
+  serverLogsFeature,
 ];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
@@ -293,3 +305,4 @@ export * from "./events.js";
 export * from "./channelDesigns.js";
 export * from "./messageLogs.js";
 export * from "./memberLogs.js";
+export * from "./serverLogs.js";
