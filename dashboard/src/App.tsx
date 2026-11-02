@@ -5,6 +5,7 @@ import { api, avatarUrl, inviteUrl } from "./api";
 import { Footer, SUPPORT_SERVER } from "./components/Footer";
 import { GuildPage } from "./pages/GuildPage";
 import { AnnouncementsPage } from "./pages/AnnouncementsPage";
+import { DocsPage } from "./pages/DocsPage";
 import { HomePage } from "./pages/HomePage";
 import { LandingPage } from "./pages/LandingPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
@@ -184,11 +185,13 @@ export function App() {
   }
 
   const guildMatch = path.match(/^\/servers\/(\d+)(?:\/([\w-]+))?/);
+  const docsMatch = path.match(/^\/docs(?:\/([\w-]*))?\/?$/);
   // Every page is rendered inside the layout below (top bar, page, footer). Add new pages to this list.
   let page;
   if (path === "/terms") page = <TermsPage />; // public: readable without logging in
   else if (path === "/privacy") page = <PrivacyPage />; // public too
   else if (path === "/announcements") page = <AnnouncementsPage />; // public too
+  else if (docsMatch) page = <DocsPage slug={docsMatch[1] ?? ""} />; // public too
   else if (!user) page = <LandingPage />;
   else if (guildMatch) page = <GuildPage guildId={guildMatch[1]} page={guildMatch[2] ?? ""} />;
   else if (path.startsWith("/servers")) page = <ServersPage />;
@@ -202,6 +205,7 @@ export function App() {
           { label: "My servers", to: "/servers", active: path.startsWith("/servers") },
         ]
       : []),
+    { label: "Docs", to: "/docs", active: Boolean(docsMatch) },
     { label: "Announcements", to: "/announcements", active: path === "/announcements", dot: hasUnread },
     ...(clientId ? [{ label: "Add bot", to: inviteUrl(clientId), external: true }] : []),
     { label: "Support", to: SUPPORT_SERVER, external: true, wideOnly: true },
@@ -235,7 +239,7 @@ export function App() {
           </a>
         )}
       </header>
-      <main className={`content ${user && guildMatch ? "wide" : ""}`}>{page}</main>
+      <main className={`content ${(user && guildMatch) || docsMatch ? "wide" : ""}`}>{page}</main>
       <UndoToast />
       <Footer />
     </div>

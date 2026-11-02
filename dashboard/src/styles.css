@@ -4771,3 +4771,313 @@ select.chip-add {
 .gd-btn {
   font-size: 0.88rem;
 }
+
+/* ------------------------------------------------------------ Docs (/docs)
+   Laid out like GitHub's docs: pages on the left, the page in the middle, "On this page" on the right.
+   The side columns stick below the top bar while the page scrolls. */
+.docs {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 210px;
+  gap: 40px;
+  align-items: start;
+}
+
+.docs-nav,
+.docs-toc {
+  position: sticky;
+  top: calc(var(--topbar-h) + 20px);
+  max-height: calc(100vh - var(--topbar-h) - 40px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.docs-nav-toggle {
+  display: none;
+}
+
+.docs-filter {
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.docs-group {
+  margin-bottom: 16px;
+}
+
+.docs-group-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 0 0 6px 10px;
+}
+
+.docs-link a {
+  display: block;
+  padding: 5px 10px;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-left: 2px solid transparent;
+}
+
+.docs-link a:hover {
+  background: var(--surface-2);
+}
+
+.docs-link.on a {
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.docs-toc {
+  border-left: 1px solid var(--border);
+  padding-left: 14px;
+}
+
+.docs-toc .docs-group-name {
+  margin-left: 0;
+}
+
+.docs-toc a {
+  display: block;
+  padding: 4px 0;
+  font-size: 0.83rem;
+  color: var(--muted);
+  text-decoration: none;
+  line-height: 1.35;
+}
+
+.docs-toc a.level-3 {
+  padding-left: 12px;
+}
+
+.docs-toc a:hover {
+  color: var(--text);
+}
+
+.docs-toc a.on {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* The page itself. */
+.docs-body {
+  min-width: 0;
+  line-height: 1.6;
+}
+
+.docs-crumbs {
+  margin-bottom: 6px;
+}
+
+.docs-crumbs a {
+  color: var(--muted);
+}
+
+.docs-body h1 {
+  margin: 0 0 0.75rem;
+  font-size: 2rem;
+}
+
+.docs-body h2 {
+  margin: 2.25rem 0 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 1.4rem;
+}
+
+.docs-body h3 {
+  margin: 1.6rem 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.docs-body p,
+.docs-body ul,
+.docs-body ol {
+  margin: 0 0 0.9rem;
+}
+
+.docs-body ul,
+.docs-body ol {
+  padding-left: 1.4rem;
+}
+
+.docs-body li {
+  margin-bottom: 0.3rem;
+}
+
+.docs-body a {
+  color: var(--accent);
+}
+
+.docs-body p.banner {
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+
+/* GitHub-style "#" link that appears beside a heading on hover. */
+.anchored {
+  position: relative;
+}
+
+.anchored .anchor {
+  margin-left: 0.4em;
+  font-weight: 400;
+  color: var(--muted);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.anchored:hover .anchor,
+.anchored .anchor:focus {
+  opacity: 1;
+}
+
+.anchored .anchor:hover {
+  color: var(--accent);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin: 0 0 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.docs-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.docs-body th,
+.docs-body td {
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.docs-body th {
+  background: var(--surface-2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.docs-body tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.docs-body tbody tr:nth-child(even) td {
+  background: var(--surface);
+}
+
+.code-block {
+  margin: 0 0 1rem;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  overflow-x: auto;
+  font-size: 0.85rem;
+}
+
+.code-block code {
+  background: none;
+  color: var(--text);
+  padding: 0;
+}
+
+.docs-pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.docs-pager a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text);
+  min-width: 0;
+}
+
+.docs-pager a:last-child {
+  text-align: right;
+  margin-left: auto;
+}
+
+.docs-pager a:hover {
+  border-color: var(--accent);
+}
+
+.docs-edit {
+  margin-top: 1rem;
+}
+
+.docs-edit a {
+  color: var(--muted);
+}
+
+/* Narrower screens: drop "On this page", then fold the page list into a menu above the page. */
+@media (max-width: 1100px) {
+  .docs {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .docs-toc {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .docs {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .docs-nav {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+  .docs-nav-toggle {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+  }
+  .docs-nav-list {
+    display: none;
+    margin-top: 10px;
+  }
+  .docs-nav.open .docs-nav-list {
+    display: block;
+  }
+  .docs-body h1 {
+    font-size: 1.6rem;
+  }
+  .docs-body th {
+    white-space: normal;
+  }
+}

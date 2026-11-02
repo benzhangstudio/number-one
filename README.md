@@ -32,6 +32,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Custom commands → Rules: `/rule 1` posts that rule publicly | ✅ |
 | Cosmetics → Guides: a Server guide and a Staff guide posted in chosen channels, with a linked contents list | ✅ |
 | Tickets: panels with buttons or a dropdown, private ticket channels, claim, close with transcript | ✅ |
+| Docs at `/docs`: a page per module with a sidebar, "On this page" links and linkable headings | ✅ |
 | More admin features | Next, one at a time |
 
 ## Running on Wispbyte
@@ -345,7 +346,8 @@ Each feature ships as one change containing all of its parts:
 1. **Definition:** an entry in `src/shared/features.ts` with its name, description and settings, each with a sensible default.
 2. **Bot behavior:** a folder in `src/features/` with its commands and event handlers.
 3. **Dashboard page:** its settings form in `dashboard/`.
-4. **Database tables**, only if it needs to store records such as warnings or tickets.
+4. **Docs page:** `dashboard/src/content/docs/<name>.md`, listed in `dashboard/src/content/docs/index.ts`. It shows up at `/docs/<name>`.
+5. **Database tables**, only if it needs to store records such as warnings or tickets.
 
 Features start **off** in every server until an admin turns them on. If someone uses a command from a disabled feature, the bot tells them where to enable it.
 

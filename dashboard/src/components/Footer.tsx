@@ -10,6 +10,7 @@ export function Footer() {
   return (
     <footer className="footer">
       <span>© {new Date().getFullYear()} Number One</span>
+      <PageLink to="/docs">Docs</PageLink>
       <PageLink to="/announcements">Announcements</PageLink>
       <PageLink to="/terms">Terms of Service</PageLink>
       <PageLink to="/privacy">Privacy Policy</PageLink>
