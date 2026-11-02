@@ -39,7 +39,6 @@ export function JoinLeavePanel({ guild }: { guild: Guild }) {
     setError("");
     try {
       load(await api.saveJoinLeave(guild.id, draft));
-      setNotice("Saved.");
     } catch (err) {
       setError((err as Error).message);
     } finally {

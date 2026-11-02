@@ -248,7 +248,7 @@ export function AntiRaidPanel({ guild }: { guild: Guild }) {
         <div className="save-bar">
           <span>You have unsaved changes.</span>
           <button className="btn ghost small" disabled={busy} onClick={() => { setDraft(structuredClone(data.settings)); setError(""); }}>Discard</button>
-          <button className="btn primary small" disabled={busy} onClick={() => run(() => api.saveAntiRaid(guild.id, draft), "Saved.")}>
+          <button className="btn primary small" disabled={busy} onClick={() => run(() => api.saveAntiRaid(guild.id, draft), "")}>
             {busy ? "Saving…" : "Save changes"}
           </button>
         </div>

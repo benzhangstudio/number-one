@@ -28,10 +28,22 @@ export function GuildPage({ guildId, page }: { guildId: string; page: string }) 
   const [saving, setSaving] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Bumped after an undo, so the open feature's section reloads and shows the restored settings.
+  const [refreshKey, setRefreshKey] = useState(0);
+
   useEffect(() => {
     setData(null);
     setError("");
     api.guild(guildId).then(setData).catch((err) => setError(err.message));
+  }, [guildId]);
+
+  useEffect(() => {
+    const onRefresh = () => {
+      api.guild(guildId).then(setData).catch(() => {});
+      setRefreshKey((k) => k + 1);
+    };
+    window.addEventListener("dashboard:refresh", onRefresh);
+    return () => window.removeEventListener("dashboard:refresh", onRefresh);
   }, [guildId]);
 
   // Close the phone menu and jump to the top whenever the page changes.
@@ -74,11 +86,12 @@ export function GuildPage({ guildId, page }: { guildId: string; page: string }) 
   let title = "Overview";
   if (page === "setup") {
     title = "Choose features";
-    body = <SetupPage data={data} onChange={setData} />;
+    body = <SetupPage key={refreshKey} data={data} onChange={setData} />;
   } else if (feature) {
     title = feature.name;
     body = (
       <FeaturePage
+        key={`${feature.id}:${refreshKey}`}
         info={feature}
         state={stateOf(feature.id)}
         guild={data.guild}

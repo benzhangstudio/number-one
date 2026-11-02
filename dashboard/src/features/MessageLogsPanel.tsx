@@ -43,7 +43,6 @@ export function MessageLogsPanel({ guild }: { guild: Guild }) {
     setError("");
     try {
       load(await api.saveMessageLogs(guild.id, draft));
-      setNotice("Saved.");
     } catch (err) {
       setError((err as Error).message);
     } finally {

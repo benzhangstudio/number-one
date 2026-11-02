@@ -9,6 +9,7 @@ import { ServersPage } from "./pages/ServersPage";
 import { TermsPage } from "./pages/TermsPage";
 import { navigate, usePath } from "./router";
 import { useTheme } from "./theme";
+import { UndoToast } from "./undo";
 
 /** The sun / moon button: switches between light and dark mode. */
 function ThemeToggle() {
@@ -135,6 +136,7 @@ export function App() {
         )}
       </header>
       <main className={`content ${user && guildMatch ? "wide" : ""}`}>{page}</main>
+      <UndoToast />
       <Footer />
     </div>
   );

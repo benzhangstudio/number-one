@@ -4211,3 +4211,69 @@ select.chip-add {
 .topbar > .theme-toggle:last-child {
   margin-left: auto;
 }
+
+/* "Saved · Undo" popup: top right, just under the top menu. Small, so it doesn't cover the page. */
+.undo-toast {
+  position: fixed;
+  top: calc(var(--topbar-h) + 12px);
+  right: 16px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 10px 10px 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px var(--shadow);
+  font-size: 0.88rem;
+  overflow: hidden;
+  animation: undo-in 0.18s ease-out;
+}
+.undo-toast.error {
+  border-color: rgba(255, 107, 107, 0.5);
+}
+.undo-text {
+  flex: 1;
+  min-width: 0;
+}
+.undo-btn {
+  flex: none;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid rgba(255, 79, 163, 0.35);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.undo-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.undo-close {
+  flex: none;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.undo-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--accent);
+  transition: width 0.1s linear;
+}
+@keyframes undo-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}

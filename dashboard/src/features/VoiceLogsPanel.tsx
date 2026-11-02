@@ -38,7 +38,6 @@ export function VoiceLogsPanel({ guild }: { guild: Guild }) {
     setError("");
     try {
       load(await api.saveVoiceLogs(guild.id, draft));
-      setNotice("Saved.");
     } catch (err) {
       setError((err as Error).message);
     } finally {

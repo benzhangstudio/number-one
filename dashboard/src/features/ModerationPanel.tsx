@@ -77,7 +77,6 @@ export function ModerationPanel({ guild }: { guild: Guild }) {
     setError("");
     try {
       load(await api.saveModeration(guild.id, draft));
-      setNotice("Saved.");
     } catch (err) {
       setError((err as Error).message);
     } finally {

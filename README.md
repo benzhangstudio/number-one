@@ -10,7 +10,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | --- | --- |
 | Bot core: slash commands, feature on/off checks, error handling | ✅ |
 | Database (SQLite) with automatic upgrades and daily backups | ✅ |
-| Dashboard: "Log in with Discord", server list, per-server feature switches, top menu on every page, light/dark mode | ✅ |
+| Dashboard: "Log in with Discord", server list, per-server feature switches, top menu on every page, light/dark mode, undo after saving | ✅ |
 | Commands: `/setup`, `/dashboard`, `/ping` | ✅ |
 | Setup categories with recommended features | ✅ |
 | Reaction roles (dashboard) | ✅ |
@@ -315,6 +315,10 @@ Each feature ships as one change containing all of its parts:
 4. **Database tables**, only if it needs to store records such as warnings or tickets.
 
 Features start **off** in every server until an admin turns them on. If someone uses a command from a disabled feature, the bot tells them where to enable it.
+
+### Undo
+
+Every settings save on the dashboard (each feature's "Save changes", the on/off switches, and Choose features) shows a small **Saved · Undo** popup at the top right for 8 seconds (paused while the mouse is over it). Pressing **Undo** puts the previous settings back and the page shows them again. Only the latest save can be undone. Things that have already gone out in Discord (an announcement, an embed message, an event, a role menu) don't offer undo, because the message has already been sent.
 
 ### Security
 

@@ -38,7 +38,6 @@ export function ServerLogsPanel({ guild }: { guild: Guild }) {
     setError("");
     try {
       load(await api.saveServerLogs(guild.id, draft));
-      setNotice("Saved.");
     } catch (err) {
       setError((err as Error).message);
     } finally {
