@@ -4717,3 +4717,74 @@ select.chip-add {
   padding: 8px 12px;
   color: #949ba4;
 }
+
+/* Server guides */
+.gd-templates {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.gd-template {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.gd-template:hover {
+  border-color: var(--accent);
+}
+.gd-pages-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.gd-page-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gd-page-tabs .cc-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.gd-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gd-link {
+  cursor: pointer;
+  font: inherit;
+  background: transparent;
+  color: var(--muted);
+}
+.gd-link.on {
+  color: var(--text);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.gd-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.gd-preview-footer {
+  font-size: 0.75rem;
+  color: #949ba4;
+}
+.gd-btn {
+  cursor: default;
+  font: inherit;
+  font-size: 0.88rem;
+}
+button.gd-btn {
+  cursor: pointer;
+}
+.gd-btn.off {
+  opacity: 0.5;
+}

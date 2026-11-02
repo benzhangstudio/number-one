@@ -4,6 +4,7 @@ import { AnnouncementsPanel } from "./AnnouncementsPanel";
 import { AntiRaidPanel } from "./AntiRaidPanel";
 import { EmbedsPanel } from "./EmbedsPanel";
 import { EventsPanel } from "./EventsPanel";
+import { GuidesPanel } from "./GuidesPanel";
 import { AutomodPanel } from "./AutomodPanel";
 import { ChannelDesignsPanel } from "./ChannelDesignsPanel";
 import { CustomCommandsPanel } from "./CustomCommandsPanel";
@@ -37,4 +38,5 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "custom-commands": CustomCommandsPanel,
   "rule-verification": RuleVerificationPanel,
   tickets: TicketsPanel,
+  guides: GuidesPanel,
 };

@@ -30,6 +30,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Logging → Voice logs: joins, leaves, moves, server mutes | ✅ |
 | Custom commands: server-only slash commands with text or embed replies | ✅ |
 | Custom commands → Rules: `/rule 1` posts that rule publicly | ✅ |
+| Cosmetics → Server guides: paged guides for members and staff with private reading, contents and linked pages | ✅ |
 | Tickets: panels with buttons or a dropdown, private ticket channels, claim, close with transcript | ✅ |
 | More admin features | Next, one at a time |
 
@@ -76,7 +77,7 @@ Every reply is public so staff can see who did what. Only `/setup` and a member'
 
 ### Setup
 
-`/setup` (or the "What will you use Number One for?" card on the dashboard) lets owners pick broad categories: 🛡️ Moderation & Safety, 👥 Community Settings, 🎭 Roles Management, 📋 Logging & Auditing, 🎉 Engagement & Fun, 🛠️ Utilities & Automation, and 🎀 Cosmetics. The recommended features in each picked category switch on.
+`/setup` (or the "What will you use Number One for?" card on the dashboard) lets owners pick broad categories: 🛡️ Moderation & Safety, 👥 Community Settings, 🎭 Roles Management, 📋 Logging & Auditing, 🎉 Engagement & Fun, 🛠️ Utilities & Automation, and 🎀 Cosmetics (channel designs and server guides). The recommended features in each picked category switch on.
 
 - Categories without features yet are marked "coming soon". When a feature ships in a picked category, it switches on automatically for that server.
 - Re-running setup never switches off anything already in use.
@@ -237,6 +238,19 @@ Adds a cute design around every channel's name in one click, like `general` → 
 - If someone renames a designed channel by hand, that new name becomes its own name.
 - Switching the feature off leaves names as they are (use **Remove design** first). Deleting the server's data puts the original names back.
 - **Permissions:** Manage Channels (the bot and the admin).
+
+### Server guides (Cosmetics)
+
+Easy-to-read guides, like a server guide for members and a staff handbook.
+
+- **A guide** is a book of up to 25 pages, each an embed with a title, emoji, text (Discord formatting, channel and role mentions) and an optional image. Up to 10 guides per server.
+- **The cover** is posted in a chosen channel with an intro, the table of contents, a **Start reading** button and a **Jump to a page** menu.
+- **Reading is private:** pages open just for the reader, so any number of people can read at once. Each page has **Back**, **Contents** and **Next**, the jump menu, up to 4 buttons to related pages, and an optional web link button.
+- **Staff guides** can only be opened by the picked roles (and anyone with Manage Server).
+- **Templates:** start from a ready-made Server guide (welcome, rules, roles, channels, getting help) or Staff guide (how we moderate, moderation commands, handling tickets, when to escalate), or a blank one.
+- The dashboard has a live preview of the cover and each page, and counts page views.
+- Switching the feature off takes the covers down. Saving again (or switching it back on) posts them again.
+- **Permissions:** View Channel, Send Messages and Embed Links in the cover's channel.
 
 ### Message logs (Logging & Auditing)
 

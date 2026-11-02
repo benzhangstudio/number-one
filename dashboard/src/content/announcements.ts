@@ -18,6 +18,18 @@ export interface Announcement {
 
 export const announcements: Announcement[] = [
   {
+    id: "2026-11-02-guides",
+    date: "2026-11-02",
+    title: "Server guides",
+    tag: "New",
+    body: `Build easy-to-read guides for your members and your staff, in **Cosmetics**.
+
+- **Private reading:** pages open just for the reader, with Back, Next and a contents menu.
+- **Linked pages:** add buttons that jump to related pages, plus a web link.
+- **Staff guides:** only your staff roles can open them.
+- **Templates:** start from a ready-made Server guide or Staff guide.`,
+  },
+  {
     id: "2026-11-02-tickets",
     date: "2026-11-02",
     title: "Tickets",

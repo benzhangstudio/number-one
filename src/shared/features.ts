@@ -67,7 +67,7 @@ export const categories = [
     id: "cosmetics",
     name: "Cosmetics",
     emoji: "🎀",
-    description: "Cute designs for your server, like decorated channel names",
+    description: "Cute designs for your server, like decorated channel names and easy-to-read guides",
   },
 ] as const;
 
@@ -274,6 +274,16 @@ export const ruleVerificationFeature = defineFeature({
   settings: ruleVerificationSettings,
 });
 
+export const guidesFeature = defineFeature({
+  id: "guides",
+  name: "Server guides",
+  icon: "📖",
+  description: "Build easy-to-read guides for members and staff. Readers flip pages privately with Back and Next, a contents menu and buttons to related pages.",
+  category: "cosmetics",
+  recommended: true,
+  settings: z.object({}),
+});
+
 export const ticketsFeature = defineFeature({
   id: "tickets",
   name: "Tickets",
@@ -297,6 +307,7 @@ export const featureCatalog: FeatureInfo[] = [
   embedsFeature,
   eventsFeature,
   channelDesignsFeature,
+  guidesFeature,
   messageLogsFeature,
   memberLogsFeature,
   serverLogsFeature,
@@ -358,3 +369,4 @@ export * from "./voiceLogs.js";
 export * from "./customCommands.js";
 export * from "./ruleVerification.js";
 export * from "./tickets.js";
+export * from "./guides.js";
