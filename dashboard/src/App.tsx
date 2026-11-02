@@ -8,6 +8,18 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { ServersPage } from "./pages/ServersPage";
 import { TermsPage } from "./pages/TermsPage";
 import { navigate, usePath } from "./router";
+import { useTheme } from "./theme";
+
+/** The sun / moon button: switches between light and dark mode. */
+function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  const label = theme === "light" ? "Switch to dark mode" : "Switch to light mode";
+  return (
+    <button className="theme-toggle" onClick={toggle} aria-label={label} title={label}>
+      {theme === "light" ? "🌙" : "☀️"}
+    </button>
+  );
+}
 
 export function App() {
   const path = usePath();
@@ -27,6 +39,7 @@ export function App() {
           <span className="brand">
             <span className="brand-mark">#1</span> <span className="brand-name">Number One</span>
           </span>
+          <ThemeToggle />
         </header>
         <main className="content center muted">Loading…</main>
         <Footer />
@@ -99,6 +112,7 @@ export function App() {
             Privacy
           </a>
         </nav>
+        <ThemeToggle />
         {!user && (
           <a className="btn ghost small" href="/auth/login">
             Log in

@@ -10,8 +10,39 @@
   --accent-soft: rgba(255, 79, 163, 0.14);
   --accent-text: #1a0610;
   --danger: #ff6b6b;
+  --warning: #ffc46b;
+  --warning-text: #ffd99a;
+  --topbar-bg: rgba(10, 10, 11, 0.85);
+  --bar-bg: rgba(20, 18, 21, 0.95);
+  --shadow: var(--shadow);
+  --hero-from: #ffffff;
+  --hero-mid: #ffb3d6;
   --radius: 12px;
   color-scheme: dark;
+}
+
+/* Light mode: same pink identity on white. Chosen with the sun/moon button in the top menu and
+   saved in this browser (dark is the default). Discord-style message previews stay dark on purpose,
+   so they look like Discord. */
+:root[data-theme="light"] {
+  --bg: #fbf6f9;
+  --surface: #ffffff;
+  --surface-2: #f6edf2;
+  --border: #eadbe3;
+  --text: #22141b;
+  --muted: #76606c;
+  --accent: #d92f84;
+  --accent-soft: rgba(217, 47, 132, 0.1);
+  --accent-text: #ffffff;
+  --danger: #cf3434;
+  --warning: #a86a00;
+  --warning-text: #7a4d00;
+  --topbar-bg: rgba(255, 255, 255, 0.85);
+  --bar-bg: rgba(255, 255, 255, 0.96);
+  --shadow: rgba(60, 20, 40, 0.14);
+  --hero-from: #22141b;
+  --hero-mid: #a3245f;
+  color-scheme: light;
 }
 
 * {
@@ -334,12 +365,12 @@ body {
 }
 
 .topbar {
-  background: rgba(10, 10, 11, 0.85);
+  background: var(--topbar-bg);
   border-bottom-color: var(--accent-soft);
 }
 
 .hero h1 {
-  background: linear-gradient(90deg, #ffffff 0%, #ffb3d6 60%, var(--accent) 100%);
+  background: linear-gradient(90deg, var(--hero-from) 0%, var(--hero-mid) 60%, var(--accent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -644,7 +675,7 @@ textarea {
 }
 
 .warning {
-  color: #ffc46b;
+  color: var(--warning);
   font-size: 0.85rem;
 }
 
@@ -704,7 +735,7 @@ textarea {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 40px var(--shadow);
 }
 
 .emoji-grid {
@@ -819,7 +850,7 @@ textarea {
 .warning-box {
   border-color: rgba(255, 196, 107, 0.4);
   background: rgba(255, 196, 107, 0.08);
-  color: #ffd99a;
+  color: var(--warning-text);
 }
 
 .role-picker {
@@ -928,12 +959,12 @@ select.chip-add {
   align-items: center;
   gap: 10px;
   justify-content: flex-end;
-  background: rgba(20, 18, 21, 0.95);
+  background: var(--bar-bg);
   border: 1px solid rgba(255, 79, 163, 0.4);
   border-radius: 12px;
   padding: 10px 12px;
   margin-top: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 30px var(--shadow);
 }
 
 .save-bar span {
@@ -1031,7 +1062,7 @@ select.chip-add {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 6px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 30px var(--shadow);
   max-height: 320px;
   overflow-y: auto;
 }
@@ -1366,7 +1397,7 @@ select.chip-add {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 8px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 40px var(--shadow);
 }
 
 .search-input {
@@ -1614,7 +1645,7 @@ select.chip-add {
 }
 
 .rr-style.on {
-  border-color: #fff;
+  border-color: var(--text);
   box-shadow: 0 0 0 2px var(--accent);
 }
 
@@ -2495,7 +2526,7 @@ select.chip-add {
   font-size: clamp(2.2rem, 5.5vw, 3.4rem);
   line-height: 1.1;
   margin: 0.9rem 0 1rem;
-  background: linear-gradient(90deg, #ffffff 0%, #ffb3d6 60%, var(--accent) 100%);
+  background: linear-gradient(90deg, var(--hero-from) 0%, var(--hero-mid) 60%, var(--accent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -2535,6 +2566,8 @@ select.chip-add {
 /* Mock of the /setup message in Discord. */
 .setup-preview {
   background: #1e1f22;
+  /* Looks like Discord in both themes, so its text uses Discord's colours, not the page's. */
+  color: #dbdee1;
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 18px;
@@ -2564,6 +2597,7 @@ select.chip-add {
 
 .sp-name {
   font-weight: 600;
+  color: #f2f3f5;
 }
 
 .sp-tag {
@@ -2588,6 +2622,7 @@ select.chip-add {
 
 .sp-title {
   font-weight: 700;
+  color: #f2f3f5;
 }
 
 .sp-text {
@@ -2611,7 +2646,7 @@ select.chip-add {
 }
 
 .sp-option.on {
-  color: var(--text);
+  color: #f2f3f5;
 }
 
 .sp-check {
@@ -4151,4 +4186,28 @@ select.chip-add {
   .rv-preview-wrap {
     position: static;
   }
+}
+
+/* Sun / moon button in the top menu */
+.theme-toggle {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+  transform: rotate(-12deg);
+}
+.topbar > .theme-toggle:last-child {
+  margin-left: auto;
 }
