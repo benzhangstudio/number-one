@@ -2,7 +2,7 @@
 
 > 💬 **Need help or have a privacy question?** [Join the Official Support Server](https://discord.gg/7GyveHcQdn)
 
-**Effective Date:** November 2, 2026
+**Effective Date:** November 1, 2026
 
 Number One is a free, independent hobby project. This policy explains what information the bot uses, why, and what you can do about it. By inviting or using Number One, you agree to this policy.
 
@@ -21,8 +21,6 @@ Number One only keeps what it needs for its features to work. This may include:
 - Moderation records (cases), such as warnings and bans, with the reason staff gave.
 
 When a server turns on Auto-moderation, Number One reads messages in that server to check them against the server's filters. Message text is checked in memory and is never saved. To spot repeated messages, Number One briefly keeps a scrambled fingerprint of recent messages (not the text itself) for up to 10 minutes. If a server has an alert channel set up, a caught message is posted there for the server's staff to review.
-
-When a server turns on Anti-raid, Number One looks at who joins and how old their Discord account is, to spot waves of accounts joining at once. It keeps only user IDs and join times, in memory, for up to 5 minutes. While a server is in raid mode, Number One saves when raid mode started and ends and how many accounts it dealt with, and deletes this when raid mode ends. New accounts it turns away get a moderation case, like any other moderation action.
 
 Number One never collects passwords, email addresses, or payment information.
 
