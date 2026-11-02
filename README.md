@@ -23,6 +23,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Announcements: templates, embed builder, pings, publishing, scheduling | ✅ |
 | Events: RSVP buttons, reminders, one-click Discord Events tab | ✅ |
 | Cosmetics → Channel designs: cute channel-name designs in one click | ✅ |
+| Logging → Message logs: edits, deletes, bulk deletes with transcript | ✅ |
 | More admin features (logging…) | Next, one at a time |
 
 ## Running on Wispbyte
@@ -216,6 +217,17 @@ Adds a cute design around every channel's name in one click, like `general` → 
 - If someone renames a designed channel by hand, that new name becomes its own name.
 - Switching the feature off leaves names as they are (use **Remove design** first). Deleting the server's data puts the original names back.
 - **Permissions:** Manage Channels (the bot and the admin).
+
+### Message logs (Logging & Auditing)
+
+Posts edited and deleted messages to a staff channel.
+
+- **Edits:** what it said before and after, the author, channel and a link to the message. Link previews loading don't count as edits.
+- **Deletes:** what it said, the author, files and stickers it had, and when it was sent.
+- **Bulk deletes** (purges and mass deletes): one log with a text file of every deleted message.
+- **Skip:** bots and webhooks (on by default), chosen channels or categories, and members with chosen roles. The log channel itself is never logged.
+- Old text comes from Number One's memory of recent messages, so messages sent before it last restarted are logged without their text. Needs **Message Content Intent** to show text.
+- **Permissions:** View Channel, Send Messages, Embed Links and Attach Files in the log channel.
 
 ## How the project is organized
 

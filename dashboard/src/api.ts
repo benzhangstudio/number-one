@@ -12,6 +12,7 @@ import type { AntiRaidResponse, AntiRaidSettings } from "../../src/shared/antiRa
 import type { ChannelDesignSettings, ChannelDesignsResponse } from "../../src/shared/channelDesigns";
 import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embeds";
 import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
+import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
@@ -157,6 +158,9 @@ export const api = {
   channelDesigns: (guildId: string) => request<ChannelDesignsResponse>(`/api/guilds/${guildId}/channel-designs`),
   applyChannelDesign: (guildId: string, settings: ChannelDesignSettings) =>
     request<ChannelDesignsResponse>(`/api/guilds/${guildId}/channel-designs/apply`, { method: "POST", body: JSON.stringify(settings) }),
+  messageLogs: (guildId: string) => request<MessageLogResponse>(`/api/guilds/${guildId}/message-logs`),
+  saveMessageLogs: (guildId: string, settings: MessageLogSettings) =>
+    request<MessageLogResponse>(`/api/guilds/${guildId}/message-logs`, { method: "PUT", body: JSON.stringify(settings) }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 

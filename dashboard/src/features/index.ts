@@ -7,6 +7,7 @@ import { EventsPanel } from "./EventsPanel";
 import { AutomodPanel } from "./AutomodPanel";
 import { ChannelDesignsPanel } from "./ChannelDesignsPanel";
 import { JoinLeavePanel } from "./JoinLeavePanel";
+import { MessageLogsPanel } from "./MessageLogsPanel";
 import { ModerationPanel } from "./ModerationPanel";
 import { OnboardingPanel } from "./OnboardingPanel";
 import { ReactionRolesPanel } from "./ReactionRolesPanel";
@@ -23,4 +24,5 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   embeds: EmbedsPanel,
   events: EventsPanel,
   "channel-designs": ChannelDesignsPanel,
+  "message-logs": MessageLogsPanel,
 };
