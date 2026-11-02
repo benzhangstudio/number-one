@@ -109,6 +109,21 @@ export function LandingPage({ loggedIn = false }: { loggedIn?: boolean }) {
         <SetupPreview />
       </section>
 
+      {announcements.length > 0 && (
+        <section id="whats-new" className="landing-section">
+          <h2>What's new</h2>
+          <p className="muted lp-section-lead">Recent updates to Number One.</p>
+          <div className="lp-news-grid">
+            {announcements.slice(0, 3).map((a) => (
+              <AnnouncementCard key={a.id} item={a} compact />
+            ))}
+          </div>
+          <p className="lp-news-more">
+            <PageLink to="/announcements">See all announcements →</PageLink>
+          </p>
+        </section>
+      )}
+
       <section id="features" className="landing-section">
         <h2>Modules</h2>
         <p className="muted lp-section-lead">Enabled per server. Additional modules are in development.</p>
@@ -162,21 +177,6 @@ export function LandingPage({ loggedIn = false }: { loggedIn?: boolean }) {
           ))}
         </div>
       </section>
-
-      {announcements.length > 0 && (
-        <section id="whats-new" className="landing-section">
-          <h2>What's new</h2>
-          <p className="muted lp-section-lead">Recent updates to Number One.</p>
-          <div className="lp-news-grid">
-            {announcements.slice(0, 3).map((a) => (
-              <AnnouncementCard key={a.id} item={a} compact />
-            ))}
-          </div>
-          <p className="lp-news-more">
-            <PageLink to="/announcements">See all announcements →</PageLink>
-          </p>
-        </section>
-      )}
 
       <section className="landing-cta">
         <h2>Add Number One</h2>
