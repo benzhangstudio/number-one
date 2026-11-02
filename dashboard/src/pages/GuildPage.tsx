@@ -17,7 +17,7 @@ import { GuildIcon } from "./ServersPage";
 
 /**
  * A server's dashboard, laid out like MEE6 / Carl-bot:
- * a menu on the left (Overview, Server setup, then each category and its features)
+ * a menu on the left (Overview, Choose features, then each category and its features)
  * and one page at a time on the right.
  *
  * Pages: /servers/:id (overview), /servers/:id/setup, /servers/:id/:featureId
@@ -73,7 +73,7 @@ export function GuildPage({ guildId, page }: { guildId: string; page: string }) 
   let body;
   let title = "Overview";
   if (page === "setup") {
-    title = "Server setup";
+    title = "Choose features";
     body = <SetupPage data={data} onChange={setData} />;
   } else if (feature) {
     title = feature.name;
@@ -124,7 +124,7 @@ export function GuildPage({ guildId, page }: { guildId: string; page: string }) 
           {link(base, <><span className="nav-icon">🏠</span>Overview</>, !feature && page !== "setup")}
           {link(
             `${base}/setup`,
-            <><span className="nav-icon">⚙️</span>Server setup</>,
+            <><span className="nav-icon">⚙️</span>Choose features</>,
             page === "setup",
             !data.setup.completed ? <span className="nav-badge">Start here</span> : null,
           )}
@@ -251,11 +251,11 @@ function OverviewPage({
       {!data.setup.completed && (
         <div className="card banner">
           <div>
-            <div className="feature-name">New here? Start with server setup</div>
+            <div className="feature-name">New here? Start by choosing your features</div>
             <div className="muted">Tell Number One what your server needs and the right features switch on for you.</div>
           </div>
           <button className="btn primary" onClick={() => navigate(`${base}/setup`)}>
-            Set up
+            Choose features
           </button>
         </div>
       )}
@@ -463,10 +463,14 @@ function SetupPage({ data, onChange }: { data: GuildDetails; onChange: (d: Guild
   return (
     <section>
       <div className="page-head">
-        <h1>Server setup</h1>
+        <h1>Choose features</h1>
         <p className="muted">
-          What will you use Number One for? Pick everything that fits and the recommended features for each switch on. Same as{" "}
-          <code>/setup</code> in Discord. You can still turn any feature on or off later.
+          What do you use Number One for? Pick everything that fits and the recommended features for each switch on. Come back anytime
+          to add more. Same as <code>/setup</code> in Discord.
+        </p>
+        <p className="muted small">
+          Un-picking a category doesn't switch anything off. To turn a single feature off, use its switch on the Overview or on its own
+          page.
         </p>
       </div>
       <div className="category-grid">
