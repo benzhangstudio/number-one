@@ -67,6 +67,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await found.handler.handle(interaction);
     } catch (err) {
       console.error(`[bot] ${interaction.customId} failed:`, err);
+      // Buttons and menus belong to private flows (setup, onboarding, role menus), so their errors stay private too.
       const content = "Something went wrong. Please try again.";
       await (interaction.replied || interaction.deferred
         ? interaction.followUp({ content, flags: MessageFlags.Ephemeral })
@@ -81,8 +82,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   const reply = (content: string) =>
     interaction.replied || interaction.deferred
-      ? interaction.followUp({ content, flags: MessageFlags.Ephemeral })
-      : interaction.reply({ content, flags: MessageFlags.Ephemeral });
+      ? interaction.followUp({ content })
+      : interaction.reply({ content });
 
   if (interaction.guildId && !(await isFeatureEnabled(interaction.guildId, entry.feature.info))) {
     const link = dashboardLink(`/servers/${interaction.guildId}`);

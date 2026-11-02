@@ -10,7 +10,7 @@ import type { FeatureInfo } from "../../shared/features.js";
 
 /**
  * A slash command. Replies are PUBLIC by default, so staff can see who used which command.
- * Only use private (ephemeral) replies for errors, permission denials, or a member's personal steps.
+ * Only /setup and a member's own walkthroughs (onboarding steps, role menu clicks) reply privately. Errors are public too.
  */
 export interface SlashCommand {
   /** Built with discord.js's SlashCommandBuilder. */

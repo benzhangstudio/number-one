@@ -5,7 +5,6 @@ import {
   type Guild,
   type GuildMember,
   InteractionContextType,
-  MessageFlags,
   PermissionFlagsBits,
   SlashCommandBuilder,
   type SlashCommandUserOption,
@@ -27,12 +26,9 @@ import { caseEmbed, caseTitle, postNote, refreshLog } from "./messages.js";
 import * as store from "./store.js";
 
 /*
- * Moderation commands. Results of actions are posted publicly, like the rest of Number One, so staff can see
- * who did what. Looking up someone's record (/case history, /case view) replies privately, because a member's
- * history shouldn't be shown to whoever happens to be in the channel.
+ * Moderation commands. Every reply is public, like the rest of Number One, so staff can see who did what.
+ * Only /setup and the dashboard are private.
  */
-
-const privately = { flags: MessageFlags.Ephemeral } as const;
 
 const userOption = (o: SlashCommandUserOption, what: string) => o.setName("user").setDescription(what).setRequired(true);
 
@@ -51,7 +47,7 @@ async function fail(interaction: ChatInputCommandInteraction | AutocompleteInter
   const content = `❌ ${err.message}`;
   return interaction.deferred || interaction.replied
     ? interaction.editReply({ content, embeds: [] })
-    : interaction.reply({ content, ...privately });
+    : interaction.reply({ content });
 }
 
 /** The public confirmation after an action, plus any automatic follow-up. */
@@ -229,9 +225,9 @@ const unban: SlashCommand = {
     const guild = interaction.guild!;
     const raw = interaction.options.getString("user", true).trim();
     const id = raw.match(/\d{17,20}/)?.[0];
-    if (!id) return interaction.reply({ content: "❌ Pick someone from the list, or paste their user ID.", ...privately });
+    if (!id) return interaction.reply({ content: "❌ Pick someone from the list, or paste their user ID." });
     const user = await interaction.client.users.fetch(id).catch(() => null);
-    if (!user) return interaction.reply({ content: "❌ I couldn't find a Discord user with that ID.", ...privately });
+    if (!user) return interaction.reply({ content: "❌ I couldn't find a Discord user with that ID." });
     const reason = interaction.options.getString("reason") ?? "";
     try {
       const settings = await getSettings(guild.id);
@@ -274,16 +270,16 @@ const purge: SlashCommand = {
     const channel = interaction.channel;
     const me = interaction.guild!.members.me!;
     if (!channel || channel.isDMBased() || !("bulkDelete" in channel)) {
-      return interaction.reply({ content: "❌ I can't purge messages in this channel.", ...privately });
+      return interaction.reply({ content: "❌ I can't purge messages in this channel." });
     }
     if (!channel.permissionsFor(me)?.has([PermissionFlagsBits.ManageMessages, PermissionFlagsBits.ReadMessageHistory])) {
-      return interaction.reply({ content: "❌ I need **Manage Messages** and **Read Message History** in this channel.", ...privately });
+      return interaction.reply({ content: "❌ I need **Manage Messages** and **Read Message History** in this channel." });
     }
     const amount = interaction.options.getInteger("amount", true);
     const user = interaction.options.getUser("user");
     const contains = interaction.options.getString("contains")?.toLowerCase();
 
-    await interaction.deferReply(privately);
+    await interaction.deferReply();
     const recent = await channel.messages.fetch({ limit: amount, before: interaction.id }).catch(() => null);
     if (!recent) return interaction.editReply("❌ I couldn't read this channel's messages.");
     const twoWeeksAgo = Date.now() - 14 * 86_400_000 + 60_000;
@@ -364,7 +360,7 @@ const caseCommand: SlashCommand = {
     try {
       if (sub === "note") {
         const user = interaction.options.getUser("user", true);
-        await interaction.deferReply(privately);
+        await interaction.deferReply();
         const result = await runAction(guild, {
           action: "note",
           user,
@@ -402,14 +398,14 @@ const caseCommand: SlashCommand = {
               : "No cases. Clean record.",
           )
           .setFooter({ text: `User ID ${user.id}` });
-        return interaction.reply({ embeds: [embed], ...privately });
+        return interaction.reply({ embeds: [embed] });
       }
 
       const number = interaction.options.getInteger("number", true);
       const found = await store.getCase(guild.id, number);
-      if (!found) return interaction.reply({ content: `❌ There's no case #${number}.`, ...privately });
+      if (!found) return interaction.reply({ content: `❌ There's no case #${number}.` });
 
-      if (sub === "view") return interaction.reply({ embeds: [caseEmbed(found)], ...privately });
+      if (sub === "view") return interaction.reply({ embeds: [caseEmbed(found)] });
 
       if (sub === "reason") {
         const isAuthor = found.moderatorId === interaction.user.id;
@@ -419,7 +415,7 @@ const caseCommand: SlashCommand = {
         found.reason = interaction.options.getString("reason", true).trim();
         await store.updateCase(found.id, { reason: found.reason });
         await refreshLog(guild, found);
-        return interaction.reply({ content: `✏️ Updated the reason for ${caseTitle(found)}.`, ...privately });
+        return interaction.reply({ content: `✏️ Updated the reason for ${caseTitle(found)}.` });
       }
 
       if (sub === "delete") {
