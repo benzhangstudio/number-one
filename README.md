@@ -24,6 +24,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Events: RSVP buttons, reminders, one-click Discord Events tab | ✅ |
 | Cosmetics → Channel designs: cute channel-name designs in one click | ✅ |
 | Logging → Message logs: edits, deletes, bulk deletes with transcript | ✅ |
+| Logging → Member logs: joins, leaves, nicknames, roles, profiles | ✅ |
 | More admin features (logging…) | Next, one at a time |
 
 ## Running on Wispbyte
@@ -228,6 +229,17 @@ Posts edited and deleted messages to a staff channel.
 - **Skip:** bots and webhooks (on by default), chosen channels or categories, and members with chosen roles. The log channel itself is never logged.
 - Old text comes from Number One's memory of recent messages, so messages sent before it last restarted are logged without their text. Needs **Message Content Intent** to show text.
 - **Permissions:** View Channel, Send Messages, Embed Links and Attach Files in the log channel.
+
+### Member logs (Logging & Auditing)
+
+Posts member activity to a staff channel.
+
+- **Joins:** account age (marked ⚠️ new when younger than a set number of days) and the new member count.
+- **Leaves:** when they joined and the roles they had.
+- **Nickname and role changes:** before and after, and who made the change (from Discord's audit log).
+- **Username, display name and avatar changes**, including server avatars.
+- Bots can be skipped.
+- **Permissions:** View Channel, Send Messages and Embed Links in the log channel; View Audit Log to show who made changes.
 
 ## How the project is organized
 

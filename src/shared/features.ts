@@ -3,6 +3,7 @@ import { antiRaidSettings } from "./antiRaid.js";
 import { automodSettings } from "./automod.js";
 import { channelDesignSettings } from "./channelDesigns.js";
 import { joinLeaveSettings } from "./joinLeave.js";
+import { memberLogSettings } from "./memberLogs.js";
 import { messageLogSettings } from "./messageLogs.js";
 import { moderationSettings } from "./moderation.js";
 import { onboardingSettings } from "./onboarding.js";
@@ -218,6 +219,16 @@ export const messageLogsFeature = defineFeature({
   settings: messageLogSettings,
 });
 
+export const memberLogsFeature = defineFeature({
+  id: "member-logs",
+  name: "Member logs",
+  icon: "👥",
+  description: "Post joins, leaves, nickname and role changes, and username and avatar changes to a staff channel.",
+  category: "logging",
+  recommended: true,
+  settings: memberLogSettings,
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
@@ -231,6 +242,7 @@ export const featureCatalog: FeatureInfo[] = [
   eventsFeature,
   channelDesignsFeature,
   messageLogsFeature,
+  memberLogsFeature,
 ];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
@@ -280,3 +292,4 @@ export * from "./announcements.js";
 export * from "./events.js";
 export * from "./channelDesigns.js";
 export * from "./messageLogs.js";
+export * from "./memberLogs.js";

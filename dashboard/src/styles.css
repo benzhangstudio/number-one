@@ -3640,3 +3640,31 @@ select.chip-add {
   flex-direction: column;
   gap: 10px;
 }
+
+/* --- Member logs --- */
+.panel.member-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.member-logs .sub {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin: 0;
+}
+.member-logs .sub > .sub-body {
+  border-top: 1px solid var(--border);
+  margin: 14px -20px 0;
+  padding: 14px 20px 0;
+}
+.memlog-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.memlog-days {
+  max-width: 420px;
+  padding-left: 12px;
+}
