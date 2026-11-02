@@ -64,7 +64,6 @@ export function newProgress(guildId: string, userId: string, joinedAt = new Date
     rulesAccepted: false,
     joinedAt,
     completedAt: null,
-    welcomed: false,
   };
 }
 

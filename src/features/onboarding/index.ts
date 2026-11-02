@@ -28,8 +28,6 @@ async function validate(guild: Guild, userId: string, s: OnboardingSettings, acc
     const channel = guild.channels.cache.get(id);
     if (!channel || !TEXT_TYPES.has(channel.type)) throw new FixableError(`The ${what} channel no longer exists. Pick another.`);
   };
-  checkChannel(s.welcome.channelId, "welcome");
-  checkChannel(s.goodbye.channelId, "goodbye");
   checkChannel(s.flow.channelId, "onboarding");
   if (s.flow.enabled && !s.flow.channelId) throw new FixableError("Pick a channel for the onboarding Start button.");
   if (s.gate.enabled && !s.flow.enabled) {

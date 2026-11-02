@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { antiRaidSettings } from "./antiRaid.js";
 import { automodSettings } from "./automod.js";
+import { joinLeaveSettings } from "./joinLeave.js";
 import { moderationSettings } from "./moderation.js";
 import { onboardingSettings } from "./onboarding.js";
 
@@ -113,10 +114,20 @@ export const onboardingFeature = defineFeature({
   id: "onboarding",
   name: "Member onboarding",
   icon: "👋",
-  description: "Welcome new members, give starting roles, and walk them through rules and questions. No Community settings needed.",
+  description: "Give new members starting roles and walk them through rules and questions. No Community settings needed.",
   category: "community",
   recommended: true,
   settings: onboardingSettings,
+});
+
+export const joinLeaveFeature = defineFeature({
+  id: "join-leave",
+  name: "Join & leave messages",
+  icon: "💬",
+  description: "Welcome new members in a channel or by DM, and post a goodbye when someone leaves.",
+  category: "community",
+  recommended: true,
+  settings: joinLeaveSettings,
 });
 
 export const moderationFeature = defineFeature({
@@ -154,6 +165,7 @@ export const featureCatalog: FeatureInfo[] = [
   moderationFeature,
   automodFeature,
   antiRaidFeature,
+  joinLeaveFeature,
   onboardingFeature,
   reactionRolesFeature,
 ];
@@ -199,3 +211,4 @@ export * from "./reactionRoles.js";
 export * from "./moderation.js";
 export * from "./automod.js";
 export * from "./antiRaid.js";
+export * from "./joinLeave.js";

@@ -145,8 +145,6 @@ export const onboardingProgress = sqliteTable(
     rulesAccepted: integer("rules_accepted", { mode: "boolean" }).notNull().default(false),
     joinedAt: integer("joined_at", { mode: "timestamp_ms" }).notNull(),
     completedAt: integer("completed_at", { mode: "timestamp_ms" }),
-    /** Whether the welcome message has been posted for this member. */
-    welcomed: integer("welcomed", { mode: "boolean" }).notNull().default(false),
   },
   (t) => [primaryKey({ columns: [t.guildId, t.userId] })],
 );

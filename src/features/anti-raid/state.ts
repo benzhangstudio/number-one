@@ -7,7 +7,7 @@ import { antiRaidFeature } from "../../shared/features.js";
 
 /**
  * Anti-raid state: settings cache, servers in raid mode, and recent joins.
- * Kept free of Discord actions so other features (onboarding) can ask "is a raid on?" without import loops.
+ * Kept free of Discord actions so other features (join & leave messages) can ask "is a raid on?" without import loops.
  */
 
 export type RaidRow = typeof raidState.$inferSelect;
@@ -35,7 +35,7 @@ export const forgetState = (guildId: string) => cache.delete(guildId);
 const raids = new Map<string, RaidRow>();
 
 export const getRaid = (guildId: string) => raids.get(guildId) ?? null;
-/** Whether a server is in raid mode. Onboarding uses this to skip welcome and goodbye messages for raiders. */
+/** Whether a server is in raid mode. Join & leave messages use this to skip welcome and goodbye messages for raiders. */
 export const isRaidActive = (guildId: string) => raids.has(guildId);
 export const activeRaids = () => [...raids.values()];
 

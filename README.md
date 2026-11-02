@@ -14,11 +14,12 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Commands: `/setup`, `/dashboard`, `/ping` | ✅ |
 | Setup categories with recommended features | ✅ |
 | Reaction roles (dashboard) | ✅ |
-| Member onboarding: welcome, goodbye, join roles, steps, access gate | ✅ |
+| Join & leave messages: welcome, welcome DM, goodbye | ✅ |
+| Member onboarding: join roles, steps, access gate | ✅ |
 | Auto-moderation: blocked words, invites, links, mass mentions, caps, emoji spam, zalgo, repeated messages | ✅ |
 | Anti-spam: message rate, cross-channel posting, attachment and link floods | ✅ |
 | Anti-raid: join-wave detection, raid mode lockdown, new-account filter, `/raidmode` | ✅ |
-| More admin features (moderation, welcome, logging…) | Next, one at a time |
+| More admin features (logging…) | Next, one at a time |
 
 ## Running on Wispbyte
 
@@ -68,15 +69,27 @@ Every reply is public so staff can see who did what. Only `/setup` and a member'
 - Re-running setup never switches off anything already in use.
 - When Number One joins a new server, it posts a one-time welcome in the system channel with a **Set up** button.
 
-### Member onboarding (Community Settings)
+### Join & leave messages (Community Settings)
 
-Discord-style onboarding and welcomes **without turning on Community settings**. Configured on the dashboard; every part is optional:
+Welcomes new members and says goodbye when they leave. Configured on the dashboard:
 
 | Part | Default | What it does |
 | --- | --- | --- |
-| Welcome message | On (system channel) | Posts in a chosen channel, as a pink card or plain text, on join or after onboarding. Placeholders: `{user}`, `{username}`, `{server}`, `{memberCount}`, `{startChannel}`. |
+| Welcome message | On (system channel) | Posts in a chosen channel when someone joins, as a pink card or plain text. |
 | Welcome DM | Off | Sends a private welcome too. |
 | Goodbye message | Off | Posts when someone leaves. |
+
+- Placeholders: `{user}`, `{username}`, `{server}`, `{memberCount}`.
+- Bots are skipped. Nothing is posted while Anti-raid's raid mode is on.
+- The dashboard warns if a chosen channel is gone or the bot can't post there.
+- **Permissions:** View Channel, Send Messages and Embed Links in the chosen channels.
+
+### Member onboarding (Community Settings)
+
+Discord-style onboarding **without turning on Community settings**. Configured on the dashboard; every part is optional:
+
+| Part | Default | What it does |
+| --- | --- | --- |
 | Join roles / bot roles | None | Given right away. Bots skip onboarding. |
 | Onboarding steps | Off | A Start button in a chosen channel opens a private walkthrough: rules ("I agree"), then up to 5 questions (single or multiple choice, required or optional), each answer giving up to 5 roles. With no rules or questions, members just click Finish. Members can change their answers later. |
 | Access gate | Off | Owner-only. Pick **staff categories** (never touched) and **whitelisted channels** (left exactly as they are), then click "Set it up for me". After a two-step confirm, it creates a "Start here" category with a read-only #start-here channel, a New member role and a **Verified** role (or uses the one you pick). It gives Verified to everyone already in the server, then makes every other channel visible only to Verified. Finishing onboarding gives Verified, which opens the server. Channels that are already private are left alone. Turning it off puts every channel back exactly as it was. Optionally removes members who don't finish in time. |
@@ -148,7 +161,7 @@ Stops raids: waves of accounts joining at once to spam. Configured on the dashbo
 
 - Raid mode can also be started or ended by hand with `/raidmode` or the dashboard's buttons. The dashboard shows whether raid mode is on, joins in the last minute and how many accounts were dealt with.
 - One alert (pinging a chosen role) when raid mode starts, and one summary when it ends. Raiders are dealt with one at a time in the background, without a case or DM each, so a big raid doesn't flood the mod log.
-- While raid mode is on, onboarding skips welcome and goodbye messages so the welcome channel isn't flooded.
+- While raid mode is on, Join & leave messages skips welcome and goodbye messages so those channels aren't flooded.
 - Raid mode is saved, so a restart still ends it on time. Everything it changed is put back when it ends, when Anti-raid is switched off, or when the server's data is deleted. The verification level is only put back if nobody changed it during the raid.
 - Admins, people with Manage Server and bots are never treated as raiders.
 - **Permissions:** Manage Server (pause invites, verification), and Kick Members, Ban Members or Timeout Members for the chosen action.

@@ -14,7 +14,7 @@ import {
 import type { ComponentHandler } from "../../server/bot/types.js";
 import type { OnboardingQuestion, OnboardingSettings } from "../../shared/onboarding.js";
 import { getAccessState } from "./access.js";
-import { PINK, postableChannel, sendWelcome } from "./messages.js";
+import { PINK, postableChannel } from "./messages.js";
 import { memberCounts, onPrivateJobDone } from "./private.js";
 import { applyFinalRoles, rolesFromAnswers } from "./roles.js";
 import * as store from "./store.js";
@@ -256,9 +256,6 @@ async function finish(
   const firstTime = progress.status !== "done";
   progress.status = "done";
   progress.completedAt ??= new Date();
-  if (firstTime && settings.welcome.enabled && settings.welcome.when === "complete" && !progress.welcomed) {
-    progress.welcomed = await sendWelcome(member, settings).catch(() => false);
-  }
   await store.saveProgress(progress);
   scheduleCardRefresh(member.guild);
 

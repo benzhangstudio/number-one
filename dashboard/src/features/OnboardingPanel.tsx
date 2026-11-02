@@ -8,7 +8,6 @@ import {
   MAX_STAFF_CATEGORIES,
   type OnboardingQuestion,
   type OnboardingSettings,
-  PLACEHOLDERS,
 } from "../../../src/shared/onboarding";
 import { type GuildDetails, type OnboardingResponse, api } from "../api";
 import { EmojiInput } from "../components/emoji";
@@ -144,8 +143,8 @@ export function OnboardingPanel({ guild }: { guild: Guild }) {
       <div className="notice">
         <strong>How Number One onboarding works</strong>
         <span className="small">
-          New members are welcomed, walked through your rules and questions, and given roles based on their answers. It all
-          works without turning on Discord's Community settings.
+          New members are walked through your rules and questions, and given roles based on their answers. It all works
+          without turning on Discord's Community settings. Welcome and goodbye messages are in Join &amp; leave messages.
         </span>
         <span className="small">
           With the access gate on, new members only see #start-here and your whitelisted channels until they finish. Finishing
@@ -188,97 +187,20 @@ export function OnboardingPanel({ guild }: { guild: Guild }) {
         </div>
       )}
 
-      {/* 1. Welcome */}
-      <section className="sub half">
-        <Toggle
-          label="Welcome message"
-          hint="Greet new members in a channel."
-          checked={draft.welcome.enabled}
-          onChange={(v) => set((d) => { d.welcome.enabled = v; })}
+      {/* 1. Join roles */}
+      <section className="sub">
+        <div className="sub-head"><strong>Join roles</strong><small className="muted">Given to every new member right away.</small></div>
+        <RolePicker
+          guild={guild}
+          value={draft.joinRoles}
+          blocked={joinBlocked}
+          onChange={(v) => set((d) => { d.joinRoles = v; })}
         />
-        {draft.welcome.enabled && (
-          <div className="sub-body">
-            <label className="field">
-              <span>Channel</span>
-              <ChannelSelect
-                guild={guild}
-                value={draft.welcome.channelId}
-                emptyLabel="Server's system channel"
-                onChange={(v) => set((d) => { d.welcome.channelId = v; })}
-              />
-            </label>
-            <label className="field">
-              <span>Message</span>
-              <textarea rows={3} maxLength={1800} value={draft.welcome.message} onChange={(e) => set((d) => { d.welcome.message = e.target.value; })} />
-              <Placeholders />
-            </label>
-            <label className="check">
-              <input type="checkbox" checked={draft.welcome.useEmbed} onChange={(e) => set((d) => { d.welcome.useEmbed = e.target.checked; })} />
-              <span><strong>Show as a card</strong><small className="muted">A pink card with the member's avatar instead of plain text.</small></span>
-            </label>
-            {flowOn && (
-              <label className="field">
-                <span>When to post it</span>
-                <select value={draft.welcome.when} onChange={(e) => set((d) => { d.welcome.when = e.target.value as "join" | "complete"; })}>
-                  <option value="join">As soon as they join</option>
-                  <option value="complete">After they finish onboarding</option>
-                </select>
-              </label>
-            )}
-            <Toggle
-              label="Also send a welcome DM"
-              hint="Some members block DMs; they simply won't get it."
-              checked={draft.welcome.dmEnabled}
-              onChange={(v) => set((d) => { d.welcome.dmEnabled = v; })}
-            />
-            {draft.welcome.dmEnabled && (
-              <label className="field">
-                <span>DM message</span>
-                <textarea rows={2} maxLength={1800} value={draft.welcome.dmMessage} onChange={(e) => set((d) => { d.welcome.dmMessage = e.target.value; })} />
-              </label>
-            )}
-          </div>
-        )}
+        <div className="sub-head spaced"><strong>Bot roles</strong><small className="muted">Given to bots that join. Bots skip onboarding.</small></div>
+        <RolePicker guild={guild} value={draft.botRoles} onChange={(v) => set((d) => { d.botRoles = v; })} />
       </section>
 
-      <div className="ob-stack">
-        {/* 2. Goodbye */}
-        <section className="sub">
-          <Toggle
-            label="Goodbye message"
-            hint="Post a message when someone leaves. Off by default."
-            checked={draft.goodbye.enabled}
-            onChange={(v) => set((d) => { d.goodbye.enabled = v; })}
-          />
-          {draft.goodbye.enabled && (
-            <div className="sub-body">
-              <label className="field">
-                <span>Channel</span>
-                <ChannelSelect guild={guild} value={draft.goodbye.channelId} emptyLabel="Server's system channel" onChange={(v) => set((d) => { d.goodbye.channelId = v; })} />
-              </label>
-              <label className="field">
-                <span>Message</span>
-                <textarea rows={2} maxLength={1800} value={draft.goodbye.message} onChange={(e) => set((d) => { d.goodbye.message = e.target.value; })} />
-              </label>
-            </div>
-          )}
-        </section>
-
-        {/* 3. Join roles */}
-        <section className="sub">
-          <div className="sub-head"><strong>Join roles</strong><small className="muted">Given to every new member right away.</small></div>
-          <RolePicker
-            guild={guild}
-            value={draft.joinRoles}
-            blocked={joinBlocked}
-            onChange={(v) => set((d) => { d.joinRoles = v; })}
-          />
-          <div className="sub-head spaced"><strong>Bot roles</strong><small className="muted">Given to bots that join. Bots skip onboarding.</small></div>
-          <RolePicker guild={guild} value={draft.botRoles} onChange={(v) => set((d) => { d.botRoles = v; })} />
-        </section>
-      </div>
-
-      {/* 4. Onboarding steps */}
+      {/* 2. Onboarding steps */}
       <section className="sub wide">
         <Toggle
           label="Onboarding steps"
@@ -343,7 +265,7 @@ export function OnboardingPanel({ guild }: { guild: Guild }) {
         )}
       </section>
 
-      {/* 5. Access gate */}
+      {/* 3. Access gate */}
       <section className="sub wide gate">
         <div className="sub-head">
           <strong>Access gate</strong>
@@ -478,20 +400,6 @@ export function OnboardingPanel({ guild }: { guild: Guild }) {
         </div>
       )}
     </div>
-  );
-}
-
-function Placeholders() {
-  return (
-    <small className="muted">
-      You can use{" "}
-      {PLACEHOLDERS.map((p, i) => (
-        <span key={p.key} title={p.means}>
-          <code>{p.key}</code>
-          {i < PLACEHOLDERS.length - 1 ? " " : ""}
-        </span>
-      ))}
-    </small>
   );
 }
 

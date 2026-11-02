@@ -1,19 +1,14 @@
 import { type Client, Events, type Guild, type GuildMember } from "discord.js";
 import { onEvent } from "../../server/bot/types.js";
-import { isRaidActive } from "../anti-raid/state.js";
 import type { OnboardingSettings } from "../../shared/onboarding.js";
 import { onboardingFeature } from "../../shared/features.js";
 import { syncAccess } from "./access.js";
-import { flowActive, scheduleCardRefresh, syncStartMessage } from "./flow.js";
-import { sendGoodbye, sendWelcome, sendWelcomeDm } from "./messages.js";
+import { scheduleCardRefresh, syncStartMessage } from "./flow.js";
 import { addRoles } from "./roles.js";
 import * as store from "./store.js";
 
-/**
- * Everything that happens when someone joins: starting roles, the "new member" role when the gate is on,
- * and the welcome message / DM. `quiet` skips messages (used when catching up after downtime).
- */
-async function handleJoin(member: GuildMember, settings: OnboardingSettings, quiet = false) {
+/** Everything that happens when someone joins: starting roles, and the "new member" role when the gate is on. */
+async function handleJoin(member: GuildMember, settings: OnboardingSettings) {
   if (member.user.bot) {
     // Bots skip onboarding, so they count as verified straight away.
     const verified = settings.access.verifiedRoleId ? [settings.access.verifiedRoleId] : [];
@@ -24,26 +19,18 @@ async function handleJoin(member: GuildMember, settings: OnboardingSettings, qui
   const gateRole = settings.gate.enabled && settings.gate.roleId ? [settings.gate.roleId] : [];
   await addRoles(member, [...settings.joinRoles, ...gateRole], "Onboarding: join roles");
 
-  const progress = store.newProgress(member.guild.id, member.id, member.joinedAt ?? new Date());
-  const welcomeNow = settings.welcome.when === "join" || !flowActive(settings);
-  if (!quiet && settings.welcome.enabled && welcomeNow) {
-    progress.welcomed = await sendWelcome(member, settings).catch(() => false);
-  }
-  if (!quiet && settings.welcome.dmEnabled) await sendWelcomeDm(member, settings);
-  await store.saveProgress(progress);
+  await store.saveProgress(store.newProgress(member.guild.id, member.id, member.joinedAt ?? new Date()));
 }
 
 const memberJoined = onEvent(Events.GuildMemberAdd, async (member) => {
   const settings = await store.getActiveSettings(member.guild.id);
   if (!settings) return;
-  // During a raid, raiders still get set up but no welcome messages, so the welcome channel isn't flooded.
-  await handleJoin(member, settings, isRaidActive(member.guild.id));
+  await handleJoin(member, settings);
   scheduleCardRefresh(member.guild);
 });
 
 const memberLeft = onEvent(Events.GuildMemberRemove, async (member) => {
   const settings = await store.getActiveSettings(member.guild.id);
-  if (settings?.goodbye.enabled && !member.user?.bot && !isRaidActive(member.guild.id)) await sendGoodbye(member, settings);
   // If they come back, they go through onboarding again (like Discord's own onboarding).
   await store.deleteProgress(member.guild.id, member.id);
   if (settings) scheduleCardRefresh(member.guild);
@@ -83,7 +70,7 @@ async function catchUp(client: Client) {
     const known = new Set((await store.joinedSince(guildId, new Date(Date.now() - DAY))).map((r) => r.userId));
     for (const member of members.values()) {
       if (member.joinedTimestamp && member.joinedTimestamp > Date.now() - DAY && !known.has(member.id)) {
-        await handleJoin(member, settings, true).catch(() => {});
+        await handleJoin(member, settings).catch(() => {});
       }
     }
   }

@@ -10,6 +10,7 @@ import type {
 import type { AntiRaidResponse, AntiRaidSettings } from "../../src/shared/antiRaid";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
+import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
 import type { OnboardingSettings, OnboardingStatus } from "../../src/shared/onboarding";
 
 export class ApiError extends Error {
@@ -109,6 +110,9 @@ export const api = {
   automod: (guildId: string) => request<AutomodResponse>(`/api/guilds/${guildId}/automod`),
   saveAutomod: (guildId: string, settings: AutomodSettings) =>
     request<AutomodResponse>(`/api/guilds/${guildId}/automod`, { method: "PUT", body: JSON.stringify(settings) }),
+  joinLeave: (guildId: string) => request<JoinLeaveResponse>(`/api/guilds/${guildId}/join-leave`),
+  saveJoinLeave: (guildId: string, settings: JoinLeaveSettings) =>
+    request<JoinLeaveResponse>(`/api/guilds/${guildId}/join-leave`, { method: "PUT", body: JSON.stringify(settings) }),
   antiRaid: (guildId: string) => request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid`),
   saveAntiRaid: (guildId: string, settings: AntiRaidSettings) =>
     request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid`, { method: "PUT", body: JSON.stringify(settings) }),

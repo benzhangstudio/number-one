@@ -2,8 +2,8 @@ import { z } from "zod";
 
 /**
  * Member onboarding settings, shared by the bot and the dashboard.
- * Every part is optional and can be switched on or off by admins. Defaults are safe:
- * only the welcome message is on, and it posts in the server's system channel.
+ * Every part is optional and can be switched on or off by admins, and everything is off by default.
+ * (Welcome and goodbye messages are their own feature: see joinLeave.ts.)
  */
 
 const snowflake = z.string().regex(/^\d{17,20}$/);
@@ -40,38 +40,7 @@ export const onboardingQuestion = z.object({
   options: z.array(onboardingOption).min(1, "Every question needs at least one answer").max(MAX_OPTIONS),
 });
 
-export const welcomeTiming = z.enum(["join", "complete"]);
-
 export const onboardingSettings = z.object({
-  welcome: z
-    .object({
-      enabled: z.boolean().default(true),
-      /** Empty = the server's system channel. */
-      channelId: snowflake.nullable().default(null),
-      message: z.string().max(1800).default("Welcome {user} to **{server}**! You're member #{memberCount}."),
-      /** Show the message in a pink card instead of plain text. */
-      useEmbed: z.boolean().default(true),
-      /** Post on join, or once the member finishes onboarding (only when onboarding steps are on). */
-      when: welcomeTiming.default("join"),
-      dmEnabled: z.boolean().default(false),
-      dmMessage: z.string().max(1800).default("Welcome to **{server}**, {username}! We're glad you're here."),
-    })
-    .default({
-      enabled: true,
-      channelId: null,
-      message: "Welcome {user} to **{server}**! You're member #{memberCount}.",
-      useEmbed: true,
-      when: "join",
-      dmEnabled: false,
-      dmMessage: "Welcome to **{server}**, {username}! We're glad you're here.",
-    }),
-  goodbye: z
-    .object({
-      enabled: z.boolean().default(false),
-      channelId: snowflake.nullable().default(null),
-      message: z.string().max(1800).default("**{username}** left {server}. We now have {memberCount} members."),
-    })
-    .default({ enabled: false, channelId: null, message: "**{username}** left {server}. We now have {memberCount} members." }),
   /** Roles every new member gets right away. */
   joinRoles: roleList(10),
   /** Roles given to bots that join (bots skip onboarding). */
@@ -124,15 +93,6 @@ export const onboardingSettings = z.object({
 
 export type OnboardingSettings = z.infer<typeof onboardingSettings>;
 export type OnboardingQuestion = z.infer<typeof onboardingQuestion>;
-
-/** Placeholders admins can use in welcome, DM and goodbye messages. */
-export const PLACEHOLDERS = [
-  { key: "{user}", means: "mentions the member" },
-  { key: "{username}", means: "the member's name" },
-  { key: "{server}", means: "the server's name" },
-  { key: "{memberCount}", means: "how many members the server has" },
-  { key: "{startChannel}", means: "links the onboarding channel" },
-] as const;
 
 /** Numbers shown on the dashboard. */
 export interface OnboardingActivity {

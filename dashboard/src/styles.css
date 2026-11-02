@@ -2017,16 +2017,6 @@ select.chip-add {
   grid-column: 1 / -1;
   margin: 0;
 }
-.panel.onboarding > .sub.half,
-.panel.onboarding > .ob-stack {
-  grid-column: auto;
-}
-/* Goodbye and Join roles stack in the column next to Welcome. */
-.ob-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
 
 /* Join roles box: keep its two role lists apart. */
 .onboarding .sub > .sub-head.spaced {
@@ -2778,4 +2768,24 @@ select.chip-add {
 .raid-banner.on {
   border-color: rgba(255, 107, 107, 0.5);
   background: rgba(255, 107, 107, 0.1);
+}
+
+/* Join & leave messages: welcome and goodbye side by side on wide screens. */
+.panel.join-leave {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.panel.join-leave > * {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.panel.join-leave > .sub.half {
+  grid-column: auto;
+}
+@media (max-width: 900px) {
+  .panel.join-leave {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
