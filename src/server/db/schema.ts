@@ -220,3 +220,68 @@ export const raidState = sqliteTable("raid_state", {
   /** Accounts removed, timed out or banned during this raid. */
   handled: integer("handled").notNull().default(0),
 });
+
+/** Embed messages: messages Number One posted from the dashboard's embed builder, so they can be edited later. */
+export const embedMessages = sqliteTable(
+  "embed_messages",
+  {
+    messageId: text("message_id").primaryKey(),
+    guildId: text("guild_id").notNull(),
+    channelId: text("channel_id").notNull(),
+    /** Dashboard-only label. */
+    name: text("name").notNull().default(""),
+    content: text("content").notNull().default(""),
+    /** The embeds (JSON, validated by embedData in src/shared/embeds.ts). */
+    embeds: text("embeds", { mode: "json" }).$type<unknown[]>().notNull().default([]),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("embed_messages_guild_idx").on(t.guildId), index("embed_messages_channel_idx").on(t.channelId)],
+);
+
+/** Announcements: saved templates to start announcements from. */
+export const announcementTemplates = sqliteTable(
+  "announcement_templates",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    name: text("name").notNull(),
+    channelId: text("channel_id"),
+    /** Text and embed (JSON, validated by announcementMessage in src/shared/announcements.ts). */
+    message: text("message", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    ping: text("ping", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("announcement_templates_guild_idx").on(t.guildId)],
+);
+
+/**
+ * Announcements: every announcement sent or waiting to be sent.
+ * Scheduled ones are checked every 30 seconds, so they still go out after a restart.
+ */
+export const announcements = sqliteTable(
+  "announcements",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    channelId: text("channel_id").notNull(),
+    /** The posted message, once sent. */
+    messageId: text("message_id"),
+    message: text("message", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    ping: text("ping", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    publish: integer("publish", { mode: "boolean" }).notNull().default(false),
+    /** scheduled, sent or failed. */
+    status: text("status", { enum: ["scheduled", "sent", "failed"] }).notNull(),
+    scheduledAt: integer("scheduled_at", { mode: "timestamp_ms" }),
+    sentAt: integer("sent_at", { mode: "timestamp_ms" }),
+    /** Why it couldn't be sent, in plain words. */
+    error: text("error").notNull().default(""),
+    createdBy: text("created_by").notNull(),
+    createdByTag: text("created_by_tag").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("announcements_guild_idx").on(t.guildId, t.createdAt), index("announcements_due_idx").on(t.status, t.scheduledAt)],
+);

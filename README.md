@@ -19,6 +19,8 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Auto-moderation: blocked words, invites, links, mass mentions, caps, emoji spam, zalgo, repeated messages | ✅ |
 | Anti-spam: message rate, cross-channel posting, attachment and link floods | ✅ |
 | Anti-raid: join-wave detection, raid mode lockdown, new-account filter, `/raidmode` | ✅ |
+| Embed messages: multi-embed builder, post, edit and delete | ✅ |
+| Announcements: templates, embed builder, pings, publishing, scheduling | ✅ |
 | More admin features (logging…) | Next, one at a time |
 
 ## Running on Wispbyte
@@ -165,6 +167,29 @@ Stops raids: waves of accounts joining at once to spam. Configured on the dashbo
 - Raid mode is saved, so a restart still ends it on time. Everything it changed is put back when it ends, when Anti-raid is switched off, or when the server's data is deleted. The verification level is only put back if nobody changed it during the raid.
 - Admins, people with Manage Server and bots are never treated as raiders.
 - **Permissions:** Manage Server (pause invites, verification), and Kick Members, Ban Members or Timeout Members for the chosen action.
+
+### Embed messages (Utilities & Automation)
+
+Build messages with embeds on the dashboard and Number One posts them.
+
+- Text plus up to 10 embeds, each with colour, author, title and link, description, up to 25 fields, big and small images, footer and time. A live preview shows how it will look in Discord.
+- Saved messages can be edited (the message in Discord changes too), moved to another channel, or deleted. Up to 100 per server.
+- If a message is deleted in Discord, it's removed from the list. Editing one that was deleted posts it again.
+- Mentions in the text show up but never ping anyone.
+- Admins can only post in channels where they could post themselves.
+- **Permissions:** View Channel, Send Messages and Embed Links in the chosen channel.
+
+### Announcements (Utilities & Automation)
+
+Write announcements on the dashboard, ping who needs to know, and send now or later.
+
+- **Write:** start blank, from the server's own templates, or from a starter (Server update, Event, Maintenance, Rules update). Text plus an optional embed with its own builder and live preview.
+- **Ping:** none, @everyone, @here, or up to 10 roles. Only the chosen ping goes off. Admins can only use pings they're allowed to use themselves.
+- **Publish:** in announcement channels, optionally publishes to servers that follow the channel.
+- **Schedule:** send at a set time, up to 90 days ahead (up to 25 waiting per server). Checked every 30 seconds, so scheduled ones still go out after a restart. Scheduled announcements can be edited, sent right away, or cancelled.
+- **Templates:** save announcements with their channel and ping (up to 25), or "Save as template" while writing.
+- **History:** the last 30 sent announcements, with links. Sent ones can be edited (the ping isn't sent again) or deleted. Failed ones show why and can be tried again.
+- **Permissions:** View Channel, Send Messages and Embed Links, plus "Mention @everyone, @here and All Roles" for those pings.
 
 ## How the project is organized
 

@@ -160,6 +160,26 @@ export const antiRaidFeature = defineFeature({
   settings: antiRaidSettings,
 });
 
+export const embedsFeature = defineFeature({
+  id: "embeds",
+  name: "Embed messages",
+  icon: "🧱",
+  description: "Build messages with embeds on the dashboard. Number One posts them, and you can edit or delete them anytime.",
+  category: "utility",
+  recommended: true,
+  settings: z.object({}),
+});
+
+export const announcementsFeature = defineFeature({
+  id: "announcements",
+  name: "Announcements",
+  icon: "📢",
+  description: "Write announcements with an embed, ping who needs to know, and send now or later. Save templates for the ones you post often.",
+  category: "utility",
+  recommended: true,
+  settings: z.object({}),
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
@@ -168,6 +188,8 @@ export const featureCatalog: FeatureInfo[] = [
   joinLeaveFeature,
   onboardingFeature,
   reactionRolesFeature,
+  announcementsFeature,
+  embedsFeature,
 ];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
@@ -212,3 +234,5 @@ export * from "./moderation.js";
 export * from "./automod.js";
 export * from "./antiRaid.js";
 export * from "./joinLeave.js";
+export * from "./embeds.js";
+export * from "./announcements.js";

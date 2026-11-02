@@ -7,7 +7,9 @@ import type {
   ReactionRoleMessageView,
   SetupState,
 } from "../../src/shared/features";
+import type { AnnouncementInput, AnnouncementMessage, AnnouncementView, AnnouncementsResponse, TemplateInput, TemplateView } from "../../src/shared/announcements";
 import type { AntiRaidResponse, AntiRaidSettings } from "../../src/shared/antiRaid";
+import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embeds";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
@@ -119,6 +121,24 @@ export const api = {
   startRaid: (guildId: string, minutes?: number) =>
     request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid/start`, { method: "POST", body: JSON.stringify(minutes ? { minutes } : {}) }),
   endRaid: (guildId: string) => request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid/end`, { method: "POST", body: "{}" }),
+  embeds: (guildId: string) => request<EmbedMessageView[]>(`/api/guilds/${guildId}/embeds`),
+  createEmbed: (guildId: string, input: EmbedMessageInput) =>
+    request<EmbedMessageView>(`/api/guilds/${guildId}/embeds`, { method: "POST", body: JSON.stringify(input) }),
+  updateEmbed: (guildId: string, messageId: string, input: EmbedMessageInput) =>
+    request<EmbedMessageView>(`/api/guilds/${guildId}/embeds/${messageId}`, { method: "PUT", body: JSON.stringify(input) }),
+  deleteEmbed: (guildId: string, messageId: string) => request<{ ok: true }>(`/api/guilds/${guildId}/embeds/${messageId}`, { method: "DELETE" }),
+  announcements: (guildId: string) => request<AnnouncementsResponse>(`/api/guilds/${guildId}/announcements`),
+  createAnnouncement: (guildId: string, input: AnnouncementInput) =>
+    request<AnnouncementView>(`/api/guilds/${guildId}/announcements`, { method: "POST", body: JSON.stringify(input) }),
+  updateAnnouncement: (guildId: string, id: number, input: AnnouncementInput | { message: AnnouncementMessage }) =>
+    request<AnnouncementView>(`/api/guilds/${guildId}/announcements/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  deleteAnnouncement: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/announcements/${id}`, { method: "DELETE" }),
+  createAnnouncementTemplate: (guildId: string, input: TemplateInput) =>
+    request<TemplateView>(`/api/guilds/${guildId}/announcements/templates`, { method: "POST", body: JSON.stringify(input) }),
+  updateAnnouncementTemplate: (guildId: string, id: number, input: TemplateInput) =>
+    request<TemplateView>(`/api/guilds/${guildId}/announcements/templates/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  deleteAnnouncementTemplate: (guildId: string, id: number) =>
+    request<{ ok: true }>(`/api/guilds/${guildId}/announcements/templates/${id}`, { method: "DELETE" }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 
