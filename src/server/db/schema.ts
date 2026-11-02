@@ -203,3 +203,22 @@ export const moderationCases = sqliteTable(
     index("moderation_cases_expiry_idx").on(t.active, t.expiresAt),
   ],
 );
+
+/**
+ * Anti-raid: servers currently in raid mode. Kept in the database so a restart during a raid still
+ * ends raid mode on time and puts the verification level back.
+ */
+export const raidState = sqliteTable("raid_state", {
+  guildId: text("guild_id").primaryKey(),
+  startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+  endsAt: integer("ends_at", { mode: "timestamp_ms" }).notNull(),
+  /** The moderator who started it by hand, or null when the join limit started it. */
+  startedById: text("started_by_id"),
+  startedByTag: text("started_by_tag"),
+  /** The verification level before raid mode raised it, or null if it wasn't changed. */
+  previousVerification: integer("previous_verification"),
+  /** Whether Number One paused invites (so it only un-pauses what it paused). */
+  invitesPaused: integer("invites_paused", { mode: "boolean" }).notNull().default(false),
+  /** Accounts removed, timed out or banned during this raid. */
+  handled: integer("handled").notNull().default(0),
+});

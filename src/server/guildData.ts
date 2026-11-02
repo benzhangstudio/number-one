@@ -7,6 +7,7 @@ import {
   moderationCases,
   onboardingProgress,
   onboardingState,
+  raidState,
   reactionRoleMessages,
   reactionRoleStats,
   reactionRoleTimers,
@@ -24,7 +25,7 @@ import {
 const GRACE_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** Every table that holds data for a server, by its guild_id column. */
-const guildTables = [featureSettings, guildSetup, reactionRoleMessages, reactionRoleTimers, onboardingProgress, onboardingState, moderationCases];
+const guildTables = [featureSettings, guildSetup, reactionRoleMessages, reactionRoleTimers, onboardingProgress, onboardingState, moderationCases, raidState];
 
 /** Deletes everything stored about a server. */
 export async function deleteGuildData(guildId: string) {

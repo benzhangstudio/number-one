@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import type { GuildDetails } from "../api";
+import { AntiRaidPanel } from "./AntiRaidPanel";
 import { AutomodPanel } from "./AutomodPanel";
 import { ModerationPanel } from "./ModerationPanel";
 import { OnboardingPanel } from "./OnboardingPanel";
@@ -9,6 +10,7 @@ import { ReactionRolesPanel } from "./ReactionRolesPanel";
 export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["guild"] }>> = {
   moderation: ModerationPanel,
   automod: AutomodPanel,
+  "anti-raid": AntiRaidPanel,
   onboarding: OnboardingPanel,
   "reaction-roles": ReactionRolesPanel,
 };

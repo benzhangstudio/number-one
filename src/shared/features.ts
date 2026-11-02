@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { antiRaidSettings } from "./antiRaid.js";
 import { automodSettings } from "./automod.js";
 import { moderationSettings } from "./moderation.js";
 import { onboardingSettings } from "./onboarding.js";
@@ -138,7 +139,24 @@ export const automodFeature = defineFeature({
   settings: automodSettings,
 });
 
-export const featureCatalog: FeatureInfo[] = [coreFeature, moderationFeature, automodFeature, onboardingFeature, reactionRolesFeature];
+export const antiRaidFeature = defineFeature({
+  id: "anti-raid",
+  name: "Anti-raid",
+  icon: "🚨",
+  description: "Spots waves of accounts joining at once, locks the server down for a while and removes the raiders. Can also turn away brand-new accounts.",
+  category: "moderation",
+  recommended: true,
+  settings: antiRaidSettings,
+});
+
+export const featureCatalog: FeatureInfo[] = [
+  coreFeature,
+  moderationFeature,
+  automodFeature,
+  antiRaidFeature,
+  onboardingFeature,
+  reactionRolesFeature,
+];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
   return featureCatalog.find((f) => f.id === id);
@@ -180,3 +198,4 @@ export interface DashboardUser {
 export * from "./reactionRoles.js";
 export * from "./moderation.js";
 export * from "./automod.js";
+export * from "./antiRaid.js";

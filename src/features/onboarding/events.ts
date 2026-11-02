@@ -1,5 +1,6 @@
 import { type Client, Events, type Guild, type GuildMember } from "discord.js";
 import { onEvent } from "../../server/bot/types.js";
+import { isRaidActive } from "../anti-raid/state.js";
 import type { OnboardingSettings } from "../../shared/onboarding.js";
 import { onboardingFeature } from "../../shared/features.js";
 import { syncAccess } from "./access.js";
@@ -35,13 +36,14 @@ async function handleJoin(member: GuildMember, settings: OnboardingSettings, qui
 const memberJoined = onEvent(Events.GuildMemberAdd, async (member) => {
   const settings = await store.getActiveSettings(member.guild.id);
   if (!settings) return;
-  await handleJoin(member, settings);
+  // During a raid, raiders still get set up but no welcome messages, so the welcome channel isn't flooded.
+  await handleJoin(member, settings, isRaidActive(member.guild.id));
   scheduleCardRefresh(member.guild);
 });
 
 const memberLeft = onEvent(Events.GuildMemberRemove, async (member) => {
   const settings = await store.getActiveSettings(member.guild.id);
-  if (settings?.goodbye.enabled && !member.user?.bot) await sendGoodbye(member, settings);
+  if (settings?.goodbye.enabled && !member.user?.bot && !isRaidActive(member.guild.id)) await sendGoodbye(member, settings);
   // If they come back, they go through onboarding again (like Discord's own onboarding).
   await store.deleteProgress(member.guild.id, member.id);
   if (settings) scheduleCardRefresh(member.guild);

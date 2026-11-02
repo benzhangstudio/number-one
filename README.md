@@ -17,6 +17,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Member onboarding: welcome, goodbye, join roles, steps, access gate | ✅ |
 | Auto-moderation: blocked words, invites, links, mass mentions, caps, emoji spam, zalgo, repeated messages | ✅ |
 | Anti-spam: message rate, cross-channel posting, attachment and link floods | ✅ |
+| Anti-raid: join-wave detection, raid mode lockdown, new-account filter, `/raidmode` | ✅ |
 | More admin features (moderation, welcome, logging…) | Next, one at a time |
 
 ## Running on Wispbyte
@@ -55,6 +56,9 @@ Number One keeps its command list short. Everything else is configured in the da
 | `/setup` | Manage Server | Asks what the server will use Number One for and switches on the right features |
 | `/dashboard` | Manage Server | Link to this server's dashboard page |
 | `/ping` | Everyone | Checks the bot is online |
+| `/raidmode on/off/status` | Manage Server | Starts or ends raid mode by hand (Anti-raid) |
+
+Every reply is public so staff can see who did what. Only `/setup` and a member's own walkthroughs (onboarding steps, role menu clicks) are private.
 
 ### Setup
 
@@ -128,6 +132,26 @@ Catches rule-breaking messages automatically. Configured on the dashboard; every
 - **Privacy:** message text is checked in memory and never saved. Repeated-message checks keep only a short fingerprint of each message for up to 10 minutes, and anti-spam checks keep only message IDs and times for up to 2 minutes.
 - **Permissions:** Manage Server (for Discord AutoMod rules), Manage Messages (to delete messages), Timeout Members and Kick Members (for those actions).
 - **Developer Portal:** the Number One filters (except Message rate) need **Message Content Intent** turned on (Developer Portal → Bot → Privileged Gateway Intents), then a restart. If it's off, the bot still logs in without it, the other features keep working, and the dashboard lists which filters are paused. (Once Number One is in 100+ servers, Discord must approve this intent.)
+
+### Anti-raid (Moderation & Safety)
+
+Stops raids: waves of accounts joining at once to spam. Configured on the dashboard.
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| Join limit | More than 10 joins in 10 seconds | Starts **raid mode**. |
+| Raiders | Kick | Everyone in the wave, and anyone who joins during raid mode, is kicked, timed out or banned (bans also delete their last hour of messages). Or "Lock down only". |
+| Pause invites | On | Uses Discord's own "Pause invites", which Discord lifts by itself even if Number One is offline. |
+| Raise verification | On | Sets the verification level to High (new members wait 10 minutes before chatting), then puts it back. |
+| Raid mode lasts | 15 minutes | Lasts longer while joins keep coming too fast. Up to 24 hours. |
+| Turn away new accounts | Off | At any time, kicks, times out or bans accounts younger than a set number of days. Each one is a Moderation case with a DM saying why. |
+
+- Raid mode can also be started or ended by hand with `/raidmode` or the dashboard's buttons. The dashboard shows whether raid mode is on, joins in the last minute and how many accounts were dealt with.
+- One alert (pinging a chosen role) when raid mode starts, and one summary when it ends. Raiders are dealt with one at a time in the background, without a case or DM each, so a big raid doesn't flood the mod log.
+- While raid mode is on, onboarding skips welcome and goodbye messages so the welcome channel isn't flooded.
+- Raid mode is saved, so a restart still ends it on time. Everything it changed is put back when it ends, when Anti-raid is switched off, or when the server's data is deleted. The verification level is only put back if nobody changed it during the raid.
+- Admins, people with Manage Server and bots are never treated as raiders.
+- **Permissions:** Manage Server (pause invites, verification), and Kick Members, Ban Members or Timeout Members for the chosen action.
 
 ## How the project is organized
 

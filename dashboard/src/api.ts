@@ -7,6 +7,7 @@ import type {
   ReactionRoleMessageView,
   SetupState,
 } from "../../src/shared/features";
+import type { AntiRaidResponse, AntiRaidSettings } from "../../src/shared/antiRaid";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { OnboardingSettings, OnboardingStatus } from "../../src/shared/onboarding";
@@ -108,6 +109,12 @@ export const api = {
   automod: (guildId: string) => request<AutomodResponse>(`/api/guilds/${guildId}/automod`),
   saveAutomod: (guildId: string, settings: AutomodSettings) =>
     request<AutomodResponse>(`/api/guilds/${guildId}/automod`, { method: "PUT", body: JSON.stringify(settings) }),
+  antiRaid: (guildId: string) => request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid`),
+  saveAntiRaid: (guildId: string, settings: AntiRaidSettings) =>
+    request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid`, { method: "PUT", body: JSON.stringify(settings) }),
+  startRaid: (guildId: string, minutes?: number) =>
+    request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid/start`, { method: "POST", body: JSON.stringify(minutes ? { minutes } : {}) }),
+  endRaid: (guildId: string) => request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid/end`, { method: "POST", body: "{}" }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 
