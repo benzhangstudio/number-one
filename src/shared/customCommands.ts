@@ -13,7 +13,7 @@ export const MAX_CUSTOM_COMMANDS = 50;
 export const MAX_ALLOWED_ROLES = 10;
 
 /** Number One's own commands. Custom commands can't use these names, and syncing never touches them. */
-export const BUILT_IN_NAMES = ["setup", "dashboard", "ping", "warn", "timeout", "untimeout", "kick", "ban", "unban", "purge", "case", "raidmode"];
+export const BUILT_IN_NAMES = ["setup", "dashboard", "ping", "warn", "timeout", "untimeout", "kick", "ban", "unban", "purge", "case", "raidmode", "ticket"];
 /** The Rules command (see `rules` below). */
 export const RULES_COMMAND = "rule";
 /** Names a custom command can't use. */

@@ -15,6 +15,7 @@ import { OnboardingPanel } from "./OnboardingPanel";
 import { ReactionRolesPanel } from "./ReactionRolesPanel";
 import { RuleVerificationPanel } from "./RuleVerificationPanel";
 import { ServerLogsPanel } from "./ServerLogsPanel";
+import { TicketsPanel } from "./TicketsPanel";
 import { VoiceLogsPanel } from "./VoiceLogsPanel";
 
 /** Extra dashboard section shown under a feature (keyed by feature ID). */
@@ -35,4 +36,5 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "voice-logs": VoiceLogsPanel,
   "custom-commands": CustomCommandsPanel,
   "rule-verification": RuleVerificationPanel,
+  tickets: TicketsPanel,
 };

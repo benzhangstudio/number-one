@@ -165,6 +165,31 @@ export function ChannelPicker({
   );
 }
 
+/** Searchable dropdown of the server's categories. `emptyLabel` adds a "none" choice. */
+export function CategorySelect({
+  guild,
+  value,
+  onChange,
+  emptyLabel = "No category",
+}: {
+  guild: Guild;
+  value: string | null;
+  onChange: (id: string | null) => void;
+  emptyLabel?: string;
+}) {
+  const options = guild.channels.filter((c) => c.type === CATEGORY).map((c) => ({ value: c.id, label: c.name, prefix: "📁 " }));
+  return (
+    <SearchSelect
+      options={options}
+      value={value}
+      onChange={onChange}
+      emptyLabel={emptyLabel}
+      placeholder={emptyLabel}
+      searchPlaceholder="Search categories…"
+    />
+  );
+}
+
 /** Searchable single role dropdown. */
 export function RoleSelect({
   guild,

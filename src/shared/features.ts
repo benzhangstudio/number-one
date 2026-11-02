@@ -10,6 +10,7 @@ import { moderationSettings } from "./moderation.js";
 import { onboardingSettings } from "./onboarding.js";
 import { ruleVerificationSettings } from "./ruleVerification.js";
 import { serverLogSettings } from "./serverLogs.js";
+import { ticketSettings } from "./tickets.js";
 import { voiceLogSettings } from "./voiceLogs.js";
 
 /**
@@ -273,6 +274,16 @@ export const ruleVerificationFeature = defineFeature({
   settings: ruleVerificationSettings,
 });
 
+export const ticketsFeature = defineFeature({
+  id: "tickets",
+  name: "Tickets",
+  icon: "🎫",
+  description: "Post ticket panels with buttons or a dropdown. Members open a private channel with your staff, who can claim and close it with a transcript.",
+  category: "utility",
+  recommended: true,
+  settings: ticketSettings,
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
@@ -291,6 +302,7 @@ export const featureCatalog: FeatureInfo[] = [
   serverLogsFeature,
   voiceLogsFeature,
   customCommandsFeature,
+  ticketsFeature,
 ];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
@@ -345,3 +357,4 @@ export * from "./serverLogs.js";
 export * from "./voiceLogs.js";
 export * from "./customCommands.js";
 export * from "./ruleVerification.js";
+export * from "./tickets.js";

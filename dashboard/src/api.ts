@@ -16,6 +16,7 @@ import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
 import type { RuleVerificationResponse, RuleVerificationSettings } from "../../src/shared/ruleVerification";
+import type { TicketPanelInput, TicketSettings, TicketsResponse } from "../../src/shared/tickets";
 import type { ServerLogResponse, ServerLogSettings } from "../../src/shared/serverLogs";
 import type { VoiceLogResponse, VoiceLogSettings } from "../../src/shared/voiceLogs";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
@@ -239,6 +240,20 @@ export const api = {
   ruleVerification: (guildId: string) => request<RuleVerificationResponse>(`/api/guilds/${guildId}/rule-verification`),
   saveRuleVerification: (guildId: string, settings: RuleVerificationSettings) =>
     undoableSettings<RuleVerificationResponse, RuleVerificationSettings>(`/api/guilds/${guildId}/rule-verification`, settings),
+  tickets: (guildId: string) => request<TicketsResponse>(`/api/guilds/${guildId}/tickets`),
+  saveTicketSettings: (guildId: string, settings: TicketSettings) =>
+    undoable<TicketsResponse, TicketSettings>(
+      () => request(`/api/guilds/${guildId}/tickets`),
+      (r) => r.settings,
+      (s) => request(`/api/guilds/${guildId}/tickets/settings`, { method: "PUT", body: JSON.stringify(s) }),
+      settings,
+    ),
+  createTicketPanel: (guildId: string, input: TicketPanelInput) =>
+    request<TicketsResponse>(`/api/guilds/${guildId}/tickets/panels`, { method: "POST", body: JSON.stringify(input) }),
+  updateTicketPanel: (guildId: string, id: number, input: TicketPanelInput) =>
+    request<TicketsResponse>(`/api/guilds/${guildId}/tickets/panels/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  deleteTicketPanel: (guildId: string, id: number) =>
+    request<TicketsResponse>(`/api/guilds/${guildId}/tickets/panels/${id}`, { method: "DELETE" }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 

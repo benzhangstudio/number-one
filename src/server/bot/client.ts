@@ -60,11 +60,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
     return;
   }
-  if (interaction.isMessageComponent()) {
+  if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
     const found = components.get(interaction.customId.split(":")[0]);
     if (!found) return;
     try {
-      await found.handler.handle(interaction);
+      if (interaction.isModalSubmit()) await found.handler.handleModal?.(interaction);
+      else await found.handler.handle(interaction);
     } catch (err) {
       console.error(`[bot] ${interaction.customId} failed:`, err);
       // Buttons and menus belong to private flows (setup, onboarding, role menus), so their errors stay private too.

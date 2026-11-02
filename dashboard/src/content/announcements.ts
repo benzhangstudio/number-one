@@ -18,6 +18,17 @@ export interface Announcement {
 
 export const announcements: Announcement[] = [
   {
+    id: "2026-11-02-tickets",
+    date: "2026-11-02",
+    title: "Tickets",
+    tag: "New",
+    body: `Members can now open private tickets with your staff.
+
+- **Ticket panels:** post a message with buttons or a dropdown, with up to 10 ticket types.
+- **Optional question:** ask members what they need before the ticket opens.
+- **Claim and close:** staff claim tickets, add people with **/ticket add**, and close with a transcript in your log channel.`,
+  },
+  {
     id: "2026-11-02-home-dashboard",
     date: "2026-11-02",
     title: "New home dashboard and announcements",

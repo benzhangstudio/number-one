@@ -372,3 +372,58 @@ export const ruleVerificationPosts = sqliteTable("rule_verification_posts", {
   channelId: text("channel_id").notNull(),
   messageId: text("message_id").notNull(),
 });
+
+/** Tickets: the panels (messages with "open a ticket" buttons or a dropdown) admins posted. */
+export const ticketPanels = sqliteTable(
+  "ticket_panels",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    channelId: text("channel_id").notNull(),
+    /** The posted message, or null while it isn't up (feature off, or deleted in Discord). */
+    messageId: text("message_id"),
+    /** Look and ticket types (JSON, validated by ticketPanelInput in src/shared/tickets.ts). */
+    details: text("details", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    createdBy: text("created_by").notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("ticket_panels_guild_idx").on(t.guildId), index("ticket_panels_message_idx").on(t.messageId)],
+);
+
+/** Tickets: one row per ticket opened. The channel is deleted when it closes; the row stays as history. */
+export const tickets = sqliteTable(
+  "tickets",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    /** Numbered per server: #1, #2... */
+    number: integer("number").notNull(),
+    channelId: text("channel_id").notNull(),
+    panelId: integer("panel_id"),
+    /** The ticket type's name when it was opened. */
+    type: text("type").notNull(),
+    /** Staff roles that could see it (server staff + the type's own). */
+    staffRoleIds: text("staff_role_ids", { mode: "json" }).$type<string[]>().notNull().default([]),
+    openerId: text("opener_id").notNull(),
+    openerTag: text("opener_tag").notNull(),
+    reason: text("reason"),
+    status: text("status", { enum: ["open", "closed"] }).notNull().default("open"),
+    claimedById: text("claimed_by_id"),
+    claimedByTag: text("claimed_by_tag"),
+    closedByTag: text("closed_by_tag"),
+    closeReason: text("close_reason"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    closedAt: integer("closed_at", { mode: "timestamp_ms" }),
+  },
+  (t) => [
+    uniqueIndex("tickets_number_idx").on(t.guildId, t.number),
+    index("tickets_channel_idx").on(t.channelId),
+    index("tickets_status_idx").on(t.guildId, t.status, t.openerId),
+  ],
+);
+
+/** Tickets: the last ticket number used in each server. */
+export const ticketCounters = sqliteTable("ticket_counters", {
+  guildId: text("guild_id").primaryKey(),
+  last: integer("last").notNull().default(0),
+});

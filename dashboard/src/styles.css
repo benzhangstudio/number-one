@@ -4677,3 +4677,43 @@ select.chip-add {
 .lp-news-more a:hover {
   text-decoration: underline;
 }
+
+/* Tickets */
+.tk-type-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tk-more summary {
+  cursor: pointer;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.tk-reason {
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+.tk-preview-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 520px;
+}
+.tk-preview-buttons .rv-preview-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tk-preview-menu {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+  background: #1e1f22;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #949ba4;
+}

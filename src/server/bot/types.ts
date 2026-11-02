@@ -4,6 +4,7 @@ import type {
   Client,
   ClientEvents,
   MessageComponentInteraction,
+  ModalSubmitInteraction,
   RESTPostAPIChatInputApplicationCommandsJSONBody,
 } from "discord.js";
 import type { FeatureInfo } from "../../shared/features.js";
@@ -20,10 +21,12 @@ export interface SlashCommand {
   autocomplete?(interaction: AutocompleteInteraction): Promise<unknown>;
 }
 
-/** Handles buttons and menus whose custom ID starts with `${prefix}:`. */
+/** Handles buttons and menus (and optionally pop-up forms) whose custom ID starts with `${prefix}:`. */
 export interface ComponentHandler {
   prefix: string;
   handle(interaction: MessageComponentInteraction): Promise<unknown>;
+  /** Pop-up forms (modals) this handler showed, when they're submitted. */
+  handleModal?(interaction: ModalSubmitInteraction): Promise<unknown>;
 }
 
 export interface FeatureEvent<E extends keyof ClientEvents = keyof ClientEvents> {

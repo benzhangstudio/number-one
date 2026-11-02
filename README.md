@@ -30,6 +30,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Logging → Voice logs: joins, leaves, moves, server mutes | ✅ |
 | Custom commands: server-only slash commands with text or embed replies | ✅ |
 | Custom commands → Rules: `/rule 1` posts that rule publicly | ✅ |
+| Tickets: panels with buttons or a dropdown, private ticket channels, claim, close with transcript | ✅ |
 | More admin features | Next, one at a time |
 
 ## Running on Wispbyte
@@ -69,6 +70,7 @@ Number One keeps its command list short. Everything else is configured in the da
 | `/dashboard` | Manage Server | Link to this server's dashboard page |
 | `/ping` | Everyone | Checks the bot is online |
 | `/raidmode on/off/status` | Manage Server | Starts or ends raid mode by hand (Anti-raid) |
+| `/ticket add/remove/close` | Ticket staff (close: also the opener) | Manages the ticket it's used in (Tickets) |
 
 Every reply is public so staff can see who did what. Only `/setup` and a member's own walkthroughs (onboarding steps, role menu clicks) are private.
 
@@ -288,6 +290,19 @@ Admins make their own slash commands for their server, like `/faq` or `/ip`.
 - Commands are registered in that server only and kept in step with the dashboard (on save, when the feature is switched on or off, and on every restart). Number One's own command names can't be reused. Up to 50 per server, with a use count for each.
 - **Rules (`/rule`):** admins write up to 25 numbered rules (title and optional description), a heading and a colour on the Rules tab. Anyone can type `/rule 1` to post that rule publicly in the channel, or `/rule` on its own to post the full list. While typing, Discord suggests the rule titles. `/rule` only appears in the server once it's switched on with at least one rule.
 - **Permissions:** Send Messages. Number One must have been added with the commands permission (the dashboard's "Add bot" button includes it).
+
+### Tickets (Utilities & Automation)
+
+Members open a private channel with the staff team from a **ticket panel**.
+
+- **Panels:** a message with an embed (title, description, colour, image) and up to 10 ticket types, shown as buttons or a dropdown. Up to 10 panels per server. Saving updates the panel in place; picking another channel moves it.
+- **Ticket types:** name, emoji, button colour (or dropdown description), the first message in the ticket (placeholders `{user}`, `{username}`, `{server}`, `{type}`, `{number}`), and an optional question asked in a pop-up first. Each type can use its own channel name start, category and extra staff roles.
+- **Opening:** creates `ticket-0001` (or `ticket-username`), visible only to the member, the staff roles and Number One. The welcome message is pinned and has **Close** and **Claim** buttons. Members can have 1–5 open tickets at once (default 1); double-clicks never open two.
+- **Staff** (the picked roles, plus anyone with Manage Channels) can claim tickets, `/ticket add` and `/ticket remove` people, and close any ticket. Members can close their own, unless that's switched off.
+- **Closing** asks to confirm, posts a transcript file (last 1,000 messages) to the log channel, can DM it to the member, then deletes the channel after 5 seconds. Tickets whose channel is deleted by hand are marked closed.
+- The dashboard lists the 50 most recent tickets (open and closed) with who opened, claimed and closed them.
+- Switching the feature off takes panels down; open tickets stay. Switching it back on posts them again.
+- **Permissions:** Manage Channels (to create and delete ticket channels); View Channel, Send Messages and Embed Links in the panel and log channels.
 
 ## How the project is organized
 
