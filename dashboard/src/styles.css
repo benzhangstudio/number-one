@@ -4650,3 +4650,30 @@ select.chip-add {
   background: var(--accent-soft);
   color: var(--text);
 }
+
+/* "What's new" on the landing page: the latest announcements, shortened. */
+.lp-news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.lp-news-grid .announcement-body {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.lp-news-more {
+  text-align: center;
+  margin: 1.5rem 0 0 !important;
+}
+.lp-news-more a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.lp-news-more a:hover {
+  text-decoration: underline;
+}

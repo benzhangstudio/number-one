@@ -1,6 +1,9 @@
 import { categories, featureCatalog, isUsable } from "../../../src/shared/features";
 import { SUPPORT_SERVER } from "../components/Footer";
+import { PageLink } from "../components/PageLink";
+import { announcements } from "../content/announcements";
 import { navigate } from "../router";
+import { AnnouncementCard } from "./AnnouncementsPage";
 
 /** Live features in each category, straight from the feature catalog, so this page never over-promises. */
 const liveFeatures = (categoryId: string) =>
@@ -159,6 +162,21 @@ export function LandingPage({ loggedIn = false }: { loggedIn?: boolean }) {
           ))}
         </div>
       </section>
+
+      {announcements.length > 0 && (
+        <section id="whats-new" className="landing-section">
+          <h2>What's new</h2>
+          <p className="muted lp-section-lead">Recent updates to Number One.</p>
+          <div className="lp-news-grid">
+            {announcements.slice(0, 3).map((a) => (
+              <AnnouncementCard key={a.id} item={a} compact />
+            ))}
+          </div>
+          <p className="lp-news-more">
+            <PageLink to="/announcements">See all announcements →</PageLink>
+          </p>
+        </section>
+      )}
 
       <section className="landing-cta">
         <h2>Add Number One</h2>
