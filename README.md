@@ -10,7 +10,7 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | --- | --- |
 | Bot core: slash commands, feature on/off checks, error handling | ✅ |
 | Database (SQLite) with automatic upgrades and daily backups | ✅ |
-| Dashboard: "Log in with Discord", server list, per-server feature switches | ✅ |
+| Dashboard: "Log in with Discord", server list, per-server feature switches, top menu on every page | ✅ |
 | Commands: `/setup`, `/dashboard`, `/ping` | ✅ |
 | Setup categories with recommended features | ✅ |
 | Reaction roles (dashboard) | ✅ |

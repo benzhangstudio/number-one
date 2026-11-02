@@ -51,13 +51,72 @@ h2 {
   min-height: 60vh;
 }
 
+/* Top menu: on every page and pinned while scrolling. It's "sticky", not "fixed", so it keeps its own
+   space at the top and never covers the page. Anything else that sticks while scrolling sits below it. */
+:root {
+  --topbar-h: 52px;
+}
+html {
+  scroll-padding-top: calc(var(--topbar-h) + 12px);
+}
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--topbar-h);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 24px;
+  gap: 16px;
+  padding: 0 20px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
+  backdrop-filter: blur(10px);
+}
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.topnav::-webkit-scrollbar {
+  display: none;
+}
+.topnav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.topnav a:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.topnav a.on {
+  color: var(--text);
+  background: var(--accent-soft);
+}
+.topbar .user {
+  margin-left: auto;
+  flex: none;
+}
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .brand-name,
+  .user-name,
+  .topnav .wide-only {
+    display: none;
+  }
+  .topnav a {
+    padding: 6px 8px;
+  }
 }
 
 .brand {
@@ -910,8 +969,8 @@ select.chip-add {
 
 .sidebar {
   position: sticky;
-  top: 16px;
-  max-height: calc(100vh - 32px);
+  top: calc(var(--topbar-h) + 16px);
+  max-height: calc(100vh - var(--topbar-h) - 32px);
   overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1623,7 +1682,7 @@ select.chip-add {
 
 .rr-preview-wrap {
   position: sticky;
-  top: 16px;
+  top: calc(var(--topbar-h) + 16px);
 }
 
 .rr-preview-label {
@@ -1931,13 +1990,13 @@ select.chip-add {
   .guild-layout {
     grid-template-columns: 272px minmax(0, 1fr);
     gap: 0;
-    min-height: calc(100vh - 63px);
+    min-height: calc(100vh - var(--topbar-h));
   }
   .sidebar {
     position: sticky;
-    top: 0;
-    height: 100vh;
-    max-height: 100vh;
+    top: var(--topbar-h);
+    height: calc(100vh - var(--topbar-h));
+    max-height: calc(100vh - var(--topbar-h));
     border: 0;
     border-right: 1px solid var(--border);
     border-radius: 0;
@@ -2938,7 +2997,7 @@ select.chip-add {
 .emb-preview-wrap,
 .ann-preview-wrap {
   position: sticky;
-  top: 16px;
+  top: calc(var(--topbar-h) + 16px);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -3408,7 +3467,7 @@ select.chip-add {
 }
 .evt-preview-wrap {
   position: sticky;
-  top: 16px;
+  top: calc(var(--topbar-h) + 16px);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -3808,7 +3867,7 @@ select.chip-add {
 }
 .cc-preview-wrap {
   position: sticky;
-  top: 16px;
+  top: calc(var(--topbar-h) + 16px);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -4016,7 +4075,7 @@ select.chip-add {
 }
 .rv-preview-wrap {
   position: sticky;
-  top: 16px;
+  top: calc(var(--topbar-h) + 16px);
   display: flex;
   flex-direction: column;
   gap: 6px;
