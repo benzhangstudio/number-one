@@ -16,7 +16,7 @@ import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
 import type { RuleVerificationResponse, RuleVerificationSettings } from "../../src/shared/ruleVerification";
-import type { GuideInput, GuidesResponse } from "../../src/shared/guides";
+import type { GuideKind, GuideSettings, GuidesResponse } from "../../src/shared/guides";
 import type { TicketPanelInput, TicketSettings, TicketsResponse } from "../../src/shared/tickets";
 import type { ServerLogResponse, ServerLogSettings } from "../../src/shared/serverLogs";
 import type { VoiceLogResponse, VoiceLogSettings } from "../../src/shared/voiceLogs";
@@ -256,11 +256,13 @@ export const api = {
   deleteTicketPanel: (guildId: string, id: number) =>
     request<TicketsResponse>(`/api/guilds/${guildId}/tickets/panels/${id}`, { method: "DELETE" }),
   guides: (guildId: string) => request<GuidesResponse>(`/api/guilds/${guildId}/guides`),
-  createGuide: (guildId: string, input: GuideInput) =>
-    request<GuidesResponse>(`/api/guilds/${guildId}/guides`, { method: "POST", body: JSON.stringify(input) }),
-  updateGuide: (guildId: string, id: number, input: GuideInput) =>
-    request<GuidesResponse>(`/api/guilds/${guildId}/guides/${id}`, { method: "PUT", body: JSON.stringify(input) }),
-  deleteGuide: (guildId: string, id: number) => request<GuidesResponse>(`/api/guilds/${guildId}/guides/${id}`, { method: "DELETE" }),
+  saveGuide: (guildId: string, kind: GuideKind, guide: GuideSettings) =>
+    undoable<GuidesResponse, GuideSettings>(
+      () => request(`/api/guilds/${guildId}/guides`),
+      (r) => r.settings[kind],
+      (g) => request(`/api/guilds/${guildId}/guides/${kind}`, { method: "PUT", body: JSON.stringify(g) }),
+      guide,
+    ),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 

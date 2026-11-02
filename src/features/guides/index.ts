@@ -7,29 +7,35 @@ import {
   Events,
   type Guild,
   type GuildTextBasedChannel,
-  MessageFlags,
+  type Message,
   PermissionFlagsBits,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { client } from "../../server/bot/discord.js";
-import { type BotFeature, type ComponentHandler, onEvent } from "../../server/bot/types.js";
+import { type BotFeature, onEvent } from "../../server/bot/types.js";
 import { db } from "../../server/db/client.js";
-import { guides } from "../../server/db/schema.js";
-import { isFeatureEnabled } from "../../server/settings.js";
+import { guidePosts } from "../../server/db/schema.js";
+import { getFeatureState, saveFeatureState } from "../../server/settings.js";
 import { guidesFeature } from "../../shared/features.js";
-import { type GuideInput, type GuideView, type GuidesResponse, MAX_GUIDES, guideInput } from "../../shared/guides.js";
-import { parseEmojiInput } from "../reaction-roles/emoji.js";
+import {
+  GUIDE_NAMES,
+  type GuideKind,
+  type GuideSettings,
+  type GuidesResponse,
+  type GuidesSettings,
+  guideKinds,
+  guideSettings,
+} from "../../shared/guides.js";
 
 /**
- * Server guides: a cover message with the table of contents, and pages readers open privately.
- * Pages are ephemeral, so any number of people can read at once without fighting over one message.
+ * Guides: a Server guide and a Staff guide, each posted as plain messages in the channel the admin picks.
+ * The first message is the contents, linking to every section; each section links back to the contents
+ * and on to the next one. Readers just scroll or tap links; there's nothing to press.
  */
 
-type Req = FastifyRequest<{ Params: { guildId: string; guideId?: string } }>;
-type GuideRow = typeof guides.$inferSelect;
+type Req = FastifyRequest<{ Params: { guildId: string; kind?: string } }>;
+type PostRow = typeof guidePosts.$inferSelect;
 
 /** A problem the admin can fix, shown as-is on the dashboard. */
 class GuideError extends Error {}
@@ -37,160 +43,60 @@ class GuideError extends Error {}
 const log = (...args: unknown[]) => console.warn("[guides]", ...args);
 const TEXT_TYPES = new Set([ChannelType.GuildText, ChannelType.GuildAnnouncement]);
 
-const rowOf = (guildId: string, id: number) => db.select().from(guides).where(and(eq(guides.guildId, guildId), eq(guides.id, id))).get();
-const rowsOf = (guildId: string) => db.select().from(guides).where(eq(guides.guildId, guildId)).all();
+const stateOf = (guildId: string) => getFeatureState(guildId, guidesFeature);
+const postOf = (guildId: string, kind: GuideKind) =>
+  db.select().from(guidePosts).where(and(eq(guidePosts.guildId, guildId), eq(guidePosts.kind, kind))).get();
 
-function detailsOf(row: GuideRow): GuideInput | null {
-  const parsed = guideInput.safeParse({ ...row.details, channelId: row.channelId });
-  return parsed.success ? parsed.data : null;
-}
+const messageUrl = (guildId: string, channelId: string, messageId: string) => `https://discord.com/channels/${guildId}/${channelId}/${messageId}`;
 
-/** The emoji as Discord takes it on buttons and menus, or nothing. */
-function emojiFor(guild: Guild, text: string) {
-  if (!text) return null;
-  const parsed = parseEmojiInput(text, guild);
-  return "error" in parsed ? null : parsed.display;
-}
+/** Embed titles can't show custom emojis, so those go at the start of the text instead. */
+const isCustom = (emoji: string) => emoji.startsWith("<");
 
-/** Embed titles can't show custom emojis, so only standard ones go there. */
-const titled = (emoji: string, title: string) => (emoji && !emoji.startsWith("<") ? `${emoji} ${title}` : title);
-const colorOf = (g: GuideInput) => Number.parseInt(g.color.slice(1), 16);
+/* ------------------------------------------------------------ the messages */
 
-function contentsList(g: GuideInput) {
-  return g.pages.map((p, i) => `**${i + 1}.** ${p.emoji ? `${p.emoji} ` : ""}${p.title}`).join("\n");
-}
-
-function jumpMenu(guild: Guild, guideId: number, g: GuideInput, current?: string) {
-  const menu = new StringSelectMenuBuilder()
-    .setCustomId(`gd:jump:${guideId}`)
-    .setPlaceholder("📑 Jump to a page…")
-    .addOptions(
-      g.pages.map((p, i) => {
-        const option = new StringSelectMenuOptionBuilder().setLabel(`${i + 1}. ${p.title}`.slice(0, 100)).setValue(p.id).setDefault(p.id === current);
-        const emoji = emojiFor(guild, p.emoji);
-        if (emoji) option.setEmoji(emoji);
-        return option;
-      }),
-    );
-  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
-}
-
-/** The public cover: title, intro, contents, a Start reading button and the jump menu. */
-function coverMessage(guild: Guild, guideId: number, g: GuideInput) {
-  const parts = [g.intro.trim(), g.showContents ? `**Contents**\n${contentsList(g)}` : ""].filter(Boolean);
-  const embed = new EmbedBuilder().setColor(colorOf(g)).setDescription(parts.join("\n\n") || "Press Start reading to open the guide.");
+/** The contents message. `links` are the section message links (left out on the very first post, then filled in). */
+function contentsMessage(g: GuideSettings, links: string[] | null) {
+  const list = g.sections
+    .map((s, i) => {
+      const label = `${i + 1}. ${s.emoji ? `${s.emoji} ` : ""}${s.title}`;
+      return links?.[i] ? `[${label}](${links[i]})` : label;
+    })
+    .join("\n");
+  const embed = new EmbedBuilder()
+    .setColor(Number.parseInt(g.color.slice(1), 16))
+    .setDescription([g.intro.trim(), `**Contents**\n${list}`].filter(Boolean).join("\n\n"));
   if (g.title) embed.setTitle(g.title);
   if (g.image) embed.setImage(g.image);
-  embed.setFooter({ text: `${g.audience === "staff" ? "🔒 Staff only · " : ""}Pages open just for you` });
-  const start = new ButtonBuilder().setCustomId(`gd:p:${guideId}:${g.pages[0].id}`).setLabel("Start reading").setEmoji("📖").setStyle(ButtonStyle.Primary);
-  return {
-    embeds: [embed],
-    components: [new ActionRowBuilder<ButtonBuilder>().addComponents(start), jumpMenu(guild, guideId, g)],
-    allowedMentions: { parse: [] },
-  };
+  return { embeds: [embed], components: [], allowedMentions: { parse: [] } };
 }
 
-/** One page, as the reader sees it: Back / Contents / Next, the jump menu, and links to related pages. */
-function pageMessage(guild: Guild, guideId: number, g: GuideInput, index: number) {
-  const page = g.pages[index];
+/** One section. `contents` and `next` are message links for the buttons underneath. */
+function sectionMessage(g: GuideSettings, index: number, contents: string | null, next: string | null) {
+  const s = g.sections[index];
+  const text = s.content.trim() || "​";
   const embed = new EmbedBuilder()
-    .setColor(colorOf(g))
-    .setTitle(titled(page.emoji, page.title))
-    .setDescription(page.content.trim() || "​")
-    .setFooter({ text: `${g.name} · Page ${index + 1} of ${g.pages.length}` });
-  if (page.image) embed.setImage(page.image);
+    .setColor(Number.parseInt(g.color.slice(1), 16))
+    .setTitle(`${s.emoji && !isCustom(s.emoji) ? `${s.emoji} ` : ""}${s.title}`)
+    .setDescription(s.emoji && isCustom(s.emoji) ? `${s.emoji} ${text}` : text)
+    .setFooter({ text: `${index + 1} of ${g.sections.length}` });
+  if (s.image) embed.setImage(s.image);
 
-  const prev = g.pages[index - 1];
-  const next = g.pages[index + 1];
-  // Custom IDs must be unique in a message, so the disabled ends get their own.
-  const nav = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId(prev ? `gd:p:${guideId}:${prev.id}` : "gd:end:back")
-      .setLabel("Back")
-      .setEmoji("◀️")
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(!prev),
-    new ButtonBuilder().setCustomId(`gd:toc:${guideId}`).setLabel("Contents").setEmoji("📑").setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId(next ? `gd:p:${guideId}:${next.id}` : "gd:end:next")
-      .setLabel("Next")
-      .setEmoji("▶️")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(!next),
-  );
-  const rows: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = [nav, jumpMenu(guild, guideId, g, page.id)];
-
-  const related = page.links.map((id) => g.pages.find((p) => p.id === id)).filter((p) => p !== undefined);
-  const extra = new ActionRowBuilder<ButtonBuilder>();
-  for (const p of related) {
-    const button = new ButtonBuilder().setCustomId(`gd:l:${guideId}:${p.id}`).setLabel(`→ ${p.title}`.slice(0, 80)).setStyle(ButtonStyle.Secondary);
-    const emoji = emojiFor(guild, p.emoji);
-    if (emoji) button.setEmoji(emoji);
-    extra.addComponents(button);
+  const components: ActionRowBuilder<ButtonBuilder>[] = [];
+  if (g.navButtons && contents) {
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(contents).setLabel("Contents").setEmoji("📑"),
+    );
+    const after = g.sections[index + 1];
+    if (after && next) row.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(next).setLabel(`Next: ${after.title}`.slice(0, 80)).setEmoji("⬇️"));
+    components.push(row);
   }
-  if (page.linkUrl && page.linkLabel) extra.addComponents(new ButtonBuilder().setURL(page.linkUrl).setLabel(page.linkLabel).setStyle(ButtonStyle.Link));
-  if (extra.components.length) rows.push(extra);
-  return { embeds: [embed], components: rows, allowedMentions: { parse: [] } };
+  return { embeds: [embed], components, allowedMentions: { parse: [] } };
 }
 
-/** The contents page inside the private reader. */
-function contentsMessage(guild: Guild, guideId: number, g: GuideInput) {
-  const embed = new EmbedBuilder()
-    .setColor(colorOf(g))
-    .setTitle(g.title || g.name)
-    .setDescription(`**Contents**\n${contentsList(g)}`)
-    .setFooter({ text: `${g.name} · ${g.pages.length} page${g.pages.length === 1 ? "" : "s"}` });
-  const start = new ButtonBuilder().setCustomId(`gd:p:${guideId}:${g.pages[0].id}`).setLabel("Start reading").setEmoji("📖").setStyle(ButtonStyle.Primary);
-  return {
-    embeds: [embed],
-    components: [new ActionRowBuilder<ButtonBuilder>().addComponents(start), jumpMenu(guild, guideId, g)],
-    allowedMentions: { parse: [] },
-  };
-}
+/* ------------------------------------------------------------ posting */
 
-/* ------------------------------------------------------------ reading */
-
-const reader: ComponentHandler = {
-  prefix: "gd",
-  async handle(interaction) {
-    if (!interaction.inCachedGuild()) return;
-    const [, action, id, pageId] = interaction.customId.split(":");
-    if (action === "end") return interaction.deferUpdate();
-    const privately = (content: string) => interaction.reply({ content, flags: MessageFlags.Ephemeral });
-    if (!(await isFeatureEnabled(interaction.guildId, guidesFeature))) return privately("Guides are turned off in this server right now.");
-
-    const guideId = Number(id);
-    const row = await rowOf(interaction.guildId, guideId);
-    const g = row ? detailsOf(row) : null;
-    if (!g) return privately("This guide no longer exists.");
-    if (g.audience === "staff") {
-      const member = interaction.member;
-      const allowed = member.permissions.has(PermissionFlagsBits.ManageGuild) || g.roleIds.some((r) => member.roles.cache.has(r));
-      if (!allowed) return privately("🔒 This guide is for staff only.");
-    }
-
-    let message;
-    if (action === "toc") message = contentsMessage(interaction.guild, guideId, g);
-    else {
-      const target = action === "jump" && interaction.isStringSelectMenu() ? interaction.values[0] : pageId;
-      const index = g.pages.findIndex((p) => p.id === target);
-      message = index >= 0 ? pageMessage(interaction.guild, guideId, g, index) : contentsMessage(interaction.guild, guideId, g);
-    }
-
-    await db.update(guides).set({ views: sql`${guides.views} + 1` }).where(eq(guides.id, guideId)).run();
-
-    // Inside the private reader the page is swapped in place; from the cover a private reader opens.
-    if (interaction.message.flags.has(MessageFlags.Ephemeral)) return interaction.update(message);
-    await interaction.reply({ ...message, flags: MessageFlags.Ephemeral });
-    // A dropdown keeps showing the last pick; put the cover back so the next person sees it fresh.
-    if (interaction.isStringSelectMenu()) await interaction.message.edit(coverMessage(interaction.guild, guideId, g)).catch(() => {});
-  },
-};
-
-/* ------------------------------------------------------------ posting the cover */
-
-function postableChannel(guild: Guild, channelId: string) {
-  const channel = guild.channels.cache.get(channelId);
+function postableChannel(guild: Guild, channelId: string | null) {
+  const channel = channelId ? guild.channels.cache.get(channelId) : null;
   if (!channel || !TEXT_TYPES.has(channel.type)) throw new GuideError("Pick a text channel for the guide.");
   const me = guild.members.me;
   const missing = (
@@ -198,6 +104,7 @@ function postableChannel(guild: Guild, channelId: string) {
       [PermissionFlagsBits.ViewChannel, "View Channel"],
       [PermissionFlagsBits.SendMessages, "Send Messages"],
       [PermissionFlagsBits.EmbedLinks, "Embed Links"],
+      [PermissionFlagsBits.ReadMessageHistory, "Read Message History"],
     ] as const
   )
     .filter(([flag]) => !(me && channel.permissionsFor(me).has(flag)))
@@ -206,73 +113,95 @@ function postableChannel(guild: Guild, channelId: string) {
   return channel as GuildTextBasedChannel;
 }
 
-/** Posts the cover, or updates it in place. Moving it to another channel removes the old one. */
-async function publish(guild: Guild, guideId: number, g: GuideInput, previous: { channelId: string; messageId: string | null }) {
+async function deleteMessages(guild: Guild | undefined, post: PostRow) {
+  const channel = guild?.channels.cache.get(post.channelId);
+  if (channel?.isTextBased()) for (const id of post.messageIds) await channel.messages.delete(id).catch(() => {});
+}
+
+/** Fills in every message's links, now that all the message IDs are known. */
+async function linkUp(guild: Guild, g: GuideSettings, channelId: string, messages: Message[]) {
+  const urls = messages.map((m) => messageUrl(guild.id, channelId, m.id));
+  const [contents, ...sections] = messages;
+  await contents.edit(contentsMessage(g, urls.slice(1)));
+  for (const [i, m] of sections.entries()) await m.edit(sectionMessage(g, i, urls[0], urls[i + 2] ?? null));
+}
+
+/**
+ * Posts a guide, or updates it in place when it's already up with the same number of sections.
+ * Otherwise the old messages are removed and the guide is posted fresh, so it always reads top to bottom.
+ */
+async function publish(guild: Guild, kind: GuideKind, g: GuideSettings) {
   const channel = postableChannel(guild, g.channelId);
-  const message = coverMessage(guild, guideId, g);
   const fail = (err: Error) => {
-    throw new GuideError(`Discord didn't accept the guide: ${err.message}`);
+    throw new GuideError(`Discord didn't accept the ${GUIDE_NAMES[kind].toLowerCase()}: ${err.message}`);
   };
-  if (previous.messageId && previous.channelId === channel.id) {
-    const existing = await channel.messages.fetch(previous.messageId).catch(() => null);
-    if (existing) {
-      await existing.edit(message).catch(fail);
+  const post = await postOf(guild.id, kind);
+
+  if (post && post.channelId === channel.id && post.messageIds.length === g.sections.length + 1) {
+    const existing = await Promise.all(post.messageIds.map((id) => channel.messages.fetch(id).catch(() => null)));
+    if (existing.every((m) => m !== null)) {
+      await linkUp(guild, g, channel.id, existing as Message[]).catch(fail);
       return;
     }
   }
-  if (previous.messageId && previous.channelId !== channel.id) {
-    const old = guild.channels.cache.get(previous.channelId);
-    if (old?.isTextBased()) await old.messages.delete(previous.messageId).catch(() => {});
+
+  if (post) await deleteMessages(guild, post);
+  const sent: Message[] = [];
+  try {
+    sent.push(await channel.send(contentsMessage(g, null)));
+    for (let i = 0; i < g.sections.length; i++) sent.push(await channel.send(sectionMessage(g, i, null, null)));
+    await linkUp(guild, g, channel.id, sent);
+  } catch (err) {
+    for (const m of sent) await m.delete().catch(() => {}); // nothing half-posted
+    await db.delete(guidePosts).where(and(eq(guidePosts.guildId, guild.id), eq(guidePosts.kind, kind))).run();
+    return fail(err as Error);
   }
-  const sent = await channel.send(message).catch(fail);
-  await db.update(guides).set({ channelId: channel.id, messageId: sent.id }).where(eq(guides.id, guideId)).run();
+  const values = { guildId: guild.id, kind, channelId: channel.id, messageIds: sent.map((m) => m.id) };
+  await db.insert(guidePosts).values(values).onConflictDoUpdate({ target: [guidePosts.guildId, guidePosts.kind], set: values }).run();
 }
 
-async function unpublish(guild: Guild | undefined, row: GuideRow) {
-  if (!row.messageId) return;
-  const channel = guild?.channels.cache.get(row.channelId);
-  if (channel?.isTextBased()) await channel.messages.delete(row.messageId).catch(() => {});
-  await db.update(guides).set({ messageId: null }).where(eq(guides.id, row.id)).run();
+async function unpublish(guildId: string, kind: GuideKind) {
+  const post = await postOf(guildId, kind);
+  if (!post) return;
+  await deleteMessages(client.guilds.cache.get(guildId), post);
+  await db.delete(guidePosts).where(and(eq(guidePosts.guildId, guildId), eq(guidePosts.kind, kind))).run();
 }
 
+/** One of a guide's messages was deleted in Discord: forget it, so the next save reposts the whole guide. */
 const messageDeleted = onEvent(Events.MessageDelete, async (message) => {
-  if (message.guildId) await db.update(guides).set({ messageId: null }).where(eq(guides.messageId, message.id)).run();
+  if (!message.guildId) return;
+  const posts = await db.select().from(guidePosts).where(and(eq(guidePosts.guildId, message.guildId), like(guidePosts.messageIds, `%"${message.id}"%`))).all();
+  for (const post of posts) {
+    await db
+      .update(guidePosts)
+      .set({ messageIds: post.messageIds.filter((id) => id !== message.id) })
+      .where(and(eq(guidePosts.guildId, post.guildId), eq(guidePosts.kind, post.kind)))
+      .run();
+  }
 });
 
 /* ------------------------------------------------------------ dashboard */
 
-function check(guild: Guild, g: GuideInput) {
-  postableChannel(guild, g.channelId);
-  for (const id of g.roleIds) if (!guild.roles.cache.has(id)) throw new GuideError("A role picked for this guide no longer exists.");
-  for (const p of g.pages) {
-    if (!p.emoji) continue;
-    const parsed = parseEmojiInput(p.emoji, guild);
-    if ("error" in parsed) throw new GuideError(`${p.title}: ${parsed.error}`);
-  }
-}
-
-function parse(body: unknown) {
-  const parsed = guideInput.safeParse(body);
-  if (!parsed.success) throw new GuideError(parsed.error.issues[0]?.message ?? "Check the form and try again.");
-  return parsed.data;
-}
-
-/** What's stored in the details column: everything except the channel, which has its own column. */
-const stored = ({ channelId: _channel, ...rest }: GuideInput): Record<string, unknown> => rest;
-
 async function respond(guild: Guild): Promise<GuidesResponse> {
-  const enabled = await isFeatureEnabled(guild.id, guidesFeature);
-  const list: GuideView[] = [];
+  const state = await stateOf(guild.id);
+  const s = state.settings as GuidesSettings;
+  const posted = { server: null, staff: null } as Record<GuideKind, string | null>;
   const problems: string[] = [];
-  for (const row of await rowsOf(guild.id)) {
-    const g = detailsOf(row);
-    if (!g) continue;
-    list.push({ ...g, id: row.id, views: row.views, messageUrl: row.messageId ? `https://discord.com/channels/${guild.id}/${row.channelId}/${row.messageId}` : null });
-    if (enabled && !row.messageId) problems.push(`"${g.name}" isn't posted. Save it to post it again.`);
-    if (g.audience === "staff" && g.roleIds.some((id) => !guild.roles.cache.has(id))) problems.push(`"${g.name}": a staff role was deleted.`);
+  for (const kind of guideKinds) {
+    const g = s[kind];
+    const post = await postOf(guild.id, kind);
+    if (post?.messageIds[0]) posted[kind] = messageUrl(guild.id, post.channelId, post.messageIds[0]);
+    if (!state.enabled || !g.enabled) continue;
+    if (!post) problems.push(`The ${GUIDE_NAMES[kind]} isn't posted. Save it to post it.`);
+    else if (post.messageIds.length !== g.sections.length + 1) problems.push(`Part of the ${GUIDE_NAMES[kind]} was deleted in Discord. Save it to post it again.`);
+    const channel = g.channelId ? guild.channels.cache.get(g.channelId) : null;
+    if (!channel) problems.push(`The ${GUIDE_NAMES[kind]}'s channel was deleted. Pick another one.`);
+    else if (kind === "staff" && channel.permissionsFor(guild.roles.everyone).has(PermissionFlagsBits.ViewChannel)) {
+      problems.push(`Everyone can see #${channel.name}, where the Staff guide is posted. Pick a staff-only channel, or hide that channel from @everyone.`);
+    }
   }
-  if (!enabled && list.length) problems.push("Server guides is switched off, so guides aren't posted. Switch it on to post them.");
-  return { guides: list, problems };
+  if (!state.enabled && (s.server.enabled || s.staff.enabled)) problems.push("Guides is switched off, so nothing is posted. Switch it on to post your guides.");
+  return { settings: s, posted, problems };
 }
 
 async function guarded(reply: FastifyReply, run: () => Promise<unknown>) {
@@ -286,26 +215,23 @@ async function guarded(reply: FastifyReply, run: () => Promise<unknown>) {
 
 export const guidesBot: BotFeature = {
   info: guidesFeature,
-  components: [reader],
   events: [messageDeleted],
 
   async onToggle(guildId, enabled) {
-    const guild = client.guilds.cache.get(guildId);
-    const rows = await rowsOf(guildId);
     if (!enabled) {
-      for (const row of rows) await unpublish(guild, row);
+      for (const kind of guideKinds) await unpublish(guildId, kind);
       return;
     }
+    const guild = client.guilds.cache.get(guildId);
     if (!guild) return;
-    for (const row of rows) {
-      const g = detailsOf(row);
-      if (g) await publish(guild, row.id, g, row).catch((err) => log(`couldn't post a guide in ${guild.name}:`, err.message));
+    const s = (await stateOf(guildId)).settings as GuidesSettings;
+    for (const kind of guideKinds) {
+      if (s[kind].enabled) await publish(guild, kind, s[kind]).catch((err) => log(`couldn't post the ${kind} guide in ${guild.name}:`, err.message));
     }
   },
 
   async beforeDataDelete(guildId) {
-    const guild = client.guilds.cache.get(guildId);
-    for (const row of await rowsOf(guildId)) await unpublish(guild, row);
+    for (const kind of guideKinds) await unpublish(guildId, kind);
   },
 
   registerApi(api) {
@@ -313,50 +239,24 @@ export const guidesBot: BotFeature = {
 
     api.get("/api/guilds/:guildId/guides", async (request: Req) => respond(guildOf(request)));
 
-    api.post("/api/guilds/:guildId/guides", (request: Req, reply) =>
+    // Saves one guide. Posting it, updating it in place or taking it down follows from its on/off switch.
+    api.put("/api/guilds/:guildId/guides/:kind", (request: Req, reply) =>
       guarded(reply, async () => {
         const guild = guildOf(request);
-        const g = parse(request.body);
-        if ((await rowsOf(guild.id)).length >= MAX_GUIDES) throw new GuideError(`A server can have up to ${MAX_GUIDES} guides.`);
-        check(guild, g);
-        const [row] = await db
-          .insert(guides)
-          .values({ guildId: guild.id, channelId: g.channelId, details: stored(g), createdBy: request.session!.userId, updatedAt: new Date() })
-          .returning()
-          .all();
-        if (await isFeatureEnabled(guild.id, guidesFeature)) {
-          try {
-            await publish(guild, row.id, g, { channelId: g.channelId, messageId: null });
-          } catch (err) {
-            await db.delete(guides).where(eq(guides.id, row.id)).run(); // nothing half-made
-            throw err;
-          }
-        }
+        const kind = request.params.kind as GuideKind;
+        if (!guideKinds.includes(kind)) return reply.code(404).send({ error: "There's no guide like that." });
+        const parsed = guideSettings[kind].safeParse(request.body);
+        if (!parsed.success) throw new GuideError(parsed.error.issues[0]?.message ?? "Check the form and try again.");
+        const g = parsed.data;
+        const state = await stateOf(guild.id);
+
+        if (state.enabled && g.enabled) await publish(guild, kind, g);
+        else await unpublish(guild.id, kind);
+
+        const settings = { ...(state.settings as GuidesSettings), [kind]: g };
+        await saveFeatureState(guild.id, guidesFeature, { enabled: state.enabled, settings }, request.session!.userId);
         return respond(guild);
       }),
     );
-
-    api.put("/api/guilds/:guildId/guides/:guideId", (request: Req, reply) =>
-      guarded(reply, async () => {
-        const guild = guildOf(request);
-        const row = await rowOf(guild.id, Number(request.params.guideId));
-        if (!row) return reply.code(404).send({ error: "That guide no longer exists." });
-        const g = parse(request.body);
-        check(guild, g);
-        if (await isFeatureEnabled(guild.id, guidesFeature)) await publish(guild, row.id, g, row);
-        else if (row.channelId !== g.channelId) await unpublish(guild, row);
-        await db.update(guides).set({ channelId: g.channelId, details: stored(g), updatedAt: new Date() }).where(eq(guides.id, row.id)).run();
-        return respond(guild);
-      }),
-    );
-
-    api.delete("/api/guilds/:guildId/guides/:guideId", async (request: Req, reply) => {
-      const guild = guildOf(request);
-      const row = await rowOf(guild.id, Number(request.params.guideId));
-      if (!row) return reply.code(404).send({ error: "That guide no longer exists." });
-      await unpublish(guild, row);
-      await db.delete(guides).where(eq(guides.id, row.id)).run();
-      return respond(guild);
-    });
   },
 };

@@ -20,14 +20,13 @@ export const announcements: Announcement[] = [
   {
     id: "2026-11-02-guides",
     date: "2026-11-02",
-    title: "Server guides",
+    title: "Server and staff guides",
     tag: "New",
-    body: `Build easy-to-read guides for your members and your staff, in **Cosmetics**.
+    body: `Post a **Server guide** for members and a **Staff guide** for your team, each in the channel you pick. Find them in **Cosmetics → Guides**.
 
-- **Private reading:** pages open just for the reader, with Back, Next and a contents menu.
-- **Linked pages:** add buttons that jump to related pages, plus a web link.
-- **Staff guides:** only your staff roles can open them.
-- **Templates:** start from a ready-made Server guide or Staff guide.`,
+- **Easy to read:** a contents message at the top links straight to every section.
+- **Easy to move around:** each section has Contents and Next buttons.
+- **Ready-made text:** both guides start filled in, so you only edit what's different.`,
   },
   {
     id: "2026-11-02-tickets",

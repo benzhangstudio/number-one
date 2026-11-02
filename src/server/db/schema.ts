@@ -428,21 +428,18 @@ export const ticketCounters = sqliteTable("ticket_counters", {
   last: integer("last").notNull().default(0),
 });
 
-/** Server guides: each guide's pages and where its cover is posted. */
-export const guides = sqliteTable(
-  "guides",
+/**
+ * Guides: where each server's Server guide and Staff guide are posted.
+ * The guide's text lives in the feature settings; this keeps the posted messages (contents first, then one per section).
+ */
+export const guidePosts = sqliteTable(
+  "guide_posts",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
     guildId: text("guild_id").notNull(),
+    /** server or staff. */
+    kind: text("kind", { enum: ["server", "staff"] }).notNull(),
     channelId: text("channel_id").notNull(),
-    /** The posted cover, or null while it isn't up (feature off, or deleted in Discord). */
-    messageId: text("message_id"),
-    /** Name, cover and pages (JSON, validated by guideInput in src/shared/guides.ts). */
-    details: text("details", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
-    /** Times a page was opened. */
-    views: integer("views").notNull().default(0),
-    createdBy: text("created_by").notNull(),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    messageIds: text("message_ids", { mode: "json" }).$type<string[]>().notNull(),
   },
-  (t) => [index("guides_guild_idx").on(t.guildId), index("guides_message_idx").on(t.messageId)],
+  (t) => [primaryKey({ columns: [t.guildId, t.kind] })],
 );

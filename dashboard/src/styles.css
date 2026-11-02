@@ -4718,24 +4718,7 @@ select.chip-add {
   color: #949ba4;
 }
 
-/* Server guides */
-.gd-templates {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
-}
-.gd-template {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: left;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-}
-.gd-template:hover {
-  border-color: var(--accent);
-}
+/* Guides */
 .gd-pages-head {
   display: flex;
   align-items: center;
@@ -4753,38 +4736,38 @@ select.chip-add {
   align-items: center;
   gap: 4px;
 }
-.gd-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.gd-channel {
+  max-height: 70vh;
+  overflow-y: auto;
 }
-.gd-link {
-  cursor: pointer;
+.gd-toc-link {
+  background: none;
+  border: 0;
+  padding: 0;
   font: inherit;
-  background: transparent;
-  color: var(--muted);
+  color: #00a8fc;
+  cursor: pointer;
+  text-align: left;
 }
-.gd-link.on {
-  color: var(--text);
-  border-color: var(--accent);
-  background: var(--accent-soft);
+.gd-toc-link:hover {
+  text-decoration: underline;
 }
-.gd-link:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.gd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.gd-section.on {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 .gd-preview-footer {
   font-size: 0.75rem;
   color: #949ba4;
 }
 .gd-btn {
-  cursor: default;
-  font: inherit;
   font-size: 0.88rem;
-}
-button.gd-btn {
-  cursor: pointer;
-}
-.gd-btn.off {
-  opacity: 0.5;
 }

@@ -10,6 +10,7 @@ import { moderationSettings } from "./moderation.js";
 import { onboardingSettings } from "./onboarding.js";
 import { ruleVerificationSettings } from "./ruleVerification.js";
 import { serverLogSettings } from "./serverLogs.js";
+import { guidesSettings } from "./guides.js";
 import { ticketSettings } from "./tickets.js";
 import { voiceLogSettings } from "./voiceLogs.js";
 
@@ -67,7 +68,7 @@ export const categories = [
     id: "cosmetics",
     name: "Cosmetics",
     emoji: "🎀",
-    description: "Cute designs for your server, like decorated channel names and easy-to-read guides",
+    description: "Cute designs for your server, like decorated channel names and easy-to-read server and staff guides",
   },
 ] as const;
 
@@ -276,12 +277,12 @@ export const ruleVerificationFeature = defineFeature({
 
 export const guidesFeature = defineFeature({
   id: "guides",
-  name: "Server guides",
+  name: "Guides",
   icon: "📖",
-  description: "Build easy-to-read guides for members and staff. Readers flip pages privately with Back and Next, a contents menu and buttons to related pages.",
+  description: "Post a Server guide for members and a Staff guide for your team in the channels you pick, with a contents list that links to every section.",
   category: "cosmetics",
   recommended: true,
-  settings: z.object({}),
+  settings: guidesSettings,
 });
 
 export const ticketsFeature = defineFeature({
