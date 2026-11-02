@@ -15,6 +15,7 @@ import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
 import type { ServerLogResponse, ServerLogSettings } from "../../src/shared/serverLogs";
+import type { VoiceLogResponse, VoiceLogSettings } from "../../src/shared/voiceLogs";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
@@ -169,6 +170,9 @@ export const api = {
   serverLogs: (guildId: string) => request<ServerLogResponse>(`/api/guilds/${guildId}/server-logs`),
   saveServerLogs: (guildId: string, settings: ServerLogSettings) =>
     request<ServerLogResponse>(`/api/guilds/${guildId}/server-logs`, { method: "PUT", body: JSON.stringify(settings) }),
+  voiceLogs: (guildId: string) => request<VoiceLogResponse>(`/api/guilds/${guildId}/voice-logs`),
+  saveVoiceLogs: (guildId: string, settings: VoiceLogSettings) =>
+    request<VoiceLogResponse>(`/api/guilds/${guildId}/voice-logs`, { method: "PUT", body: JSON.stringify(settings) }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 };
 

@@ -8,6 +8,7 @@ import { messageLogSettings } from "./messageLogs.js";
 import { moderationSettings } from "./moderation.js";
 import { onboardingSettings } from "./onboarding.js";
 import { serverLogSettings } from "./serverLogs.js";
+import { voiceLogSettings } from "./voiceLogs.js";
 
 /**
  * The single definition of every feature: its name, description, category and settings shape.
@@ -240,6 +241,16 @@ export const serverLogsFeature = defineFeature({
   settings: serverLogSettings,
 });
 
+export const voiceLogsFeature = defineFeature({
+  id: "voice-logs",
+  name: "Voice logs",
+  icon: "🔊",
+  description: "Post voice channel joins, leaves, moves and server mutes to a staff channel, with how long people stayed.",
+  category: "logging",
+  recommended: true,
+  settings: voiceLogSettings,
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
@@ -255,6 +266,7 @@ export const featureCatalog: FeatureInfo[] = [
   messageLogsFeature,
   memberLogsFeature,
   serverLogsFeature,
+  voiceLogsFeature,
 ];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
@@ -306,3 +318,4 @@ export * from "./channelDesigns.js";
 export * from "./messageLogs.js";
 export * from "./memberLogs.js";
 export * from "./serverLogs.js";
+export * from "./voiceLogs.js";

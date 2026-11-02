@@ -13,6 +13,7 @@ export const client = new Client({
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildExpressions, // emoji and sticker changes (Server logs)
     GatewayIntentBits.GuildInvites, // invites being created and deleted (Server logs)
+    GatewayIntentBits.GuildVoiceStates, // voice joins, leaves and moves (Voice logs)
     GatewayIntentBits.AutoModerationExecution, // Discord AutoMod catches, so Number One can warn, time out or kick
     GatewayIntentBits.MessageContent, // privileged: enable "Message Content Intent" (auto-moderation's own filters)
   ],

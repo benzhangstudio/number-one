@@ -26,7 +26,8 @@ The bot and its dashboard run together as **one program** on one Wispbyte server
 | Logging → Message logs: edits, deletes, bulk deletes with transcript | ✅ |
 | Logging → Member logs: joins, leaves, nicknames, roles, profiles | ✅ |
 | Logging → Server logs: channels, roles, settings, emojis, invites | ✅ |
-| More admin features (logging…) | Next, one at a time |
+| Logging → Voice logs: joins, leaves, moves, server mutes | ✅ |
+| More admin features | Next, one at a time |
 
 ## Running on Wispbyte
 
@@ -252,6 +253,15 @@ Posts server changes to a staff channel, with who made each one.
 - **Emojis and stickers** added, removed and renamed. **Invites** created (channel, expiry, uses, who made it) and deleted.
 - Changes Number One makes itself (like channel designs) are skipped by default. Just moving channels or roles up and down isn't logged.
 - **Permissions:** View Channel, Send Messages and Embed Links in the log channel; View Audit Log to show who made changes; Manage Server for invites.
+
+### Voice logs (Logging & Auditing)
+
+Posts voice activity to a staff channel.
+
+- **Joins, leaves** (with how long they stayed) and **moves** between voice channels.
+- **Server mutes and deafens** by staff (not people muting themselves).
+- Bots (by default) and chosen voice channels or categories can be skipped.
+- **Permissions:** View Channel, Send Messages and Embed Links in the log channel.
 
 ## How the project is organized
 
