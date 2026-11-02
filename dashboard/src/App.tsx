@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DashboardUser } from "../../src/shared/features";
+import { useHasUnread } from "./announcementsSeen";
 import { api, avatarUrl, inviteUrl } from "./api";
 import { Footer, SUPPORT_SERVER } from "./components/Footer";
 import { GuildPage } from "./pages/GuildPage";
+import { AnnouncementsPage } from "./pages/AnnouncementsPage";
 import { HomePage } from "./pages/HomePage";
+import { LandingPage } from "./pages/LandingPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { ServersPage } from "./pages/ServersPage";
 import { TermsPage } from "./pages/TermsPage";
@@ -22,13 +25,145 @@ function ThemeToggle() {
   );
 }
 
+/** One entry in the top menu or the phone menu. External links open in a new tab. */
+interface MenuItem {
+  label: string;
+  to: string;
+  external?: boolean;
+  /** Highlighted when the current address matches. */
+  active?: boolean;
+  /** Shows a small "unread" dot. */
+  dot?: boolean;
+  /** Top bar only on wide screens; always in the phone menu. */
+  wideOnly?: boolean;
+}
+
+function MenuLink({ item, onPick }: { item: MenuItem; onPick?: () => void }) {
+  if (item.external) {
+    return (
+      <a href={item.to} target="_blank" rel="noopener noreferrer" className={item.wideOnly ? "wide-only" : ""} onClick={onPick}>
+        {item.label}
+      </a>
+    );
+  }
+  return (
+    <a
+      href={item.to}
+      className={`${item.active ? "on" : ""} ${item.wideOnly ? "wide-only" : ""}`}
+      aria-current={item.active ? "page" : undefined}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // keep "open in new tab"
+        e.preventDefault();
+        onPick?.();
+        navigate(item.to);
+        window.scrollTo(0, 0);
+      }}
+    >
+      {item.label}
+      {item.dot && <span className="unread-dot" aria-label="(new)" />}
+    </a>
+  );
+}
+
+/** Closes a dropdown on Escape or a click outside it. */
+function useDismiss(open: boolean, close: () => void) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) close();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, close]);
+  return ref;
+}
+
+/** Avatar button that opens the account menu. */
+function UserMenu({ user }: { user: DashboardUser }) {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
+  const ref = useDismiss(open, close);
+  const avatar = avatarUrl(user);
+  return (
+    <div className="user-menu" ref={ref}>
+      <button className="user-menu-btn" onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open}>
+        {avatar ? <img src={avatar} alt="" /> : <span className="avatar-fallback">{user.username[0]}</span>}
+        <span className="user-name">{user.username}</span>
+        <span className="caret" aria-hidden="true">
+          ▾
+        </span>
+      </button>
+      {open && (
+        <div className="dropdown" role="menu">
+          <div className="dropdown-head">
+            Signed in as <strong>{user.username}</strong>
+          </div>
+          <MenuLink item={{ label: "🏠 Home", to: "/" }} onPick={close} />
+          <MenuLink item={{ label: "📋 My servers", to: "/servers" }} onPick={close} />
+          <MenuLink item={{ label: "📣 Announcements", to: "/announcements" }} onPick={close} />
+          <div className="dropdown-sep" />
+          <button
+            className="dropdown-item danger"
+            onClick={async () => {
+              await api.logout().catch(() => {});
+              window.location.href = "/";
+            }}
+          >
+            Log out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** ☰ button for phones: opens a menu with every link from the top bar plus the legal pages. */
+function MobileMenu({ items, path }: { items: MenuItem[]; path: string }) {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
+  const ref = useDismiss(open, close);
+  useEffect(close, [path]);
+  const extra: MenuItem[] = [
+    { label: "Terms of Service", to: "/terms", active: path === "/terms" },
+    { label: "Privacy Policy", to: "/privacy", active: path === "/privacy" },
+  ];
+  return (
+    <div className="mobile-menu" ref={ref}>
+      <button className="mobile-menu-btn" onClick={() => setOpen((o) => !o)} aria-label="Menu" aria-expanded={open}>
+        {open ? "✕" : "☰"}
+        {!open && items.some((i) => i.dot) && <span className="unread-dot" />}
+      </button>
+      {open && (
+        <nav className="dropdown mobile-dropdown" aria-label="Menu">
+          {items.map((i) => (
+            <MenuLink key={i.to} item={{ ...i, wideOnly: false }} onPick={close} />
+          ))}
+          <div className="dropdown-sep" />
+          {extra.map((i) => (
+            <MenuLink key={i.to} item={i} onPick={close} />
+          ))}
+        </nav>
+      )}
+    </div>
+  );
+}
+
 export function App() {
   const path = usePath();
   const [user, setUser] = useState<DashboardUser | null | undefined>(undefined); // undefined = still checking
   const [clientId, setClientId] = useState<string | null>(null);
+  const hasUnread = useHasUnread();
 
   useEffect(() => {
-    // Any failure (usually "not logged in") shows the login page.
+    // Any failure (usually "not logged in") shows the landing page.
     api.me().then(setUser).catch(() => setUser(null));
     api.config().then((c) => setClientId(c.clientId)).catch(() => {});
   }, []);
@@ -53,86 +188,51 @@ export function App() {
   let page;
   if (path === "/terms") page = <TermsPage />; // public: readable without logging in
   else if (path === "/privacy") page = <PrivacyPage />; // public too
-  else if (!user) page = <HomePage />;
+  else if (path === "/announcements") page = <AnnouncementsPage />; // public too
+  else if (!user) page = <LandingPage />;
   else if (guildMatch) page = <GuildPage guildId={guildMatch[1]} page={guildMatch[2] ?? ""} />;
   else if (path.startsWith("/servers")) page = <ServersPage />;
-  else page = <HomePage loggedIn />;
+  else page = <HomePage user={user} />;
+
+  // The main menu. Logged-in users get their pages; visitors get the public ones.
+  const items: MenuItem[] = [
+    ...(user
+      ? [
+          { label: "Home", to: "/", active: path === "/" },
+          { label: "My servers", to: "/servers", active: path.startsWith("/servers") },
+        ]
+      : []),
+    { label: "Announcements", to: "/announcements", active: path === "/announcements", dot: hasUnread },
+    ...(clientId ? [{ label: "Add bot", to: inviteUrl(clientId), external: true }] : []),
+    { label: "Support", to: SUPPORT_SERVER, external: true, wideOnly: true },
+  ];
 
   return (
     <div className="app">
       <header className="topbar">
+        <MobileMenu items={items} path={path} />
         <a
           className="brand"
           href="/"
           onClick={(e) => {
             e.preventDefault();
-            navigate(user ? "/servers" : "/");
+            navigate("/");
           }}
         >
           <span className="brand-mark">#1</span> <span className="brand-name">Number One</span>
         </a>
         <nav className="topnav" aria-label="Main menu">
-          {user && (
-            <a
-              href="/servers"
-              className={path.startsWith("/servers") ? "on" : ""}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/servers");
-              }}
-            >
-              My servers
-            </a>
-          )}
-          {clientId && (
-            <a href={inviteUrl(clientId)} target="_blank" rel="noreferrer">
-              Add bot
-            </a>
-          )}
-          <a className="wide-only" href={SUPPORT_SERVER} target="_blank" rel="noreferrer">
-            Support
-          </a>
-          <a
-            href="/terms"
-            className={`wide-only ${path === "/terms" ? "on" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/terms");
-            }}
-          >
-            Terms
-          </a>
-          <a
-            href="/privacy"
-            className={`wide-only ${path === "/privacy" ? "on" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/privacy");
-            }}
-          >
-            Privacy
-          </a>
+          {items.map((i) => (
+            <MenuLink key={i.to} item={i} />
+          ))}
         </nav>
         <ThemeToggle />
-        {!user && (
+        {user ? (
+          <UserMenu user={user} />
+        ) : (
           <a className="btn ghost small" href="/auth/login">
             Log in
           </a>
-        )}
-        {user && (
-          <div className="user">
-            {avatarUrl(user) ? <img src={avatarUrl(user)!} alt="" /> : <span className="avatar-fallback">{user.username[0]}</span>}
-            <span className="user-name">{user.username}</span>
-            <button
-              className="btn ghost small"
-              onClick={async () => {
-                await api.logout();
-                window.location.href = "/";
-              }}
-            >
-              Log out
-            </button>
-          </div>
         )}
       </header>
       <main className={`content ${user && guildMatch ? "wide" : ""}`}>{page}</main>

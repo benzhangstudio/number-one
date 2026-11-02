@@ -155,7 +155,7 @@ export function registerAuthRoutes(app: FastifyInstance) {
     await db.delete(sessions).where(lt(sessions.expiresAt, new Date())).run(); // tidy up old logins
 
     reply.setCookie(SESSION_COOKIE, id, cookieOptions(request, ttlSeconds));
-    return reply.redirect("/servers");
+    return reply.redirect("/");
   });
 
   app.post("/auth/logout", async (request, reply) => {
