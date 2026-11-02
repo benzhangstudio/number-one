@@ -198,15 +198,13 @@ export function RuleVerificationPanel({ guild }: { guild: Guild }) {
       </div>
 
       {error && <p className="error">{error}</p>}
-      {(dirty || !data.messageUrl) && (
-        <div className="save-bar">
-          <span>{dirty ? "You have unsaved changes." : "The rules aren't posted yet."}</span>
-          {dirty && <button className="btn ghost small" disabled={saving} onClick={() => { setDraft(structuredClone(data.settings)); setError(""); }}>Discard</button>}
-          <button className="btn primary small" disabled={saving || Boolean(problem)} title={problem ?? undefined} onClick={save}>
-            {saving ? "Saving…" : data.messageUrl ? "Save changes" : "Save and post"}
-          </button>
-        </div>
-      )}
+      <div className="save-bar">
+        <span>{dirty ? "You have unsaved changes." : data.messageUrl ? "No changes to save." : "The rules aren't posted yet."}</span>
+        <button className="btn ghost small" disabled={saving || !dirty} onClick={() => { setDraft(structuredClone(data.settings)); setError(""); }}>Discard</button>
+        <button className="btn primary small" disabled={saving || Boolean(problem) || (!dirty && Boolean(data.messageUrl))} title={problem ?? undefined} onClick={save}>
+          {saving ? "Saving…" : data.messageUrl ? "Save changes" : "Save and post"}
+        </button>
+      </div>
       {problem && <small className="muted">{problem}</small>}
     </div>
   );

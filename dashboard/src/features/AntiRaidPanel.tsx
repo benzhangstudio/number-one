@@ -244,15 +244,13 @@ export function AntiRaidPanel({ guild }: { guild: Guild }) {
       </section>
 
       {error && <p className="error">{error}</p>}
-      {dirty && (
-        <div className="save-bar">
-          <span>You have unsaved changes.</span>
-          <button className="btn ghost small" disabled={busy} onClick={() => { setDraft(structuredClone(data.settings)); setError(""); }}>Discard</button>
-          <button className="btn primary small" disabled={busy} onClick={() => run(() => api.saveAntiRaid(guild.id, draft), "")}>
-            {busy ? "Saving…" : "Save changes"}
-          </button>
-        </div>
-      )}
+      <div className="save-bar">
+        <span>{dirty ? "You have unsaved changes." : "No changes to save."}</span>
+        <button className="btn ghost small" disabled={busy || !dirty} onClick={() => { setDraft(structuredClone(data.settings)); setError(""); }}>Discard</button>
+        <button className="btn primary small" disabled={busy || !dirty} onClick={() => run(() => api.saveAntiRaid(guild.id, draft), "")}>
+          {busy ? "Saving…" : "Save changes"}
+        </button>
+      </div>
     </div>
   );
 }

@@ -392,13 +392,11 @@ export function OnboardingPanel({ guild }: { guild: Guild }) {
       </section>
 
       {error && <p className="error">{error}</p>}
-      {dirty && (
-        <div className="save-bar">
-          <span>You have unsaved changes.</span>
-          <button className="btn ghost small" disabled={saving} onClick={() => setDraft(structuredClone(data.settings))}>Discard</button>
-          <button className="btn primary small" disabled={saving} onClick={save}>{saving ? "Saving…" : "Save changes"}</button>
-        </div>
-      )}
+      <div className="save-bar">
+        <span>{dirty ? "You have unsaved changes." : "No changes to save."}</span>
+        <button className="btn ghost small" disabled={saving || !dirty} onClick={() => setDraft(structuredClone(data.settings))}>Discard</button>
+        <button className="btn primary small" disabled={saving || !dirty} onClick={save}>{saving ? "Saving…" : "Save changes"}</button>
+      </div>
     </div>
   );
 }

@@ -127,13 +127,11 @@ export function JoinLeavePanel({ guild }: { guild: Guild }) {
       <p className="muted small">Bots are never welcomed or said goodbye to. While Anti-raid's raid mode is on, nobody is, so raiders don't flood these channels.</p>
 
       {error && <p className="error">{error}</p>}
-      {dirty && (
-        <div className="save-bar">
-          <span>You have unsaved changes.</span>
-          <button className="btn ghost small" disabled={saving} onClick={() => { setDraft(structuredClone(data.settings)); setError(""); }}>Discard</button>
-          <button className="btn primary small" disabled={saving} onClick={save}>{saving ? "Saving…" : "Save changes"}</button>
-        </div>
-      )}
+      <div className="save-bar">
+        <span>{dirty ? "You have unsaved changes." : "No changes to save."}</span>
+        <button className="btn ghost small" disabled={saving || !dirty} onClick={() => { setDraft(structuredClone(data.settings)); setError(""); }}>Discard</button>
+        <button className="btn primary small" disabled={saving || !dirty} onClick={save}>{saving ? "Saving…" : "Save changes"}</button>
+      </div>
     </div>
   );
 }

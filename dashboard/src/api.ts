@@ -45,15 +45,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 /**
- * A settings save that can be undone: reads the settings first, saves the new ones, then offers
- * "Saved · Undo". Undo saves the earlier settings back (without offering another undo).
+ * A settings save that can be undone: reads the settings first, saves the new ones, then shows the timed
+ * Undo button. Undo saves the earlier settings back (without offering another undo).
  * `pick` gets the settings out of the read; `put` saves a given set of settings.
  */
 async function undoable<R, S>(read: () => Promise<R>, pick: (r: R) => S, put: (s: S) => Promise<R>, next: S): Promise<R> {
   const before = await read().then(pick, () => null);
   const result = await put(next);
   if (before !== null && JSON.stringify(before) !== JSON.stringify(pick(result))) {
-    offerUndo("Saved.", () => put(before));
+    offerUndo(() => put(before));
   }
   return result;
 }
@@ -108,7 +108,7 @@ export const api = {
     const put = (s: Omit<FeatureState, "id">) =>
       request<FeatureState>(`/api/guilds/${guildId}/features/${featureId}`, { method: "PUT", body: JSON.stringify(s) });
     const result = await put(state);
-    offerUndo(state.enabled ? "Switched on." : "Switched off.", () => put({ enabled: !state.enabled, settings: state.settings }));
+    offerUndo(() => put({ enabled: !state.enabled, settings: state.settings }));
     return result;
   },
   reactionRoles: (guildId: string) => request<ReactionRoleMessageView[]>(`/api/guilds/${guildId}/reaction-roles`),
@@ -126,7 +126,7 @@ export const api = {
     const result = await put(categories);
     if (before) {
       // Undo puts the old choices back and switches off whatever this save switched on.
-      offerUndo(result.turnedOn.length ? `Saved. Switched on ${result.turnedOn.length} feature${result.turnedOn.length === 1 ? "" : "s"}.` : "Saved.", async () => {
+      offerUndo(async () => {
         await put(before);
         for (const id of result.turnedOn) {
           const f = result.features.find((x) => x.id === id);

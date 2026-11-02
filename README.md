@@ -318,7 +318,7 @@ Features start **off** in every server until an admin turns them on. If someone 
 
 ### Undo
 
-Every settings save on the dashboard (each feature's "Save changes", the on/off switches, and Choose features) shows a small **Saved · Undo** popup at the top right for 8 seconds (paused while the mouse is over it). Pressing **Undo** puts the previous settings back and the page shows them again. Only the latest save can be undone. Things that have already gone out in Discord (an announcement, an embed message, an event, a role menu) don't offer undo, because the message has already been sent.
+After every settings save (each feature's Save changes, the on/off switches, and Choose features), a timed **Undo** button appears at the top right for 8 seconds. Clicking it puts the previous settings back; the button then stays, disabled, until its time runs out. Save buttons are always shown and stay disabled until there's a change to save, including right after an undo. Only the latest save can be undone. Things that have already gone out in Discord (an announcement, an embed message, an event, a role menu) don't offer undo.
 
 ### Security
 

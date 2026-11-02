@@ -399,15 +399,13 @@ function RulesEditor({ guild, initial, onSaved }: { guild: Guild; initial: Rules
         </section>
 
         {error && <p className="error">{error}</p>}
-        {dirty && (
-          <div className="save-bar">
-            <span>You have unsaved changes.</span>
-            <button className="btn ghost small" disabled={saving} onClick={() => { setR(structuredClone(saved)); setError(""); }}>Discard</button>
-            <button className="btn primary small" disabled={saving || Boolean(problem)} title={problem ?? undefined} onClick={save}>
-              {saving ? "Saving…" : "Save changes"}
-            </button>
-          </div>
-        )}
+        <div className="save-bar">
+          <span>{dirty ? "You have unsaved changes." : "No changes to save."}</span>
+          <button className="btn ghost small" disabled={saving || !dirty} onClick={() => { setR(structuredClone(saved)); setError(""); }}>Discard</button>
+          <button className="btn primary small" disabled={saving || !dirty || Boolean(problem)} title={problem ?? undefined} onClick={save}>
+            {saving ? "Saving…" : "Save changes"}
+          </button>
+        </div>
         {problem && dirty && <small className="muted">{problem}</small>}
       </div>
 
