@@ -25,6 +25,7 @@ import {
   levelInfo,
   levelsSettings,
 } from "../../shared/levels.js";
+import { payLevelUp } from "../economy/index.js";
 import { renderRankCard } from "./card.js";
 
 /**
@@ -132,10 +133,11 @@ function canPost(channel: GuildTextBasedChannel | null | undefined): channel is 
   return Boolean(channel && me && channel.permissionsFor(me)?.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]));
 }
 
-async function announceLevelUp(message: Message<true>, member: GuildMember, level: number, settings: LevelsSettings) {
+async function announceLevelUp(message: Message<true>, member: GuildMember, level: number, settings: LevelsSettings, reward = "") {
   const { where, channelId } = settings.levelUp;
-  const text = fill(settings.levelUp.message, member, level).trim();
-  if (where === "off" || !text) return;
+  const filled = fill(settings.levelUp.message, member, level).trim();
+  if (where === "off" || !filled) return;
+  const text = reward ? `${filled}\n-# You also got ${reward}.` : filled;
   const payload = { content: text.slice(0, 2000), allowedMentions: { users: [member.id] } };
   if (where === "dm") return member.send({ ...payload, content: `${text} (in **${member.guild.name}**)`.slice(0, 2000) }).catch(() => {});
   const channel = where === "channel" && channelId ? member.guild.channels.cache.get(channelId) : message.channel;
@@ -174,7 +176,9 @@ const messageSent = onEvent(Events.MessageCreate, async (message) => {
   const newLevel = levelInfo(after).level;
   if (newLevel <= oldLevel) return;
   await syncRewards(member, newLevel, settings);
-  await announceLevelUp(message, member, newLevel, settings);
+  // Economy pays a reward per level gained, when it's switched on.
+  const reward = await payLevelUp(message.guildId, member.id, newLevel - oldLevel).catch(() => "");
+  await announceLevelUp(message, member, newLevel, settings, reward);
 });
 
 /** Members who come back get their reward roles again. */

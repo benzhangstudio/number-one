@@ -27,6 +27,8 @@ import {
   reactionRoleStats,
   reactionRoleTimers,
   memberLevels,
+  economyBalances,
+  economyTransactions,
   removedGuilds,
 } from "./db/schema.js";
 
@@ -41,7 +43,7 @@ import {
 const GRACE_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** Every table that holds data for a server, by its guild_id column. */
-const guildTables = [featureSettings, guildSetup, reactionRoleMessages, reactionRoleTimers, onboardingProgress, onboardingState, moderationCases, raidState, embedMessages, announcementTemplates, announcements, eventRsvps, events, channelDesigns, customCommands, ruleVerificationPosts, ticketPanels, tickets, ticketCounters, guidePosts, devUpdateDeliveries, applicationPanels, staffApplications, memberLevels];
+const guildTables = [featureSettings, guildSetup, reactionRoleMessages, reactionRoleTimers, onboardingProgress, onboardingState, moderationCases, raidState, embedMessages, announcementTemplates, announcements, eventRsvps, events, channelDesigns, customCommands, ruleVerificationPosts, ticketPanels, tickets, ticketCounters, guidePosts, devUpdateDeliveries, applicationPanels, staffApplications, memberLevels, economyBalances, economyTransactions];
 
 /** Deletes everything stored about a server. */
 export async function deleteGuildData(guildId: string) {

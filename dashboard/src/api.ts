@@ -26,6 +26,7 @@ import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod"
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
 import type { LevelsResponse, LevelsSettings } from "../../src/shared/levels";
+import type { EconomyResponse, EconomySettings } from "../../src/shared/economy";
 import type { OnboardingSettings, OnboardingStatus } from "../../src/shared/onboarding";
 import { offerUndo } from "./undo";
 
@@ -175,6 +176,10 @@ export const api = {
   saveLevels: (guildId: string, settings: LevelsSettings) =>
     undoableSettings<LevelsResponse, LevelsSettings>(`/api/guilds/${guildId}/levels`, settings),
   resetLevels: (guildId: string) => request<LevelsResponse>(`/api/guilds/${guildId}/levels/reset`, { method: "POST", body: "{}" }),
+  economy: (guildId: string) => request<EconomyResponse>(`/api/guilds/${guildId}/economy`),
+  saveEconomy: (guildId: string, settings: EconomySettings) =>
+    undoableSettings<EconomyResponse, EconomySettings>(`/api/guilds/${guildId}/economy`, settings),
+  resetEconomy: (guildId: string) => request<EconomyResponse>(`/api/guilds/${guildId}/economy/reset`, { method: "POST", body: "{}" }),
   saveJoinLeave: (guildId: string, settings: JoinLeaveSettings) =>
     undoableSettings<JoinLeaveResponse, JoinLeaveSettings>(`/api/guilds/${guildId}/join-leave`, settings),
   antiRaid: (guildId: string) => request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid`),

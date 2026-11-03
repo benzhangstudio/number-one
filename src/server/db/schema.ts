@@ -533,3 +533,40 @@ export const memberLevels = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.guildId, t.userId] }), index("member_levels_rank_idx").on(t.guildId, t.xp)],
 );
+
+/** Economy: each member's balance in a server, and when they last used /daily and /work. */
+export const economyBalances = sqliteTable(
+  "economy_balances",
+  {
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    balance: integer("balance").notNull().default(0),
+    /** Days in a row /daily was claimed. */
+    dailyStreak: integer("daily_streak").notNull().default(0),
+    lastDailyAt: integer("last_daily_at", { mode: "timestamp_ms" }),
+    lastWorkAt: integer("last_work_at", { mode: "timestamp_ms" }),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.guildId, t.userId] }), index("economy_balances_rich_idx").on(t.guildId, t.balance)],
+);
+
+/** Economy: every balance change, kept for 90 days (see HISTORY_DAYS in src/shared/economy.ts). */
+export const economyTransactions = sqliteTable(
+  "economy_transactions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    /** Positive when they got money, negative when they lost it. */
+    amount: integer("amount").notNull(),
+    balanceAfter: integer("balance_after").notNull(),
+    /** See transactionKinds in src/shared/economy.ts. */
+    kind: text("kind").notNull(),
+    /** The other member in a payment. */
+    otherUserId: text("other_user_id"),
+    /** Staff member who made an admin change. */
+    byUserId: text("by_user_id"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("economy_tx_guild_idx").on(t.guildId, t.createdAt), index("economy_tx_member_idx").on(t.guildId, t.userId, t.createdAt)],
+);

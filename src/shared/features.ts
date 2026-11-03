@@ -12,6 +12,7 @@ import { ruleVerificationSettings } from "./ruleVerification.js";
 import { serverLogSettings } from "./serverLogs.js";
 import { guidesSettings } from "./guides.js";
 import { levelsSettings } from "./levels.js";
+import { economySettings } from "./economy.js";
 import { ticketSettings } from "./tickets.js";
 import { voiceLogSettings } from "./voiceLogs.js";
 import { botUpdateSettings } from "./botUpdates.js";
@@ -224,6 +225,16 @@ export const levelsFeature = defineFeature({
   settings: levelsSettings,
 });
 
+export const economyFeature = defineFeature({
+  id: "economy",
+  name: "Economy",
+  icon: "🪙",
+  description: "Your server's own currency. Members earn it by chatting, with /daily and /work, and send it to each other with /pay.",
+  category: "engagement",
+  recommended: true,
+  settings: economySettings,
+});
+
 export const channelDesignsFeature = defineFeature({
   id: "channel-designs",
   name: "Channel designs",
@@ -347,6 +358,7 @@ export const featureCatalog: FeatureInfo[] = [
   embedsFeature,
   eventsFeature,
   levelsFeature,
+  economyFeature,
   channelDesignsFeature,
   guidesFeature,
   messageLogsFeature,
@@ -418,3 +430,4 @@ export * from "./ruleVerification.js";
 export * from "./tickets.js";
 export * from "./guides.js";
 export * from "./levels.js";
+export * from "./economy.js";

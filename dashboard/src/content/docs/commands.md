@@ -52,6 +52,20 @@ Part of the [Levels](/docs/levels) module.
 | `/xp give/take/set member amount` | Manage Server | Changes a member's XP. |
 | `/xp reset member` | Manage Server | Sets a member's XP back to zero. |
 
+## Economy
+
+Part of the [Economy](/docs/economy) module.
+
+| Command | Who | What it does |
+| --- | --- | --- |
+| `/balance [member]` | Everyone | Shows a balance, rank and daily streak. |
+| `/daily` | Everyone | Collects the daily reward. Come back each day for a streak bonus. |
+| `/work` | Everyone | Does a quick job for some money. |
+| `/pay member amount` | Everyone | Sends some of your money to another member. |
+| `/richest [page]` | Everyone | Shows the members with the most money. |
+| `/economy give/take/set member amount` | Manage Server | Changes a member's balance. |
+| `/economy history member` | Manage Server | Shows a member's latest balance changes. |
+
 ## Tickets
 
 Part of the [Tickets](/docs/tickets) module. Used inside a ticket channel.

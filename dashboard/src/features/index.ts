@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import type { GuildDetails } from "../api";
 import { AnnouncementsPanel } from "./AnnouncementsPanel";
 import { AntiRaidPanel } from "./AntiRaidPanel";
+import { EconomyPanel } from "./EconomyPanel";
 import { EmbedsPanel } from "./EmbedsPanel";
 import { EventsPanel } from "./EventsPanel";
 import { GuidesPanel } from "./GuidesPanel";
@@ -34,6 +35,7 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   embeds: EmbedsPanel,
   events: EventsPanel,
   levels: LevelsPanel,
+  economy: EconomyPanel,
   "channel-designs": ChannelDesignsPanel,
   "message-logs": MessageLogsPanel,
   "member-logs": MemberLogsPanel,
