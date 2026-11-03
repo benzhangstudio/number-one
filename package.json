@@ -23,7 +23,7 @@
     "type": "git",
     "url": "git+https://github.com/benzhangstudio/number-one.git"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "comment": "Build tools (typescript, vite, @types/*) are regular dependencies on purpose: Wispbyte runs `npm install`, which may skip devDependencies, and the postinstall build needs them.",
   "dependencies": {
     "@fastify/cookie": "^11.1.5",

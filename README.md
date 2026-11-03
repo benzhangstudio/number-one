@@ -91,3 +91,7 @@ Features start **off** in every server until an admin turns them on.
 ## Security
 
 Found a security problem? Please don't open a public issue. Report it privately in the [support server](https://discord.gg/7GyveHcQdn) instead.
+
+## License
+
+[MIT](LICENSE). You can use, change and share the code, as long as you keep the copyright notice.
