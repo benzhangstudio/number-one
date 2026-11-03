@@ -5565,3 +5565,76 @@ select.chip-add {
   color: var(--accent-text);
   background: var(--accent);
 }
+
+/* ------------------------------------------------------------ Levels */
+
+.levels-reward {
+  display: grid;
+  grid-template-columns: auto 90px auto minmax(160px, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.levels-board {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.levels-board li {
+  display: grid;
+  grid-template-columns: 32px 28px minmax(0, 1fr) auto auto 90px;
+  gap: 10px;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+.levels-board img,
+.levels-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.levels-place {
+  text-align: center;
+  font-weight: 600;
+}
+
+.levels-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.levels-board li > :last-child {
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .levels-reward {
+    grid-template-columns: auto 80px minmax(0, 1fr) auto;
+  }
+  .levels-reward > .levels-xp-note,
+  .levels-reward > span:nth-of-type(2) {
+    display: none;
+  }
+  .levels-board li {
+    grid-template-columns: 28px 28px minmax(0, 1fr) auto;
+  }
+  .levels-board li > .muted {
+    display: none;
+  }
+}

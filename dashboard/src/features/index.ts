@@ -10,6 +10,7 @@ import { BotUpdatesPanel } from "./BotUpdatesPanel";
 import { ChannelDesignsPanel } from "./ChannelDesignsPanel";
 import { CustomCommandsPanel } from "./CustomCommandsPanel";
 import { JoinLeavePanel } from "./JoinLeavePanel";
+import { LevelsPanel } from "./LevelsPanel";
 import { MemberLogsPanel } from "./MemberLogsPanel";
 import { MessageLogsPanel } from "./MessageLogsPanel";
 import { ModerationPanel } from "./ModerationPanel";
@@ -32,6 +33,7 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   announcements: AnnouncementsPanel,
   embeds: EmbedsPanel,
   events: EventsPanel,
+  levels: LevelsPanel,
   "channel-designs": ChannelDesignsPanel,
   "message-logs": MessageLogsPanel,
   "member-logs": MemberLogsPanel,

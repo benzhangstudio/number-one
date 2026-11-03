@@ -11,6 +11,7 @@ import { onboardingSettings } from "./onboarding.js";
 import { ruleVerificationSettings } from "./ruleVerification.js";
 import { serverLogSettings } from "./serverLogs.js";
 import { guidesSettings } from "./guides.js";
+import { levelsSettings } from "./levels.js";
 import { ticketSettings } from "./tickets.js";
 import { voiceLogSettings } from "./voiceLogs.js";
 import { botUpdateSettings } from "./botUpdates.js";
@@ -213,6 +214,16 @@ export const eventsFeature = defineFeature({
   settings: z.object({}),
 });
 
+export const levelsFeature = defineFeature({
+  id: "levels",
+  name: "Levels",
+  icon: "🏆",
+  description: "Members earn XP by chatting and level up. Show ranks and a leaderboard, and give roles at the levels you pick.",
+  category: "engagement",
+  recommended: true,
+  settings: levelsSettings,
+});
+
 export const channelDesignsFeature = defineFeature({
   id: "channel-designs",
   name: "Channel designs",
@@ -335,6 +346,7 @@ export const featureCatalog: FeatureInfo[] = [
   announcementsFeature,
   embedsFeature,
   eventsFeature,
+  levelsFeature,
   channelDesignsFeature,
   guidesFeature,
   messageLogsFeature,
@@ -405,3 +417,4 @@ export * from "./customCommands.js";
 export * from "./ruleVerification.js";
 export * from "./tickets.js";
 export * from "./guides.js";
+export * from "./levels.js";

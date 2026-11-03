@@ -41,6 +41,17 @@ Part of the [Anti-raid](/docs/anti-raid) module.
 | `/raidmode off` | Manage Server | Ends raid mode and puts everything back. |
 | `/raidmode status` | Manage Server | Shows whether raid mode is on, and until when. |
 
+## Levels
+
+Part of the [Levels](/docs/levels) module.
+
+| Command | Who | What it does |
+| --- | --- | --- |
+| `/rank [member]` | Everyone | Shows your level, XP and rank, or someone else's. |
+| `/leaderboard [page]` | Everyone | Shows the members with the most XP. |
+| `/xp give/take/set member amount` | Manage Server | Changes a member's XP. |
+| `/xp reset member` | Manage Server | Sets a member's XP back to zero. |
+
 ## Tickets
 
 Part of the [Tickets](/docs/tickets) module. Used inside a ticket channel.

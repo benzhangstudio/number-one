@@ -25,6 +25,7 @@ import type { BotUpdateFailure, BotUpdateInput, BotUpdateSettings, BotUpdateSumm
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
+import type { LevelsResponse, LevelsSettings } from "../../src/shared/levels";
 import type { OnboardingSettings, OnboardingStatus } from "../../src/shared/onboarding";
 import { offerUndo } from "./undo";
 
@@ -170,6 +171,10 @@ export const api = {
   saveAutomod: (guildId: string, settings: AutomodSettings) =>
     undoableSettings<AutomodResponse, AutomodSettings>(`/api/guilds/${guildId}/automod`, settings),
   joinLeave: (guildId: string) => request<JoinLeaveResponse>(`/api/guilds/${guildId}/join-leave`),
+  levels: (guildId: string) => request<LevelsResponse>(`/api/guilds/${guildId}/levels`),
+  saveLevels: (guildId: string, settings: LevelsSettings) =>
+    undoableSettings<LevelsResponse, LevelsSettings>(`/api/guilds/${guildId}/levels`, settings),
+  resetLevels: (guildId: string) => request<LevelsResponse>(`/api/guilds/${guildId}/levels/reset`, { method: "POST", body: "{}" }),
   saveJoinLeave: (guildId: string, settings: JoinLeaveSettings) =>
     undoableSettings<JoinLeaveResponse, JoinLeaveSettings>(`/api/guilds/${guildId}/join-leave`, settings),
   antiRaid: (guildId: string) => request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid`),

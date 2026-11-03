@@ -519,3 +519,17 @@ export const staffApplications = sqliteTable(
     index("staff_applications_status_idx").on(t.guildId, t.status),
   ],
 );
+
+/** Levels: each member's XP in a server. Kept when they leave, so rejoining doesn't wipe their progress. */
+export const memberLevels = sqliteTable(
+  "member_levels",
+  {
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    xp: integer("xp").notNull().default(0),
+    /** Messages that earned XP. */
+    messages: integer("messages").notNull().default(0),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.guildId, t.userId] }), index("member_levels_rank_idx").on(t.guildId, t.xp)],
+);
