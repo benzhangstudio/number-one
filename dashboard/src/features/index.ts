@@ -9,6 +9,7 @@ import { GuidesPanel } from "./GuidesPanel";
 import { AutomodPanel } from "./AutomodPanel";
 import { BotUpdatesPanel } from "./BotUpdatesPanel";
 import { ChannelDesignsPanel } from "./ChannelDesignsPanel";
+import { CommunityToolsPanel } from "./CommunityToolsPanel";
 import { CustomCommandsPanel } from "./CustomCommandsPanel";
 import { JoinLeavePanel } from "./JoinLeavePanel";
 import { LevelsPanel } from "./LevelsPanel";
@@ -45,6 +46,7 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "rule-verification": RuleVerificationPanel,
   tickets: TicketsPanel,
   "staff-applications": StaffApplicationsPanel,
+  "community-tools": CommunityToolsPanel,
   guides: GuidesPanel,
   "bot-updates": BotUpdatesPanel,
 };

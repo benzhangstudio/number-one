@@ -125,6 +125,16 @@ export const coreFeature = defineFeature({
   settings: z.object({}),
 });
 
+export const communityToolsFeature = defineFeature({
+  id: "community-tools",
+  name: "Community tools",
+  icon: "🏘️",
+  description: "Switch on Discord's Community features in one click, make announcement channels, and edit Discord's Welcome Screen and onboarding.",
+  category: "community",
+  recommended: true,
+  settings: z.object({}),
+});
+
 export const reactionRolesFeature = defineFeature({
   id: "reaction-roles",
   name: "Reaction roles",
@@ -368,6 +378,7 @@ export const featureCatalog: FeatureInfo[] = [
   customCommandsFeature,
   ticketsFeature,
   staffApplicationsFeature,
+  communityToolsFeature,
   botUpdatesFeature,
 ];
 
@@ -431,3 +442,4 @@ export * from "./tickets.js";
 export * from "./guides.js";
 export * from "./levels.js";
 export * from "./economy.js";
+export * from "./communityTools.js";

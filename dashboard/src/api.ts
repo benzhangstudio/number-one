@@ -27,6 +27,7 @@ import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
 import type { LevelsResponse, LevelsSettings } from "../../src/shared/levels";
 import type { EconomyResponse, EconomySettings } from "../../src/shared/economy";
+import type { CommunityToolsResponse, DiscordOnboardingInput, EnableCommunityInput, WelcomeScreenInput } from "../../src/shared/communityTools";
 import type { OnboardingSettings, OnboardingStatus } from "../../src/shared/onboarding";
 import { offerUndo } from "./undo";
 
@@ -180,6 +181,18 @@ export const api = {
   saveEconomy: (guildId: string, settings: EconomySettings) =>
     undoableSettings<EconomyResponse, EconomySettings>(`/api/guilds/${guildId}/economy`, settings),
   resetEconomy: (guildId: string) => request<EconomyResponse>(`/api/guilds/${guildId}/economy/reset`, { method: "POST", body: "{}" }),
+  communityTools: (guildId: string) => request<CommunityToolsResponse>(`/api/guilds/${guildId}/community-tools`),
+  enableCommunity: (guildId: string, input: EnableCommunityInput) =>
+    request<CommunityToolsResponse>(`/api/guilds/${guildId}/community-tools/community`, { method: "POST", body: JSON.stringify(input) }),
+  disableCommunity: (guildId: string) => request<CommunityToolsResponse>(`/api/guilds/${guildId}/community-tools/community`, { method: "DELETE" }),
+  convertChannel: (guildId: string, input: { channelId: string; to: "announcement" | "text" }) =>
+    request<CommunityToolsResponse>(`/api/guilds/${guildId}/community-tools/convert`, { method: "POST", body: JSON.stringify(input) }),
+  createAnnouncementChannel: (guildId: string, input: { name: string; parentId: string | null }) =>
+    request<CommunityToolsResponse>(`/api/guilds/${guildId}/community-tools/announcement`, { method: "POST", body: JSON.stringify(input) }),
+  saveWelcomeScreen: (guildId: string, input: WelcomeScreenInput) =>
+    request<CommunityToolsResponse>(`/api/guilds/${guildId}/community-tools/welcome-screen`, { method: "PUT", body: JSON.stringify(input) }),
+  saveDiscordOnboarding: (guildId: string, input: DiscordOnboardingInput) =>
+    request<CommunityToolsResponse>(`/api/guilds/${guildId}/community-tools/onboarding`, { method: "PUT", body: JSON.stringify(input) }),
   saveJoinLeave: (guildId: string, settings: JoinLeaveSettings) =>
     undoableSettings<JoinLeaveResponse, JoinLeaveSettings>(`/api/guilds/${guildId}/join-leave`, settings),
   antiRaid: (guildId: string) => request<AntiRaidResponse>(`/api/guilds/${guildId}/anti-raid`),
