@@ -16,7 +16,7 @@ Nothing is logged until a log channel is picked.
 
 | Group | Default | What's included |
 | --- | --- | --- |
-| Channels | On | Created, deleted, renamed, moved (up or down, or to another category), topic, age restriction, slowmode, voice settings, and whose permissions changed. |
+| Channels | On | Created, deleted, renamed, moved to another category, topic, age restriction, slowmode, voice settings, and whose permissions changed. |
 | Roles | On | Created, deleted, and changes to name, colour, display, icon, and **exactly which permissions** were given or taken away. |
 | Server settings | On | Name, icon, banner, verification level, image filter, notifications, two-factor requirement, system/rules/AFK channels, vanity invite and owner. |
 | Emojis and stickers | On | Added, removed and renamed. |

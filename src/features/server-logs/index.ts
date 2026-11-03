@@ -170,11 +170,8 @@ const channelUpdated = onEvent(Events.ChannelUpdate, async (before, after) => {
   }
   for (const [id, o] of before.permissionOverwrites.cache) if (!after.permissionOverwrites.cache.has(id)) overwrites.push(`➖ ${target(id, o.type)}`);
   if (overwrites.length) fields.push({ name: "Permissions changed for", value: overwrites.join("\n") });
-  if (!fields.length) {
-    // Only the position changed. One drag fires an update for every channel that shifted, so collect them briefly.
-    if (before.rawPosition !== after.rawPosition) queueMove(after.guild, s, after.id, before.rawPosition, after.rawPosition);
-    return;
-  }
+  // Moving channels around also fires updates; those alone aren't worth a log.
+  if (!fields.length) return;
 
   await post(after.guild, s, {
     color: COLORS.update,
@@ -188,57 +185,6 @@ const channelUpdated = onEvent(Events.ChannelUpdate, async (before, after) => {
     footer: `Channel ID ${after.id}`,
   });
 });
-
-/*
- * Reordering: dragging one channel makes Discord send an update for it and for every channel it passed.
- * The updates for a server are collected for a moment, then only the channel that was dragged is logged:
- * it moved furthest, while the others each shifted by one. Two channels that only swapped places are logged together.
- */
-const MOVE_WAIT_MS = 1500;
-const pendingMoves = new Map<string, { timer: NodeJS.Timeout; s: ServerLogSettings; moves: Map<string, { from: number; to: number }> }>();
-
-function queueMove(guild: Guild, s: ServerLogSettings, channelId: string, from: number, to: number) {
-  let batch = pendingMoves.get(guild.id);
-  if (!batch) {
-    batch = { s, moves: new Map(), timer: setTimeout(() => void flushMoves(guild), MOVE_WAIT_MS) };
-    pendingMoves.set(guild.id, batch);
-  }
-  const old = batch.moves.get(channelId);
-  batch.moves.set(channelId, { from: old?.from ?? from, to });
-}
-
-async function flushMoves(guild: Guild) {
-  const batch = pendingMoves.get(guild.id);
-  pendingMoves.delete(guild.id);
-  if (!batch) return;
-  const moves = [...batch.moves].map(([id, m]) => ({ id, ...m, by: Math.abs(m.to - m.from) })).filter((m) => m.by > 0);
-  if (!moves.length) return;
-  const most = Math.max(...moves.map((m) => m.by));
-  const dragged = moves.filter((m) => m.by === most);
-
-  const logMove = (id: string, description: string) => {
-    const channel = guild.channels.cache.get(id);
-    if (!channel) return;
-    return post(guild, batch.s, {
-      color: COLORS.update,
-      title: `↕️ ${kindOf(channel)} moved`,
-      description,
-      fields: [{ name: "Category", value: channel.parent?.name ?? "No category", inline: true }],
-      audit: [AuditLogEvent.ChannelUpdate],
-      targetId: id,
-      footer: `Channel ID ${id}`,
-    });
-  };
-
-  if (most === 1) {
-    // Moved by one place: the two neighbours swapped. More than two is Discord tidying positions, not a person.
-    if (dragged.length === 2) await logMove(dragged[0].id, `<#${dragged[0].id}> and <#${dragged[1].id}> swapped places`);
-    return;
-  }
-  for (const m of dragged.slice(0, 5)) {
-    await logMove(m.id, `<#${m.id}> moved ${m.to > m.from ? "down" : "up"} ${m.by} places`);
-  }
-}
 
 /* ------------------------------------------------------------ roles */
 
