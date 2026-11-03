@@ -1,4 +1,4 @@
-import { ApplicationFlags, Events, MessageFlags, Routes } from "discord.js";
+import { ActivityType, ApplicationFlags, Events, MessageFlags, Routes } from "discord.js";
 import { features } from "../../features/index.js";
 import { config, dashboardLink, setPublicUrl } from "../config.js";
 import { isFeatureEnabled } from "../settings.js";
@@ -41,8 +41,29 @@ async function detectDashboardAddress() {
   if (callback) setPublicUrl(callback.slice(0, -"/auth/callback".length), "Discord application settings");
 }
 
+/**
+ * The bot's status on its Discord profile: "Listening to /setup in 12 servers", with the live count.
+ * Updated when the bot joins or leaves a server, at most every 20 seconds (Discord limits status changes).
+ */
+let statusTimer: NodeJS.Timeout | undefined;
+function showStatus() {
+  const n = client.guilds.cache.size;
+  client.user?.setPresence({ status: "online", activities: [{ type: ActivityType.Listening, name: `/setup in ${n} server${n === 1 ? "" : "s"}` }] });
+}
+function queueStatus() {
+  statusTimer ??= setTimeout(() => {
+    statusTimer = undefined;
+    showStatus();
+  }, 20_000);
+}
+client.on(Events.GuildCreate, queueStatus);
+client.on(Events.GuildDelete, queueStatus);
+
 client.once(Events.ClientReady, async (c) => {
   console.log(`[bot] logged in as ${c.user.tag} in ${c.guilds.cache.size} servers`);
+  showStatus();
+  // Re-sent every 30 minutes too, in case Discord drops it after a reconnect.
+  setInterval(showStatus, 30 * 60_000).unref();
   await registerCommands().catch((err) => console.error("[bot] command registration failed:", err));
   await detectDashboardAddress().catch(() => {});
 });
