@@ -12,6 +12,7 @@ import {
   reactionRoleModes,
 } from "../../../src/shared/features";
 import { type GuildDetails, api } from "../api";
+import { refreshGuildData } from "../undo";
 import { EmojiInput, EmojiView } from "../components/emoji";
 import { ChannelSelect, RolePicker, RoleSelect, Toggle } from "../components/pickers";
 
@@ -195,6 +196,11 @@ interface Row {
   key: number;
   emoji: string;
   roleId: string;
+  /** A template row whose role isn't in the server: the role it suggests (name and colour). */
+  newRoleName: string;
+  newRoleColor: string;
+  /** The "Create this role" box is ticked: the bot makes that role in Discord when the menu is saved. */
+  createRole: boolean;
   label: string;
   description: string;
   style: ButtonStyleId;
@@ -221,7 +227,18 @@ interface Draft {
 }
 
 let rowKey = 0;
-const newRow = (r: Partial<Row> = {}): Row => ({ key: rowKey++, emoji: "", roleId: "", label: "", description: "", style: "secondary", ...r });
+const newRow = (r: Partial<Row> = {}): Row => ({
+  key: rowKey++,
+  emoji: "",
+  roleId: "",
+  createRole: false,
+  newRoleName: "",
+  newRoleColor: "",
+  label: "",
+  description: "",
+  style: "secondary",
+  ...r,
+});
 
 const defaultEmbed: ReactionRoleInput["embed"] = {
   enabled: true,
@@ -275,7 +292,10 @@ function draftFrom(m: ReactionRoleMessageView | undefined, channelId: string): D
   };
 }
 
-/** Starting points, like MEE6's templates. Roles whose names match a row's label are picked automatically. */
+/**
+ * Starting points, like MEE6's templates. Roles whose names match a row's label are picked automatically.
+ * When the server has no such role, the row offers a "Create this role" box instead.
+ */
 const TEMPLATES: { id: string; name: string; emoji: string; make: () => Partial<Draft> }[] = [
   {
     id: "verify",
@@ -299,12 +319,12 @@ const TEMPLATES: { id: string; name: string; emoji: string; make: () => Partial<
       mode: "unique",
       embed: { ...defaultEmbed, title: "Pick a name colour", description: "Choose one colour for your name. Pick another to switch." , listRoles: false },
       rows: [
-        newRow({ emoji: "🔴", label: "Red" }),
-        newRow({ emoji: "🟠", label: "Orange" }),
-        newRow({ emoji: "🟡", label: "Yellow" }),
-        newRow({ emoji: "🟢", label: "Green" }),
-        newRow({ emoji: "🔵", label: "Blue" }),
-        newRow({ emoji: "🟣", label: "Purple" }),
+        newRow({ emoji: "🔴", label: "Red", newRoleColor: "#e74c3c" }),
+        newRow({ emoji: "🟠", label: "Orange", newRoleColor: "#e67e22" }),
+        newRow({ emoji: "🟡", label: "Yellow", newRoleColor: "#f1c40f" }),
+        newRow({ emoji: "🟢", label: "Green", newRoleColor: "#2ecc71" }),
+        newRow({ emoji: "🔵", label: "Blue", newRoleColor: "#3498db" }),
+        newRow({ emoji: "🟣", label: "Purple", newRoleColor: "#9b59b6" }),
       ],
     }),
   },
@@ -449,19 +469,25 @@ function Editor({
     // Pick existing roles whose names match the template's labels.
     const rows = (made.rows ?? []).map((r) => {
       const match = guild.roles.find((role) => role.assignable && role.name.toLowerCase() === r.label.toLowerCase());
-      return match ? { ...r, roleId: match.id, label: "" } : r;
+      if (match) return { ...r, roleId: match.id, label: "" };
+      // Offer to create it only when no role has that name at all (one above my role is picked by hand).
+      const exists = guild.roles.some((role) => role.name.toLowerCase() === r.label.toLowerCase());
+      return r.label && !exists ? { ...r, newRoleName: r.label, label: "" } : r; // button text comes from the role
     });
     setD((x) => ({ ...x, ...made, kind: x.useExisting ? "reactions" : (made.kind ?? x.kind), rows, embed: { ...x.embed, ...made.embed } }));
   };
 
   const submit = async () => {
     setError("");
-    const rows = d.rows.filter((r) => r.emoji || r.roleId || r.label);
+    const rows = d.rows.filter((r) => r.emoji || r.roleId || r.label || r.newRoleName);
     if (onExisting && !lockedToMessage && !d.existingMessage.trim()) return setError("Paste the link to the message to use.");
     if (!onExisting && !d.channelId) return setError("Pick a channel.");
     if (rows.length === 0) return setError("Add at least one role.");
-    const missingRole = rows.findIndex((r) => !r.roleId);
-    if (missingRole !== -1) return setError(`Row ${missingRole + 1}: pick a role.`);
+    const missingRole = rows.findIndex((r) => !r.roleId && !(r.createRole && r.newRoleName.trim()));
+    if (missingRole !== -1) {
+      const r = rows[missingRole];
+      return setError(r.newRoleName ? `Row ${missingRole + 1}: pick a role, or tick “Create ${r.newRoleName}”.` : `Row ${missingRole + 1}: pick a role.`);
+    }
     if (d.kind === "reactions") {
       const missingEmoji = rows.findIndex((r) => !r.emoji);
       if (missingEmoji !== -1) return setError(`Row ${missingEmoji + 1}: pick an emoji. Reactions need one.`);
@@ -483,13 +509,24 @@ function Editor({
       confirm: d.confirm,
       tempMinutes: d.mode === "drop" ? 0 : d.tempMinutes,
       existingMessage: onExisting && !lockedToMessage ? d.existingMessage.trim() : "",
-      entries: rows.map(({ emoji, roleId, label, description, style }) => ({ emoji, roleId, label, description, style })),
+      entries: rows.map(({ emoji, roleId, createRole, newRoleName, newRoleColor, label, description, style }) => ({
+        emoji,
+        roleId,
+        // Only sent when no existing role is picked.
+        newRoleName: !roleId && createRole ? newRoleName.trim() : "",
+        newRoleColor: !roleId && createRole ? newRoleColor : "",
+        label,
+        description,
+        style,
+      })),
     };
     setSaving(true);
     try {
       const result = editingExisting
         ? await api.updateReactionRole(guild.id, initial.messageId, input)
         : await api.createReactionRole(guild.id, input);
+      // New roles were made: reload the server's role list so they show up by name.
+      if (input.entries.some((e) => e.newRoleName)) refreshGuildData();
       onSaved(result.message, result.warnings, editingExisting ? initial.messageId : undefined);
     } catch (err) {
       setError((err as Error).message);
@@ -634,6 +671,15 @@ function Editor({
                     </button>
                   </div>
                 </div>
+                {!r.roleId && r.newRoleName && (
+                  <label className="rr-create-role">
+                    <input type="checkbox" checked={r.createRole} onChange={(e) => setRow(r.key, { createRole: e.target.checked })} />
+                    <span>
+                      <strong>{r.newRoleName}</strong> isn't a role in this server yet. Create it
+                      <small className="muted"> (when you save, with no permissions)</small>
+                    </span>
+                  </label>
+                )}
                 {d.kind !== "reactions" && (
                   <div className="rr-row-extra">
                     <input
@@ -824,8 +870,8 @@ const STYLE_COLORS: Record<string, string> = Object.fromEntries(buttonStyles.map
 /** A Discord-like preview of the message, updated as the admin types. */
 function Preview({ guild, d }: { guild: Guild; d: Draft }) {
   const roleName = (id: string) => guild.roles.find((r) => r.id === id)?.name;
-  const rows = d.rows.filter((r) => r.emoji || r.roleId || r.label);
-  const labelOf = (r: Row) => r.label || roleName(r.roleId) || "Role";
+  const rows = d.rows.filter((r) => r.emoji || r.roleId || r.label || r.newRoleName);
+  const labelOf = (r: Row) => r.label || roleName(r.roleId) || r.newRoleName || "Role";
 
   const mention = (id: string) => {
     const role = guild.roles.find((r) => r.id === id);
@@ -868,7 +914,7 @@ function Preview({ guild, d }: { guild: Guild; d: Draft }) {
                   <div className="dc-embed-desc dc-lines">
                     {rows.map((r) => (
                       <div key={r.key}>
-                        {r.emoji && <EmojiView display={r.emoji} />} {r.roleId ? mention(r.roleId) : <span className="muted">@role</span>}
+                        {r.emoji && <EmojiView display={r.emoji} />} {r.roleId ? mention(r.roleId) : <span className="muted">@{r.newRoleName || "role"}</span>}
                         {d.kind === "dropdown" && r.description && <span className="muted"> — {r.description}</span>}
                       </div>
                     ))}

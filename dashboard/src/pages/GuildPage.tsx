@@ -42,8 +42,14 @@ export function GuildPage({ guildId, page }: { guildId: string; page: string }) 
       api.guild(guildId).then(setData).catch(() => {});
       setRefreshKey((k) => k + 1);
     };
+    // Just the server details, e.g. after a role was created from the dashboard.
+    const onGuildData = () => api.guild(guildId).then(setData).catch(() => {});
     window.addEventListener("dashboard:refresh", onRefresh);
-    return () => window.removeEventListener("dashboard:refresh", onRefresh);
+    window.addEventListener("dashboard:guild-data", onGuildData);
+    return () => {
+      window.removeEventListener("dashboard:refresh", onRefresh);
+      window.removeEventListener("dashboard:guild-data", onGuildData);
+    };
   }, [guildId]);
 
   // Close the phone menu and jump to the top whenever the page changes.

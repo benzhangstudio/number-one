@@ -119,16 +119,26 @@ export const reactionRoleEmbed = z.object({
   listRoles: z.boolean().default(true),
 });
 
-export const reactionRoleEntryInput = z.object({
-  /** Required for reactions; optional on buttons and dropdown options. */
-  emoji: z.string().trim().max(100).default(""),
-  roleId: snowflake.or(z.literal("")).refine((v) => v !== "", "Pick a role for every row"),
-  /** Button text / dropdown option name. Defaults to the role's name. */
-  label: z.string().trim().max(80).default(""),
-  /** Small grey text under a dropdown option. */
-  description: z.string().trim().max(100).default(""),
-  style: z.enum(["primary", "secondary", "success", "danger"]).default("secondary"),
-});
+export const reactionRoleEntryInput = z
+  .object({
+    /** Required for reactions; optional on buttons and dropdown options. */
+    emoji: z.string().trim().max(100).default(""),
+    /** Empty when the row asks for a new role (newRoleName). */
+    roleId: snowflake.or(z.literal("")).default(""),
+    /**
+     * "Create a new role" in the dashboard: when roleId is empty, the bot makes a role with this name (or
+     * reuses one that already has it) before saving. The role gets no permissions.
+     */
+    newRoleName: z.string().trim().max(100).default(""),
+    /** Colour for that new role, like "#ff0000". Empty = no colour. */
+    newRoleColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).or(z.literal("")).default(""),
+    /** Button text / dropdown option name. Defaults to the role's name. */
+    label: z.string().trim().max(80).default(""),
+    /** Small grey text under a dropdown option. */
+    description: z.string().trim().max(100).default(""),
+    style: z.enum(["primary", "secondary", "success", "danger"]).default("secondary"),
+  })
+  .refine((e) => e.roleId !== "" || e.newRoleName !== "", "Pick a role for every row, or tick “Create a new role”.");
 
 /** What the dashboard sends to create or update a reaction-role message. */
 export const reactionRoleInput = z

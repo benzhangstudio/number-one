@@ -1829,6 +1829,19 @@ select.chip-add {
   cursor: default;
 }
 
+/* "Create this role" on template rows whose role isn't in the server yet */
+.rr-create-role {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+.rr-create-role input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
 .rr-row-extra {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

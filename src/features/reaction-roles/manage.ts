@@ -1,4 +1,4 @@
-import { ChannelType, type Client, type Guild, type GuildTextBasedChannel } from "discord.js";
+import { ChannelType, type Client, type Guild, type GuildMember, type GuildTextBasedChannel, PermissionFlagsBits } from "discord.js";
 import { MAX_REACTION_ROLE_MESSAGES, type ReactionRoleInput, parseMessageLink } from "../../shared/features.js";
 import { parseEmojiInput } from "./emoji.js";
 import { buildMessage, fetchConfigMessage, missingChannelPermissions, removeOwnReactions, roleProblem, syncMessage } from "./message.js";
@@ -11,10 +11,50 @@ export class SetupError extends Error {
   }
 }
 
-/** Checks every row (emoji, role, label) and returns them ready to save. */
-async function checkEntries(guild: Guild, userId: string, input: ReactionRoleInput) {
+/**
+ * Rows with "Create a new role" ticked: makes those roles (no permissions, at the bottom of the list) and
+ * fills in their IDs. A role that already has the name is reused, so saving again after an error
+ * doesn't make duplicates.
+ */
+async function createMissingRoles(guild: Guild, member: GuildMember, input: ReactionRoleInput) {
+  const wanted = input.entries.filter((e) => !e.roleId && e.newRoleName);
+  if (wanted.length === 0) return input;
+  if (!member.permissions.has(PermissionFlagsBits.ManageRoles)) {
+    throw new SetupError("You need the Manage Roles permission to create roles. Pick existing roles instead.");
+  }
+  if (!guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles)) throw new SetupError("I need the Manage Roles permission.");
+  if (guild.roles.cache.size + wanted.length > 250) throw new SetupError("This server is near Discord's limit of 250 roles.");
+
+  const entries = [];
+  for (const [i, entry] of input.entries.entries()) {
+    if (entry.roleId || !entry.newRoleName) {
+      entries.push(entry);
+      continue;
+    }
+    const name = entry.newRoleName;
+    let role = guild.roles.cache.find((r) => !r.managed && r.id !== guild.id && r.name.toLowerCase() === name.toLowerCase());
+    role ??= await guild.roles
+      .create({
+        name,
+        color: entry.newRoleColor ? (entry.newRoleColor as `#${string}`) : undefined,
+        permissions: [],
+        mentionable: false,
+        reason: `Number One reaction roles: created from the dashboard by ${member.user.tag}`,
+      })
+      .catch((err) => {
+        console.warn("[reaction-roles] role create failed:", err?.message ?? err);
+        throw new SetupError(`Row ${i + 1}: I couldn't create the role “${name}”. Check that I have Manage Roles.`);
+      });
+    entries.push({ ...entry, roleId: role.id });
+  }
+  return { ...input, entries };
+}
+
+/** Checks every row (emoji, role, label) and returns them ready to save. Creates any new roles asked for. */
+async function checkEntries(guild: Guild, userId: string, original: ReactionRoleInput) {
   const member = await guild.members.fetch(userId).catch(() => null);
   if (!member) throw new SetupError("You're no longer a member of this server.");
+  const input = await createMissingRoles(guild, member, original);
   const rank = { position: member.roles.highest.position, isOwner: guild.ownerId === member.id };
   const reactions = input.kind === "reactions";
 

@@ -28,6 +28,8 @@ export function offerUndo(undo: () => Promise<unknown>) {
 
 /** Tells the open page to reload its data, e.g. after an undo. */
 export const refreshDashboard = () => window.dispatchEvent(new Event("dashboard:refresh"));
+/** Reloads only the server details (roles, channels, emojis) without resetting the open page. */
+export const refreshGuildData = () => window.dispatchEvent(new Event("dashboard:guild-data"));
 
 export function UndoToast() {
   const [offer, setOffer] = useState<Offer | null>(current);
