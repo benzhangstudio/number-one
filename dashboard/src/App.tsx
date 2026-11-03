@@ -5,6 +5,7 @@ import { api, avatarUrl, inviteUrl } from "./api";
 import { Footer, SUPPORT_SERVER } from "./components/Footer";
 import { GuildPage } from "./pages/GuildPage";
 import { AnnouncementsPage } from "./pages/AnnouncementsPage";
+import { DeveloperPage } from "./pages/DeveloperPage";
 import { DocsPage } from "./pages/DocsPage";
 import { HomePage } from "./pages/HomePage";
 import { LandingPage } from "./pages/LandingPage";
@@ -235,6 +236,7 @@ export function App() {
   else if (path === "/announcements") page = <AnnouncementsPage />; // public too
   else if (docsMatch) page = <DocsPage slug={docsMatch[1] ?? ""} />; // public too
   else if (!user) page = <LandingPage />;
+  else if (path === "/developer") page = user.isDeveloper ? <DeveloperPage /> : <HomePage user={user} />; // the bot's developer only
   else if (guildMatch) page = <GuildPage guildId={guildMatch[1]} page={guildMatch[2] ?? ""} />;
   else if (path.startsWith("/servers")) page = <ServersPage />;
   else page = <HomePage user={user} />;
@@ -251,6 +253,7 @@ export function App() {
     { label: "Announcements", to: "/announcements", active: path === "/announcements", dot: hasUnread },
     ...(clientId ? [{ label: "Add bot", to: inviteUrl(clientId), external: true }] : []),
     { label: "Support", to: SUPPORT_SERVER, external: true, wideOnly: true },
+    ...(user?.isDeveloper ? [{ label: "Developer", to: "/developer", active: path === "/developer" }] : []),
   ];
 
   return (

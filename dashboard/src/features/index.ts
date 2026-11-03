@@ -6,6 +6,7 @@ import { EmbedsPanel } from "./EmbedsPanel";
 import { EventsPanel } from "./EventsPanel";
 import { GuidesPanel } from "./GuidesPanel";
 import { AutomodPanel } from "./AutomodPanel";
+import { BotUpdatesPanel } from "./BotUpdatesPanel";
 import { ChannelDesignsPanel } from "./ChannelDesignsPanel";
 import { CustomCommandsPanel } from "./CustomCommandsPanel";
 import { JoinLeavePanel } from "./JoinLeavePanel";
@@ -39,4 +40,5 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "rule-verification": RuleVerificationPanel,
   tickets: TicketsPanel,
   guides: GuidesPanel,
+  "bot-updates": BotUpdatesPanel,
 };

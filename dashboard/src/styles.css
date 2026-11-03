@@ -5368,3 +5368,63 @@ select.chip-add {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* ---------- Developer page (bot's developer only) ---------- */
+.dev-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.dev-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dev-form h2 {
+  margin: 0;
+}
+.dev-form .btn {
+  align-self: flex-start;
+}
+.dev-preview {
+  position: sticky;
+  top: calc(var(--topbar-h) + 12px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dev-embed-footer {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #b5bac1;
+}
+.dev-history {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dev-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dev-item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.dev-failures {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+@media (max-width: 800px) {
+  .dev-grid {
+    grid-template-columns: 1fr;
+  }
+  .dev-preview {
+    position: static;
+  }
+}

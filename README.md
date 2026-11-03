@@ -78,7 +78,7 @@ Every reply is public so staff can see who did what. Only `/setup` and a member'
 
 ### Setup
 
-`/setup` (or the "What will you use Number One for?" card on the dashboard) lets owners pick broad categories: 🛡️ Moderation & Safety, 👥 Community Settings, 🎭 Roles Management, 📋 Logging & Auditing, 🎉 Engagement & Fun, 🛠️ Utilities & Automation, and 🎨 Cosmetics (channel designs and guides). The recommended features in each picked category switch on.
+`/setup` (or the "What will you use Number One for?" card on the dashboard) lets owners pick broad categories: 🛡️ Moderation & Safety, 👥 Community Settings, 🎭 Roles Management, 📋 Logging & Auditing, 🎉 Engagement & Fun, 🛠️ Utilities & Automation, 🎨 Cosmetics (channel designs and guides), and 🧩 Other (Number One updates). The recommended features in each picked category switch on.
 
 - Categories without features yet are marked "coming soon". When a feature ships in a picked category, it switches on automatically for that server.
 - Re-running setup never switches off anything already in use.

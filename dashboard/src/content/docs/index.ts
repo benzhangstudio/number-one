@@ -14,6 +14,7 @@ const groups: { name: string; pages: string[] }[] = [
   { name: "🎉 Engagement & Fun", pages: ["events"] },
   { name: "🛠️ Utilities & Automation", pages: ["embeds", "announcements", "custom-commands", "tickets"] },
   { name: "🎨 Cosmetics", pages: ["channel-designs", "guides"] },
+  { name: "🧩 Other", pages: ["bot-updates"] },
   { name: "Help", pages: ["permissions", "troubleshooting"] },
 ];
 

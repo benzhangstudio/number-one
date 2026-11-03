@@ -20,6 +20,7 @@ import type { GuideKind, GuideSettings, GuidesResponse } from "../../src/shared/
 import type { TicketPanelInput, TicketSettings, TicketsResponse } from "../../src/shared/tickets";
 import type { ServerLogResponse, ServerLogSettings } from "../../src/shared/serverLogs";
 import type { VoiceLogResponse, VoiceLogSettings } from "../../src/shared/voiceLogs";
+import type { BotUpdateFailure, BotUpdateInput, BotUpdateSettings, BotUpdateSummary, BotUpdatesPanelData, DeveloperOverview } from "../../src/shared/botUpdates";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
@@ -221,6 +222,15 @@ export const api = {
   serverLogs: (guildId: string) => request<ServerLogResponse>(`/api/guilds/${guildId}/server-logs`),
   saveServerLogs: (guildId: string, settings: ServerLogSettings) =>
     undoableSettings<ServerLogResponse, ServerLogSettings>(`/api/guilds/${guildId}/server-logs`, settings),
+  botUpdates: (guildId: string) => request<BotUpdatesPanelData>(`/api/guilds/${guildId}/bot-updates`),
+  saveBotUpdates: (guildId: string, settings: BotUpdateSettings) =>
+    undoableSettings<BotUpdatesPanelData, BotUpdateSettings>(`/api/guilds/${guildId}/bot-updates`, settings),
+  testBotUpdates: (guildId: string) => request<{ ok: true }>(`/api/guilds/${guildId}/bot-updates/test`, { method: "POST", body: "{}" }),
+  // Developer page (only works for the bot's developer).
+  developer: () => request<DeveloperOverview>("/api/developer"),
+  sendBotUpdate: (input: BotUpdateInput) =>
+    request<BotUpdateSummary>("/api/developer/updates", { method: "POST", body: JSON.stringify(input) }),
+  botUpdateFailures: (id: number) => request<{ failures: BotUpdateFailure[] }>(`/api/developer/updates/${id}/failures`),
   voiceLogs: (guildId: string) => request<VoiceLogResponse>(`/api/guilds/${guildId}/voice-logs`),
   saveVoiceLogs: (guildId: string, settings: VoiceLogSettings) =>
     undoableSettings<VoiceLogResponse, VoiceLogSettings>(`/api/guilds/${guildId}/voice-logs`, settings),

@@ -13,6 +13,7 @@ import { serverLogSettings } from "./serverLogs.js";
 import { guidesSettings } from "./guides.js";
 import { ticketSettings } from "./tickets.js";
 import { voiceLogSettings } from "./voiceLogs.js";
+import { botUpdateSettings } from "./botUpdates.js";
 
 /**
  * The single definition of every feature: its name, description, category and settings shape.
@@ -69,6 +70,12 @@ export const categories = [
     name: "Cosmetics",
     emoji: "🎨",
     description: "Cute designs for your server, like decorated channel names and easy-to-read server and staff guides",
+  },
+  {
+    id: "other",
+    name: "Other",
+    emoji: "🧩",
+    description: "Everything else, like news and updates about Number One itself",
   },
 ] as const;
 
@@ -295,6 +302,16 @@ export const ticketsFeature = defineFeature({
   settings: ticketSettings,
 });
 
+export const botUpdatesFeature = defineFeature({
+  id: "bot-updates",
+  name: "Number One updates",
+  icon: "📬",
+  description: "Get news about Number One (new features, fixes, downtime) in a channel you choose, with an optional role to mention.",
+  category: "other",
+  recommended: true,
+  settings: botUpdateSettings,
+});
+
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
   moderationFeature,
@@ -315,6 +332,7 @@ export const featureCatalog: FeatureInfo[] = [
   voiceLogsFeature,
   customCommandsFeature,
   ticketsFeature,
+  botUpdatesFeature,
 ];
 
 export function getFeatureInfo(id: string): FeatureInfo | undefined {
@@ -352,6 +370,8 @@ export interface DashboardUser {
   id: string;
   username: string;
   avatar: string | null;
+  /** Owns the bot's Discord application: gets the Developer page. */
+  isDeveloper?: boolean;
 }
 
 export * from "./reactionRoles.js";
@@ -367,6 +387,7 @@ export * from "./messageLogs.js";
 export * from "./memberLogs.js";
 export * from "./serverLogs.js";
 export * from "./voiceLogs.js";
+export * from "./botUpdates.js";
 export * from "./customCommands.js";
 export * from "./ruleVerification.js";
 export * from "./tickets.js";

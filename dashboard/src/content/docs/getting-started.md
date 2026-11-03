@@ -17,6 +17,7 @@ Number One combines the jobs of many single-purpose bots into one:
 | 🎉 Engagement & Fun | [Events](/docs/events) |
 | 🛠️ Utilities & Automation | [Embed messages](/docs/embeds), [Announcements](/docs/announcements), [Custom commands](/docs/custom-commands), [Tickets](/docs/tickets) |
 | 🎨 Cosmetics | [Channel designs](/docs/channel-designs), [Guides](/docs/guides) |
+| 🧩 Other | [Number One updates](/docs/bot-updates) |
 
 Number One keeps its slash command list short on purpose. Almost everything is set up on the dashboard, and only the things staff need in the moment (like `/ban` or `/raidmode`) are commands. See [Commands](/docs/commands) for the full list.
 
@@ -41,6 +42,7 @@ Type `/setup` in your server (you need **Manage Server**), or use the "What will
 - 🎉 Engagement & Fun
 - 🛠️ Utilities & Automation
 - 🎨 Cosmetics
+- 🧩 Other
 
 The recommended modules in each picked category switch on.
 

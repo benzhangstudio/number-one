@@ -447,3 +447,30 @@ export const guidePosts = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.guildId, t.kind] })],
 );
+
+/** Number One updates: announcements the bot's developer sent from the Developer page. */
+export const devUpdates = sqliteTable("dev_updates", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  url: text("url").notNull().default(""),
+  mention: integer("mention", { mode: "boolean" }).notNull().default(true),
+  createdBy: text("created_by").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  status: text("status", { enum: ["sending", "done"] }).notNull().default("sending"),
+});
+
+/** Number One updates: one row per server an update was posted to (or failed for), so a restart never posts twice. */
+export const devUpdateDeliveries = sqliteTable(
+  "dev_update_deliveries",
+  {
+    updateId: integer("update_id")
+      .notNull()
+      .references(() => devUpdates.id, { onDelete: "cascade" }),
+    guildId: text("guild_id").notNull(),
+    outcome: text("outcome", { enum: ["sent", "failed"] }).notNull(),
+    reason: text("reason").notNull().default(""),
+    deliveredAt: integer("delivered_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.updateId, t.guildId] }), index("dev_update_deliveries_guild_idx").on(t.guildId)],
+);

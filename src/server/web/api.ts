@@ -7,6 +7,8 @@ import { client } from "../bot/client.js";
 import { config, loginReady } from "../config.js";
 import { getAccessState } from "../../features/onboarding/access.js";
 import { deleteGuildData } from "../guildData.js";
+import { registerDeveloperApi } from "../../features/bot-updates/index.js";
+import { isDeveloper } from "../../features/bot-updates/developer.js";
 import { applySetup, getAllFeatureStates, getFeatureState, getSetup, saveFeatureState } from "../settings.js";
 import { type Session, discordUserFetch, requireSession } from "./auth.js";
 
@@ -99,7 +101,7 @@ export function registerApiRoutes(app: FastifyInstance) {
 
     api.get("/api/me", async (request): Promise<DashboardUser> => {
       const s = request.session!;
-      return { id: s.userId, username: s.username, avatar: s.avatar };
+      return { id: s.userId, username: s.username, avatar: s.avatar, isDeveloper: await isDeveloper(s.userId) };
     });
 
     api.get("/api/guilds", async (request, reply) => {
@@ -110,6 +112,9 @@ export function registerApiRoutes(app: FastifyInstance) {
         throw err;
       }
     });
+
+    // The Developer page (bot updates). Only for the owner of the bot's Discord application.
+    registerDeveloperApi(api);
 
     api.register(async (guildApi) => {
       guildApi.addHook("preHandler", requireManagedGuild);
