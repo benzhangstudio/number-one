@@ -17,6 +17,7 @@ import { MemberLogsPanel } from "./MemberLogsPanel";
 import { MessageLogsPanel } from "./MessageLogsPanel";
 import { ModerationPanel } from "./ModerationPanel";
 import { OnboardingPanel } from "./OnboardingPanel";
+import { PollsPanel } from "./PollsPanel";
 import { ReactionRolesPanel } from "./ReactionRolesPanel";
 import { RuleVerificationPanel } from "./RuleVerificationPanel";
 import { ServerLogsPanel } from "./ServerLogsPanel";
@@ -35,6 +36,7 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   announcements: AnnouncementsPanel,
   embeds: EmbedsPanel,
   events: EventsPanel,
+  polls: PollsPanel,
   levels: LevelsPanel,
   economy: EconomyPanel,
   "channel-designs": ChannelDesignsPanel,

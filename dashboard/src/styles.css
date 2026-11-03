@@ -3817,6 +3817,58 @@ select.chip-add {
   }
 }
 
+/* --- Polls (also uses the Events styles) --- */
+.poll-results {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.poll-results li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(60px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+.poll-results li > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.poll-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+.poll-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+.poll-voters-link {
+  align-self: flex-start;
+}
+.poll-answer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.poll-answer-row input {
+  flex: 1;
+  min-width: 0;
+}
+.poll-add {
+  align-self: flex-start;
+}
+.poll-preview-bar {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  color: #b5bac1;
+}
+
 /* --- Channel designs --- */
 .panel.designs {
   display: flex;

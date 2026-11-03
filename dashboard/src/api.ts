@@ -13,6 +13,7 @@ import type { ChannelDesignSettings, ChannelDesignsResponse } from "../../src/sh
 import type { CustomCommandInput, CustomCommandsResponse, RulesSettings } from "../../src/shared/customCommands";
 import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embeds";
 import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
+import type { PollInput, PollSettings, PollView, PollVoterView, PollsResponse } from "../../src/shared/polls";
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
 import type { RuleVerificationResponse, RuleVerificationSettings } from "../../src/shared/ruleVerification";
@@ -229,6 +230,18 @@ export const api = {
     request<EventResult>(`/api/guilds/${guildId}/events/${id}/discord`, { method: "POST", body: "{}" }),
   cancelEvent: (guildId: string, id: number) => request<EventResult>(`/api/guilds/${guildId}/events/${id}/cancel`, { method: "POST", body: "{}" }),
   deleteEvent: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/events/${id}`, { method: "DELETE" }),
+  polls: (guildId: string) => request<PollsResponse>(`/api/guilds/${guildId}/polls`),
+  savePollSettings: (guildId: string, settings: PollSettings) =>
+    undoable<PollsResponse, PollSettings>(
+      () => request<PollsResponse>(`/api/guilds/${guildId}/polls`),
+      (r) => r.settings,
+      (s) => request<PollsResponse>(`/api/guilds/${guildId}/polls/settings`, { method: "PUT", body: JSON.stringify(s) }),
+      settings,
+    ),
+  createPoll: (guildId: string, input: PollInput) => request<PollView>(`/api/guilds/${guildId}/polls`, { method: "POST", body: JSON.stringify(input) }),
+  pollVoters: (guildId: string, id: number) => request<PollVoterView[]>(`/api/guilds/${guildId}/polls/${id}/voters`),
+  endPoll: (guildId: string, id: number) => request<PollView>(`/api/guilds/${guildId}/polls/${id}/end`, { method: "POST", body: "{}" }),
+  deletePoll: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/polls/${id}`, { method: "DELETE" }),
   channelDesigns: (guildId: string) => request<ChannelDesignsResponse>(`/api/guilds/${guildId}/channel-designs`),
   applyChannelDesign: (guildId: string, settings: ChannelDesignSettings) =>
     undoable<ChannelDesignsResponse, ChannelDesignSettings>(

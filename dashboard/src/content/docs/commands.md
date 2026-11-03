@@ -66,6 +66,15 @@ Part of the [Economy](/docs/economy) module.
 | `/economy give/take/set member amount` | Manage Server | Changes a member's balance. |
 | `/economy history member` | Manage Server | Shows a member's latest balance changes. |
 
+## Polls
+
+Part of the [Polls](/docs/polls) module.
+
+| Command | Who | What it does |
+| --- | --- | --- |
+| `/poll create question answers [duration] [multiple] [anonymous] [hide_results] [channel]` | Staff (or who the settings allow) | Posts a poll with answer buttons and live results. Split answers with `\|`. |
+| `/poll end poll` | Who made it, or Manage Messages | Ends a poll now and posts the result. |
+
 ## Tickets
 
 Part of the [Tickets](/docs/tickets) module. Used inside a ticket channel.

@@ -333,6 +333,44 @@ export const eventRsvps = sqliteTable(
   (t) => [primaryKey({ columns: [t.eventId, t.userId] }), index("event_rsvps_guild_idx").on(t.guildId)],
 );
 
+/** Polls: a question with answer buttons and live results. */
+export const polls = sqliteTable(
+  "polls",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    channelId: text("channel_id").notNull(),
+    /** The posted poll message. */
+    messageId: text("message_id"),
+    /** Everything the poll was made with (JSON, validated by pollInput in src/shared/polls.ts). */
+    details: text("details", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    /** When it closes on its own, or null to stay open until someone ends it. */
+    endsAt: integer("ends_at", { mode: "timestamp_ms" }),
+    /** open or ended. */
+    status: text("status", { enum: ["open", "ended"] }).notNull().default("open"),
+    createdBy: text("created_by").notNull(),
+    createdByTag: text("created_by_tag").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("polls_guild_idx").on(t.guildId, t.status), index("polls_ends_idx").on(t.status, t.endsAt)],
+);
+
+/** Polls: one row per member per answer they picked (several rows when more than one answer is allowed). */
+export const pollVotes = sqliteTable(
+  "poll_votes",
+  {
+    pollId: integer("poll_id")
+      .notNull()
+      .references(() => polls.id, { onDelete: "cascade" }),
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    /** Answer number, starting at 0. */
+    answer: integer("answer").notNull(),
+    votedAt: integer("voted_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.pollId, t.userId, t.answer] }), index("poll_votes_guild_idx").on(t.guildId)],
+);
+
 /**
  * Channel designs: the name each channel had before Number One added a design, and the name it set,
  * so designs can be swapped or removed without changing the channel's own name.

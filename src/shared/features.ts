@@ -13,6 +13,7 @@ import { serverLogSettings } from "./serverLogs.js";
 import { guidesSettings } from "./guides.js";
 import { levelsSettings } from "./levels.js";
 import { economySettings } from "./economy.js";
+import { pollSettings } from "./polls.js";
 import { ticketSettings } from "./tickets.js";
 import { voiceLogSettings } from "./voiceLogs.js";
 import { botUpdateSettings } from "./botUpdates.js";
@@ -225,6 +226,16 @@ export const eventsFeature = defineFeature({
   settings: z.object({}),
 });
 
+export const pollsFeature = defineFeature({
+  id: "polls",
+  name: "Polls",
+  icon: "📊",
+  description: "Ask your server a question with up to 10 answers. Members vote with buttons and see live results, and the winner is posted when it ends.",
+  category: "engagement",
+  recommended: true,
+  settings: pollSettings,
+});
+
 export const levelsFeature = defineFeature({
   id: "levels",
   name: "Levels",
@@ -367,6 +378,7 @@ export const featureCatalog: FeatureInfo[] = [
   announcementsFeature,
   embedsFeature,
   eventsFeature,
+  pollsFeature,
   levelsFeature,
   economyFeature,
   channelDesignsFeature,
@@ -442,4 +454,5 @@ export * from "./tickets.js";
 export * from "./guides.js";
 export * from "./levels.js";
 export * from "./economy.js";
+export * from "./polls.js";
 export * from "./communityTools.js";

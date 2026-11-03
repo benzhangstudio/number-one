@@ -22,6 +22,7 @@ Number One only keeps what it needs for its features to work. This may include:
 - Staff applications: the answers a member sends, and the staff's decision and note.
 - Levels: how much XP each member has earned in a server and how many messages earned it (never what the messages said).
 - Economy: each member's balance in a server, and a history of balance changes (like daily rewards and payments between members), kept for 90 days.
+- Polls: which answers each member picked, so they can vote only once and change their vote. On anonymous polls this isn't shown to anyone.
 
 When a server turns on Auto-moderation, Number One reads messages in that server to check them against the server's filters. Message text is checked in memory and is never saved. To spot repeated messages, Number One briefly keeps a scrambled fingerprint of recent messages (not the text itself) for up to 10 minutes. If a server has an alert channel set up, a caught message is posted there for the server's staff to review.
 
