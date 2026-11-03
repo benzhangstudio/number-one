@@ -250,7 +250,7 @@ export const economyFeature = defineFeature({
   id: "economy",
   name: "Economy",
   icon: "🪙",
-  description: "Your server's own currency. Members earn it by chatting, with /daily and /work, and send it to each other with /pay.",
+  description: "Your server's own currency. Members earn it by chatting, /daily and /work, spend it in your shop on roles and items, and bet it on games.",
   category: "engagement",
   recommended: true,
   settings: economySettings,

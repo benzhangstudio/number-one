@@ -608,3 +608,44 @@ export const economyTransactions = sqliteTable(
   },
   (t) => [index("economy_tx_guild_idx").on(t.guildId, t.createdAt), index("economy_tx_member_idx").on(t.guildId, t.userId, t.createdAt)],
 );
+
+/** Economy: what's for sale in a server's shop (validated by shopItemInput in src/shared/economy.ts). */
+export const economyShopItems = sqliteTable(
+  "economy_shop_items",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    emoji: text("emoji").notNull().default(""),
+    price: integer("price").notNull(),
+    /** Buying it gives this role. */
+    roleId: text("role_id"),
+    /** How many are left. Null = unlimited. */
+    stock: integer("stock"),
+    /** Most one member can own. Null = no limit. */
+    maxPerMember: integer("max_per_member"),
+    /** How many have been bought in total. */
+    sold: integer("sold").notNull().default(0),
+    hidden: integer("hidden", { mode: "boolean" }).notNull().default(false),
+    /** Order in the shop, lowest first. */
+    position: integer("position").notNull().default(0),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("economy_shop_guild_idx").on(t.guildId, t.position)],
+);
+
+/** Economy: what each member bought and still owns. */
+export const economyInventory = sqliteTable(
+  "economy_inventory",
+  {
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    itemId: integer("item_id")
+      .notNull()
+      .references(() => economyShopItems.id, { onDelete: "cascade" }),
+    quantity: integer("quantity").notNull().default(0),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.guildId, t.userId, t.itemId] }), index("economy_inventory_item_idx").on(t.itemId)],
+);

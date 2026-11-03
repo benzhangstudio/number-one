@@ -63,8 +63,15 @@ Part of the [Economy](/docs/economy) module.
 | `/work` | Everyone | Does a quick job for some money. |
 | `/pay member amount` | Everyone | Sends some of your money to another member. |
 | `/richest [page]` | Everyone | Shows the members with the most money. |
+| `/shop [page]` | Everyone | Shows what's for sale in the server's shop. |
+| `/buy item [quantity]` | Everyone | Buys an item from the shop. |
+| `/inventory [member]` | Everyone | Shows what you, or someone else, bought. |
+| `/coinflip bet side` | Everyone | Bets on heads or tails. |
+| `/slots bet` | Everyone | Spins the slot machine. |
+| `/blackjack bet` | Everyone | Plays blackjack against Number One. |
 | `/economy give/take/set member amount` | Manage Server | Changes a member's balance. |
 | `/economy history member` | Manage Server | Shows a member's latest balance changes. |
+| `/economy take-item member item [quantity]` | Manage Server | Takes a shop item from a member, like when they use it. |
 
 ## Polls
 

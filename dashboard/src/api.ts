@@ -27,7 +27,7 @@ import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod"
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
 import type { LevelsResponse, LevelsSettings } from "../../src/shared/levels";
-import type { EconomyResponse, EconomySettings } from "../../src/shared/economy";
+import type { EconomyResponse, EconomySettings, ShopItemInput } from "../../src/shared/economy";
 import type { CommunityToolsResponse, DiscordOnboardingInput, EnableCommunityInput, WelcomeScreenInput } from "../../src/shared/communityTools";
 import type { OnboardingSettings, OnboardingStatus } from "../../src/shared/onboarding";
 import { offerUndo } from "./undo";
@@ -182,6 +182,11 @@ export const api = {
   saveEconomy: (guildId: string, settings: EconomySettings) =>
     undoableSettings<EconomyResponse, EconomySettings>(`/api/guilds/${guildId}/economy`, settings),
   resetEconomy: (guildId: string) => request<EconomyResponse>(`/api/guilds/${guildId}/economy/reset`, { method: "POST", body: "{}" }),
+  createShopItem: (guildId: string, item: ShopItemInput) =>
+    request<EconomyResponse>(`/api/guilds/${guildId}/economy/shop`, { method: "POST", body: JSON.stringify(item) }),
+  updateShopItem: (guildId: string, id: number, item: ShopItemInput) =>
+    request<EconomyResponse>(`/api/guilds/${guildId}/economy/shop/${id}`, { method: "PUT", body: JSON.stringify(item) }),
+  deleteShopItem: (guildId: string, id: number) => request<EconomyResponse>(`/api/guilds/${guildId}/economy/shop/${id}`, { method: "DELETE" }),
   communityTools: (guildId: string) => request<CommunityToolsResponse>(`/api/guilds/${guildId}/community-tools`),
   enableCommunity: (guildId: string, input: EnableCommunityInput) =>
     request<CommunityToolsResponse>(`/api/guilds/${guildId}/community-tools/community`, { method: "POST", body: JSON.stringify(input) }),

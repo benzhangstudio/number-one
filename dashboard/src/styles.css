@@ -5697,6 +5697,35 @@ select.chip-add {
   grid-template-columns: 32px 28px minmax(0, 1fr) auto;
 }
 
+.economy-shop {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.economy-shop li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.economy-shop li.hidden-item {
+  opacity: 0.6;
+}
+.economy-shop-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.economy-shop-add {
+  align-self: flex-start;
+}
 .economy-activity {
   list-style: none;
   margin: 0;

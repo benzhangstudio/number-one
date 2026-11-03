@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Economy: a currency each server names itself, earned by chatting, /daily, /work and level-ups,
  * and moved between members with /pay. Settings shared by the bot and the dashboard.
- * The shop and mini games will spend it later.
+ * Members spend it in the shop (items and roles that admins set up) and on games: /coinflip, /slots and /blackjack.
  */
 
 const snowflake = z.string().regex(/^\d{17,20}$/);
@@ -65,6 +65,25 @@ export const economySettings = z.object({
   levelUpReward: amount(1_000_000).default(50),
   /** Members can send each other money with /pay. */
   payEnabled: z.boolean().default(true),
+  /** The shop: /shop, /buy and /inventory. Items are set up on the dashboard. */
+  shop: z
+    .object({
+      enabled: z.boolean().default(true),
+    })
+    .prefault({}),
+  /** Betting games. */
+  games: z
+    .object({
+      enabled: z.boolean().default(true),
+      coinflip: z.boolean().default(true),
+      slots: z.boolean().default(true),
+      blackjack: z.boolean().default(true),
+      minBet: amount(MAX_CHANGE).default(10),
+      maxBet: amount(MAX_CHANGE).default(1000),
+      /** Seconds between games for each member, so channels don't fill up with games. */
+      cooldownSeconds: z.number().int().min(0).max(3600).default(5),
+    })
+    .prefault({}),
 });
 
 export type EconomySettings = z.infer<typeof economySettings>;
@@ -90,8 +109,57 @@ export const transactionKinds = {
   pay_in: "Received",
   pay_out: "Sent",
   admin: "Changed by staff",
+  shop: "Shop",
+  refund: "Refund",
+  game: "Games",
 } as const;
 export type TransactionKind = keyof typeof transactionKinds;
+
+/* ------------------------------------------------------------ shop */
+
+export const SHOP_LIMITS = {
+  name: 50,
+  description: 200,
+  /** Items per server. */
+  items: 50,
+  /** Most of one item a member can buy in one go. */
+  quantity: 100,
+} as const;
+
+export const shopItemInput = z.object({
+  name: z.string().trim().min(1, "Give the item a name").max(SHOP_LIMITS.name),
+  description: z.string().trim().max(SHOP_LIMITS.description).default(""),
+  /** A normal emoji or a custom one like <:gem:123…>. Empty = none. */
+  emoji: z.string().trim().max(64).default(""),
+  price: z.number().int().min(1, "The price has to be at least 1").max(MAX_CHANGE),
+  /** Buying it gives this role. Members can only buy a role once. */
+  roleId: snowflake.nullable().default(null),
+  /** How many are left to sell. Null = unlimited. */
+  stock: z.number().int().min(0).max(1_000_000).nullable().default(null),
+  /** Most one member can own. Null = no limit. Roles are always 1. */
+  maxPerMember: z.number().int().min(1).max(1_000_000).nullable().default(null),
+  /** Hidden items can't be seen or bought. */
+  hidden: z.boolean().default(false),
+});
+export type ShopItemInput = z.infer<typeof shopItemInput>;
+
+export interface ShopItemView extends ShopItemInput {
+  id: number;
+  /** How many have been bought in total. */
+  sold: number;
+}
+
+/* ------------------------------------------------------------ games */
+
+/** Slot machine symbols, from most to least common, with what three in a row pays (times the bet). */
+export const slotSymbols = [
+  { emoji: "🍒", weight: 6, pays: 5 },
+  { emoji: "🍋", weight: 5, pays: 10 },
+  { emoji: "🍇", weight: 4, pays: 15 },
+  { emoji: "🔔", weight: 3, pays: 25 },
+  { emoji: "💎", weight: 2, pays: 50 },
+  { emoji: "7️⃣", weight: 1, pays: 100 },
+] as const;
 
 /* ------------------------------------------------------------ dashboard */
 
@@ -115,6 +183,7 @@ export interface EconomyActivity {
 
 export interface EconomyResponse {
   settings: EconomySettings;
+  shopItems: ShopItemView[];
   problems: string[];
   /** Members with a balance above zero, and what they hold together. */
   holders: number;

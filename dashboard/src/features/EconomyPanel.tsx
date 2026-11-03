@@ -10,6 +10,7 @@ import {
 } from "../../../src/shared/economy";
 import { type GuildDetails, api } from "../api";
 import { ChannelPicker, Toggle } from "../components/pickers";
+import { EconomyShop } from "./EconomyShop";
 
 type Guild = GuildDetails["guild"];
 type Draft = EconomySettings;
@@ -22,9 +23,10 @@ const plainEmoji = (e: string) => e.replace(/<a?:(\w+):\d+>/g, ":$1:");
 
 const CHAT_COOLDOWNS = [0, 15, 30, 60, 120, 300];
 const WORK_COOLDOWNS = [15, 30, 60, 120, 240, 480, 720, 1440];
+const GAME_COOLDOWNS = [0, 5, 10, 30, 60, 300];
 const minutesLabel = (m: number) => (m < 60 ? `${m} minutes` : m === 60 ? "1 hour" : `${m / 60} hours`);
 
-/** Dashboard section for Economy: the currency, how it's earned, the richest members and recent activity. */
+/** Dashboard section for Economy: the currency, how it's earned, the shop, games, the richest members and recent activity. */
 export function EconomyPanel({ guild }: { guild: Guild }) {
   const [data, setData] = useState<EconomyResponse | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -205,6 +207,48 @@ export function EconomyPanel({ guild }: { guild: Guild }) {
                   {!WORK_COOLDOWNS.includes(draft.work.cooldownMinutes) && <option value={draft.work.cooldownMinutes}>{minutesLabel(draft.work.cooldownMinutes)}</option>}
                   {WORK_COOLDOWNS.map((m) => <option key={m} value={m}>{minutesLabel(m)}</option>)}
                 </select>
+              </label>
+            </div>
+          )}
+        </section>
+      </div>
+
+      <div className="mod-grid">
+        <section className="sub">
+          <Toggle
+            label="🛍️ Shop"
+            hint="Members browse with /shop, buy with /buy and see what they own with /inventory. Items save straight away."
+            checked={draft.shop.enabled}
+            onChange={(v) => set((d) => { d.shop.enabled = v; })}
+          />
+          {draft.shop.enabled && (
+            <EconomyShop
+              guild={guild}
+              items={data.shopItems}
+              currency={data.settings.currency}
+              onChange={(r) => setData((old) => (old ? { ...old, shopItems: r.shopItems, problems: r.problems } : r))}
+            />
+          )}
+        </section>
+
+        <section className="sub">
+          <Toggle label="🎲 Games" hint="Members bet their money. Bets are taken first and winnings paid back." checked={draft.games.enabled} onChange={(v) => set((d) => { d.games.enabled = v; })} />
+          {draft.games.enabled && (
+            <div className="sub-body">
+              <Toggle label="/coinflip" hint="Heads or tails. Right guess doubles the bet." checked={draft.games.coinflip} onChange={(v) => set((d) => { d.games.coinflip = v; })} />
+              <Toggle label="/slots" hint="Three in a row pays ×5 to ×100. Two in a row gives the bet back." checked={draft.games.slots} onChange={(v) => set((d) => { d.games.slots = v; })} />
+              <Toggle label="/blackjack" hint="Against Number One, with Hit, Stand and Double buttons. Blackjack pays 3 to 2." checked={draft.games.blackjack} onChange={(v) => set((d) => { d.games.blackjack = v; })} />
+              <div className="mod-row">
+                <label className="field"><span>Smallest bet</span>{num(draft.games.minBet, 1_000_000_000, (v) => set((d) => { d.games.minBet = v; }), 1)}</label>
+                <label className="field"><span>Biggest bet</span>{num(draft.games.maxBet, 1_000_000_000, (v) => set((d) => { d.games.maxBet = v; }), 1)}</label>
+              </div>
+              <label className="field">
+                <span>Wait between games</span>
+                <select value={draft.games.cooldownSeconds} onChange={(e) => set((d) => { d.games.cooldownSeconds = Number(e.target.value); })}>
+                  {!GAME_COOLDOWNS.includes(draft.games.cooldownSeconds) && <option value={draft.games.cooldownSeconds}>{draft.games.cooldownSeconds} seconds</option>}
+                  {GAME_COOLDOWNS.map((sec) => <option key={sec} value={sec}>{sec === 0 ? "No wait" : sec < 60 ? `${sec} seconds` : minutesLabel(sec / 60)}</option>)}
+                </select>
+                <small className="muted">Stops channels from filling up with games.</small>
               </label>
             </div>
           )}

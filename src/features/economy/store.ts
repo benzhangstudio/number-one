@@ -33,6 +33,16 @@ const sql = {
   prune: "DELETE FROM economy_transactions WHERE created_at < ?",
   wipeBalances: "DELETE FROM economy_balances WHERE guild_id = ?",
   wipeHistory: "DELETE FROM economy_transactions WHERE guild_id = ?",
+  wipeInventory: "DELETE FROM economy_inventory WHERE guild_id = ?",
+  item: "SELECT id, price, stock, max_per_member, role_id, hidden FROM economy_shop_items WHERE guild_id = ? AND id = ?",
+  itemSold: "UPDATE economy_shop_items SET sold = MAX(0, sold + ?), stock = CASE WHEN stock IS NULL THEN NULL ELSE MAX(0, stock - ?) END WHERE id = ?",
+  owned: "SELECT quantity FROM economy_inventory WHERE guild_id = ? AND user_id = ? AND item_id = ?",
+  addOwned:
+    "INSERT INTO economy_inventory (guild_id, user_id, item_id, quantity, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (guild_id, user_id, item_id) DO UPDATE SET quantity = quantity + excluded.quantity, updated_at = excluded.updated_at",
+  setOwned: "UPDATE economy_inventory SET quantity = ?, updated_at = ? WHERE guild_id = ? AND user_id = ? AND item_id = ?",
+  dropOwned: "DELETE FROM economy_inventory WHERE guild_id = ? AND user_id = ? AND item_id = ? AND quantity <= 0",
+  inventory:
+    "SELECT i.item_id AS item_id, i.quantity AS quantity FROM economy_inventory i JOIN economy_shop_items s ON s.id = i.item_id WHERE i.guild_id = ? AND i.user_id = ? AND i.quantity > 0 ORDER BY s.position, s.id",
 };
 
 /**
@@ -163,6 +173,80 @@ export function claimWork(guildId: string, userId: string, startingBalance: numb
   });
 }
 
+/* ------------------------------------------------------------ shop */
+
+export type BuyResult =
+  | { ok: true; cost: number; balance: number; owned: number }
+  | { ok: false; reason: "gone" | "broke" | "stock" | "limit"; balance: number; left?: number };
+
+type ItemRow = { id: number; price: number; stock: number | null; max_per_member: number | null; role_id: string | null; hidden: number };
+
+/**
+ * Buys `quantity` of a shop item, all or nothing: takes the money, lowers the stock and adds it to their
+ * inventory. Price, stock and limits are read again here, so two people can't buy the last one.
+ */
+export function buy(guildId: string, userId: string, itemId: number, quantity: number, startingBalance: number): BuyResult {
+  return atomic(() => {
+    const w = load(guildId, userId, startingBalance);
+    const item = q.item.get(guildId, itemId) as ItemRow | undefined;
+    if (!item || item.hidden) return { ok: false, reason: "gone", balance: w.balance };
+    const owned = Number((q.owned.get(guildId, userId, itemId) as { quantity: number } | undefined)?.quantity ?? 0);
+    const limit = item.role_id ? 1 : item.max_per_member;
+    if (limit !== null && owned + quantity > limit) return { ok: false, reason: "limit", balance: w.balance, left: Math.max(0, limit - owned) };
+    if (item.stock !== null && item.stock < quantity) return { ok: false, reason: "stock", balance: w.balance, left: item.stock };
+    const cost = item.price * quantity;
+    if (w.balance < cost) return { ok: false, reason: "broke", balance: w.balance };
+    apply(guildId, userId, w, -cost, "shop");
+    q.itemSold.run(quantity, quantity, itemId);
+    q.addOwned.run(guildId, userId, itemId, quantity, Date.now());
+    return { ok: true, cost, balance: w.balance, owned: owned + quantity };
+  });
+}
+
+/** Undoes a purchase that couldn't be delivered (like a role Number One couldn't give): money, stock and inventory go back. */
+export function refundPurchase(guildId: string, userId: string, itemId: number, quantity: number, cost: number, startingBalance: number) {
+  return atomic(() => {
+    const w = load(guildId, userId, startingBalance);
+    apply(guildId, userId, w, cost, "refund");
+    q.itemSold.run(-quantity, -quantity, itemId);
+    takeOwnedInside(guildId, userId, itemId, quantity);
+    return w.balance;
+  });
+}
+
+function takeOwnedInside(guildId: string, userId: string, itemId: number, quantity: number) {
+  const owned = Number((q.owned.get(guildId, userId, itemId) as { quantity: number } | undefined)?.quantity ?? 0);
+  const left = Math.max(0, owned - quantity);
+  q.setOwned.run(left, Date.now(), guildId, userId, itemId);
+  q.dropOwned.run(guildId, userId, itemId);
+  return { had: owned, left };
+}
+
+/** Takes items out of a member's inventory (staff marking something as used, for example). */
+export const takeOwned = (guildId: string, userId: string, itemId: number, quantity: number) => atomic(() => takeOwnedInside(guildId, userId, itemId, quantity));
+
+export const ownedCount = (guildId: string, userId: string, itemId: number) =>
+  Number((q.owned.get(guildId, userId, itemId) as { quantity: number } | undefined)?.quantity ?? 0);
+
+export const inventoryOf = (guildId: string, userId: string) =>
+  (q.inventory.all(guildId, userId) as { item_id: number; quantity: number }[]).map((r) => ({ itemId: r.item_id, quantity: r.quantity }));
+
+/* ------------------------------------------------------------ games */
+
+export type BetResult = { ok: true; balance: number } | { ok: false; balance: number };
+
+/** Takes a bet, only if they have enough. Winnings are paid back with credit(…, "game"). */
+export function placeBet(guildId: string, userId: string, amount: number, startingBalance: number): BetResult {
+  return atomic(() => {
+    const w = load(guildId, userId, startingBalance);
+    if (w.balance < amount) return { ok: false, balance: w.balance };
+    apply(guildId, userId, w, -amount, "game");
+    return { ok: true, balance: w.balance };
+  });
+}
+
+/* ------------------------------------------------------------ rankings */
+
 /** 1 = richest. Members tied on balance share a rank. */
 export const rankOf = (guildId: string, balance: number) => Number((q.rankAbove.get(guildId, balance) as { n: number }).n) + 1;
 
@@ -192,9 +276,10 @@ export const recentActivity = (guildId: string, limit: number) => (q.activity.al
 /** Deletes history older than HISTORY_DAYS, in every server. */
 export const pruneHistory = () => q.prune.run(Date.now() - HISTORY_DAYS * 24 * HOUR).changes;
 
-/** Wipes every balance and the history in one server. */
+/** Wipes every balance, the history and what members bought in one server. Shop items stay. */
 export const resetGuild = (guildId: string) =>
   atomic(() => {
     q.wipeBalances.run(guildId);
     q.wipeHistory.run(guildId);
+    q.wipeInventory.run(guildId);
   });

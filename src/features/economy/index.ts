@@ -17,11 +17,13 @@ import {
   transactionKinds,
 } from "../../shared/economy.js";
 import { economyFeature, levelsFeature } from "../../shared/features.js";
+import { blackjackButtons, blackjackCommand, coinflipCommand, pruneGameCooldowns, slotsCommand } from "./games.js";
+import { buyCommand, inventoryCommand, registerShopApi, shopCommand, shopItemsView, shopProblems, takeItem, takeItemSuggestions } from "./shop.js";
 import * as store from "./store.js";
 
 /**
  * Economy: a currency each server names itself. Members earn it by chatting, with /daily, /work and
- * level-ups, and send it with /pay. Balances live in economy_balances; every change except chatting
+ * level-ups, send it with /pay, spend it in the shop (shop.ts) and bet it on games (games.ts). Balances live in economy_balances; every change except chatting
  * is recorded in economy_transactions for 90 days.
  */
 
@@ -269,11 +271,21 @@ const adminCommand: SlashCommand = {
         .setName("history")
         .setDescription("See a member's latest balance changes")
         .addUserOption((o) => o.setName("member").setDescription("Whose history").setRequired(true)),
+    )
+    .addSubcommand((c) =>
+      c
+        .setName("take-item")
+        .setDescription("Take a shop item from a member, like when they use it")
+        .addUserOption((o) => o.setName("member").setDescription("From whom").setRequired(true))
+        .addIntegerOption((o) => o.setName("item").setDescription("Which item").setRequired(true).setAutocomplete(true))
+        .addIntegerOption((o) => o.setName("quantity").setDescription("How many (1 if empty)").setMinValue(1).setMaxValue(1_000_000)),
     ),
+  autocomplete: (interaction) => takeItemSuggestions(interaction),
   async execute(interaction) {
     if (!interaction.inCachedGuild()) return;
     const s = await settingsOf(interaction.guildId);
     const sub = interaction.options.getSubcommand();
+    if (sub === "take-item") return takeItem(interaction);
     const user = interaction.options.getUser("member", true);
     if (user.bot) return interaction.reply("Bots don't have a balance.");
     const g = interaction.guildId;
@@ -333,18 +345,35 @@ async function respond(guild: Guild, settings: EconomySettings): Promise<Economy
   }));
   const problems: string[] = [];
   if (settings.levelUpReward > 0 && !(await isFeatureEnabled(guild.id, levelsFeature))) problems.push("Level-up rewards only pay out when Levels is switched on.");
-  return { settings, problems, holders: count, totalMoney: total, richest, activity };
+  if (settings.shop.enabled) problems.push(...(await shopProblems(guild)));
+  if (settings.games.minBet > settings.games.maxBet) problems.push("The smallest bet is bigger than the biggest bet.");
+  return { settings, shopItems: await shopItemsView(guild.id), problems, holders: count, totalMoney: total, richest, activity };
 }
 
 export const economyBot: BotFeature = {
   info: economyFeature,
-  commands: [balanceCommand, dailyCommand, workCommand, payCommand, richestCommand, adminCommand],
+  commands: [
+    balanceCommand,
+    dailyCommand,
+    workCommand,
+    payCommand,
+    richestCommand,
+    shopCommand,
+    buyCommand,
+    inventoryCommand,
+    coinflipCommand,
+    slotsCommand,
+    blackjackCommand,
+    adminCommand,
+  ],
+  components: [blackjackButtons],
   events: [messageSent],
 
   setup() {
     const hourly = () => {
       const cutoff = Date.now() - 60 * 60 * 1000;
       for (const [key, at] of lastChat) if (at < cutoff) lastChat.delete(key);
+      pruneGameCooldowns();
       try {
         store.pruneHistory();
       } catch (err) {
@@ -370,13 +399,17 @@ export const economyBot: BotFeature = {
       const s = parsed.data;
       if (s.chat.min > s.chat.max) [s.chat.min, s.chat.max] = [s.chat.max, s.chat.min];
       if (s.work.min > s.work.max) [s.work.min, s.work.max] = [s.work.max, s.work.min];
+      if (s.games.minBet > s.games.maxBet) [s.games.minBet, s.games.maxBet] = [s.games.maxBet, s.games.minBet];
+      s.games.minBet = Math.max(1, s.games.minBet);
       s.chat.noEarnChannelIds = s.chat.noEarnChannelIds.filter((id) => guild.channels.cache.has(id));
       const state = await getFeatureState(guild.id, economyFeature);
       await saveFeatureState(guild.id, economyFeature, { enabled: state.enabled, settings: s }, request.session!.userId);
       return respond(guild, s);
     });
 
-    /** Wipes every balance and the history in this server. */
+    registerShopApi(api, async (guild) => respond(guild, await settingsOf(guild.id)));
+
+    /** Wipes every balance, the history and inventories in this server. */
     api.post("/api/guilds/:guildId/economy/reset", async (request: Req) => {
       const guild = client.guilds.cache.get(request.params.guildId)!;
       store.resetGuild(guild.id);
