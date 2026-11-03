@@ -7,7 +7,8 @@
   --text: #f6eef2;
   --muted: #a8949f;
   --accent: #ff4fa3;
-  --accent-soft: rgba(255, 79, 163, 0.14);
+  --accent-rgb: 255, 79, 163;
+  --accent-soft: rgba(var(--accent-rgb), 0.14);
   --accent-text: #1a0610;
   --danger: #ff6b6b;
   --warning: #ffc46b;
@@ -32,6 +33,7 @@
   --text: #22141b;
   --muted: #76606c;
   --accent: #d92f84;
+  --accent-rgb: 217, 47, 132;
   --accent-soft: rgba(217, 47, 132, 0.1);
   --accent-text: #ffffff;
   --danger: #cf3434;
@@ -43,6 +45,210 @@
   --hero-from: #22141b;
   --hero-mid: #a3245f;
   color-scheme: light;
+}
+
+/* Color presets (the 🎨 button in the top menu). Pink is the default and has no data-accent.
+   Each preset swaps the accent and gives the greys a faint tint of the same hue, in both modes.
+   Generated from the pink values by keeping their lightness and saturation and changing the hue. */
+:root:not([data-theme="light"])[data-accent="red"] {
+  --surface: #151212;
+  --surface-2: #1f1a1a;
+  --border: #2e2424;
+  --text: #f6eeee;
+  --muted: #a89494;
+  --accent: #ff5c5c;
+  --accent-rgb: 255, 92, 92;
+  --accent-soft: rgba(255, 92, 92, 0.14);
+  --accent-text: #1a0606;
+  --bar-bg: rgba(21, 18, 18, 0.95);
+  --hero-mid: #ffbebe;
+}
+:root[data-theme="light"][data-accent="red"] {
+  --bg: #fbf6f6;
+  --surface-2: #f6eded;
+  --border: #eadbdb;
+  --text: #221414;
+  --muted: #766060;
+  --accent: #d63333;
+  --accent-rgb: 214, 51, 51;
+  --accent-soft: rgba(214, 51, 51, 0.1);
+  --shadow: rgba(60, 20, 20, 0.14);
+  --hero-mid: #a02626;
+}
+:root:not([data-theme="light"])[data-accent="orange"] {
+  --surface: #151312;
+  --surface-2: #1f1c1a;
+  --border: #2e2824;
+  --text: #f6f1ee;
+  --muted: #a89c94;
+  --accent: #ff8a3d;
+  --accent-rgb: 255, 138, 61;
+  --accent-soft: rgba(255, 138, 61, 0.14);
+  --accent-text: #1a0e06;
+  --bar-bg: rgba(21, 19, 18, 0.95);
+  --hero-mid: #ffd0b1;
+}
+:root[data-theme="light"][data-accent="orange"] {
+  --bg: #fbf8f6;
+  --surface-2: #f6f0ed;
+  --border: #eae1db;
+  --text: #221914;
+  --muted: #766860;
+  --accent: #c25410;
+  --accent-rgb: 194, 84, 16;
+  --accent-soft: rgba(194, 84, 16, 0.1);
+  --shadow: rgba(60, 35, 20, 0.14);
+  --hero-mid: #923f0c;
+}
+:root:not([data-theme="light"])[data-accent="gold"] {
+  --surface: #151412;
+  --surface-2: #1f1e1a;
+  --border: #2e2b24;
+  --text: #f6f4ee;
+  --muted: #a8a394;
+  --accent: #f5c542;
+  --accent-rgb: 245, 197, 66;
+  --accent-soft: rgba(245, 197, 66, 0.14);
+  --accent-text: #1a1506;
+  --bar-bg: rgba(21, 20, 18, 0.95);
+  --hero-mid: #fbe8b3;
+}
+:root[data-theme="light"][data-accent="gold"] {
+  --bg: #fbfaf6;
+  --surface-2: #f6f4ed;
+  --border: #eae6db;
+  --text: #221f14;
+  --muted: #767160;
+  --accent: #8f6c00;
+  --accent-rgb: 143, 108, 0;
+  --accent-soft: rgba(143, 108, 0, 0.1);
+  --shadow: rgba(60, 50, 20, 0.14);
+  --hero-mid: #6b5100;
+}
+:root:not([data-theme="light"])[data-accent="green"] {
+  --surface: #121513;
+  --surface-2: #1a1f1c;
+  --border: #242e28;
+  --text: #eef6f2;
+  --muted: #94a89d;
+  --accent: #3ddc84;
+  --accent-rgb: 61, 220, 132;
+  --accent-soft: rgba(61, 220, 132, 0.14);
+  --accent-text: #061a0f;
+  --bar-bg: rgba(18, 21, 19, 0.95);
+  --hero-mid: #b1f1ce;
+}
+:root[data-theme="light"][data-accent="green"] {
+  --bg: #f6fbf8;
+  --surface-2: #edf6f1;
+  --border: #dbeae1;
+  --text: #14221a;
+  --muted: #607669;
+  --accent: #1c8549;
+  --accent-rgb: 28, 133, 73;
+  --accent-soft: rgba(28, 133, 73, 0.1);
+  --shadow: rgba(20, 60, 37, 0.14);
+  --hero-mid: #156437;
+}
+:root:not([data-theme="light"])[data-accent="teal"] {
+  --surface: #121515;
+  --surface-2: #1a1f1f;
+  --border: #242e2d;
+  --text: #eef6f5;
+  --muted: #94a8a6;
+  --accent: #2fd4c4;
+  --accent-rgb: 47, 212, 196;
+  --accent-soft: rgba(47, 212, 196, 0.14);
+  --accent-text: #061a18;
+  --bar-bg: rgba(18, 21, 21, 0.95);
+  --hero-mid: #aceee7;
+}
+:root[data-theme="light"][data-accent="teal"] {
+  --bg: #f6fbfb;
+  --surface-2: #edf6f5;
+  --border: #dbeae9;
+  --text: #142221;
+  --muted: #607674;
+  --accent: #0d7d73;
+  --accent-rgb: 13, 125, 115;
+  --accent-soft: rgba(13, 125, 115, 0.1);
+  --shadow: rgba(20, 60, 56, 0.14);
+  --hero-mid: #0a5e56;
+}
+:root:not([data-theme="light"])[data-accent="blue"] {
+  --surface: #121315;
+  --surface-2: #1a1b1f;
+  --border: #24272e;
+  --text: #eef0f6;
+  --muted: #949aa8;
+  --accent: #5b8cff;
+  --accent-rgb: 91, 140, 255;
+  --accent-soft: rgba(91, 140, 255, 0.14);
+  --accent-text: #060c1a;
+  --bar-bg: rgba(18, 19, 21, 0.95);
+  --hero-mid: #bdd1ff;
+}
+:root[data-theme="light"][data-accent="blue"] {
+  --bg: #f6f8fb;
+  --surface-2: #edf0f6;
+  --border: #dbdfea;
+  --text: #141822;
+  --muted: #606776;
+  --accent: #2f62d9;
+  --accent-rgb: 47, 98, 217;
+  --accent-soft: rgba(47, 98, 217, 0.1);
+  --shadow: rgba(20, 32, 60, 0.14);
+  --hero-mid: #234aa3;
+}
+:root:not([data-theme="light"])[data-accent="purple"] {
+  --surface: #131215;
+  --surface-2: #1c1a1f;
+  --border: #28242e;
+  --text: #f1eef6;
+  --muted: #9c94a8;
+  --accent: #a970ff;
+  --accent-rgb: 169, 112, 255;
+  --accent-soft: rgba(169, 112, 255, 0.14);
+  --accent-text: #0e061a;
+  --bar-bg: rgba(19, 18, 21, 0.95);
+  --hero-mid: #ddc6ff;
+}
+:root[data-theme="light"][data-accent="purple"] {
+  --bg: #f8f6fb;
+  --surface-2: #f1edf6;
+  --border: #e1dbea;
+  --text: #191422;
+  --muted: #696076;
+  --accent: #7a3fd6;
+  --accent-rgb: 122, 63, 214;
+  --accent-soft: rgba(122, 63, 214, 0.1);
+  --shadow: rgba(36, 20, 60, 0.14);
+  --hero-mid: #5c2fa0;
+}
+:root:not([data-theme="light"])[data-accent="mono"] {
+  --surface: #141414;
+  --surface-2: #1c1c1c;
+  --border: #292929;
+  --text: #f2f2f2;
+  --muted: #9e9e9e;
+  --accent: #e6e6e6;
+  --accent-rgb: 230, 230, 230;
+  --accent-soft: rgba(230, 230, 230, 0.14);
+  --accent-text: #111111;
+  --bar-bg: rgba(20, 20, 20, 0.95);
+  --hero-mid: #f5f5f5;
+}
+:root[data-theme="light"][data-accent="mono"] {
+  --bg: #f8f8f8;
+  --surface-2: #f2f2f2;
+  --border: #e2e2e2;
+  --text: #1b1b1b;
+  --muted: #6b6b6b;
+  --accent: #2b2b2b;
+  --accent-rgb: 43, 43, 43;
+  --accent-soft: rgba(43, 43, 43, 0.1);
+  --shadow: rgba(40, 40, 40, 0.14);
+  --hero-mid: #202020;
 }
 
 * {
@@ -359,7 +565,7 @@ html {
 /* Pink accents */
 body {
   background:
-    radial-gradient(1200px 500px at 50% -200px, rgba(255, 79, 163, 0.12), transparent 70%),
+    radial-gradient(1200px 500px at 50% -200px, rgba(var(--accent-rgb), 0.12), transparent 70%),
     var(--bg);
   background-attachment: fixed;
 }
@@ -377,7 +583,7 @@ body {
 }
 
 .btn.primary {
-  box-shadow: 0 4px 20px rgba(255, 79, 163, 0.3);
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.3);
 }
 
 .card {
@@ -385,12 +591,12 @@ body {
 }
 
 .card:hover {
-  border-color: rgba(255, 79, 163, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .pill {
   color: var(--accent);
-  border-color: rgba(255, 79, 163, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
   background: var(--accent-soft);
 }
 
@@ -660,7 +866,7 @@ textarea {
 
 .notice {
   background: var(--accent-soft);
-  border: 1px solid rgba(255, 79, 163, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 12px;
@@ -960,7 +1166,7 @@ select.chip-add {
   gap: 10px;
   justify-content: flex-end;
   background: var(--bar-bg);
-  border: 1px solid rgba(255, 79, 163, 0.4);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
   border-radius: 12px;
   padding: 10px 12px;
   margin-top: 12px;
@@ -1030,7 +1236,7 @@ select.chip-add {
 }
 
 .switcher-btn:hover {
-  border-color: rgba(255, 79, 163, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .switcher-btn .guild-icon {
@@ -1163,7 +1369,7 @@ select.chip-add {
 
 .nav-dot.on {
   background: var(--accent);
-  box-shadow: 0 0 8px rgba(255, 79, 163, 0.6);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
 }
 
 .nav-heading {
@@ -1197,7 +1403,7 @@ select.chip-add {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  border-color: rgba(255, 79, 163, 0.45);
+  border-color: rgba(var(--accent-rgb), 0.45);
   background: linear-gradient(90deg, var(--accent-soft), var(--surface) 70%);
   margin-bottom: 8px;
 }
@@ -1219,7 +1425,7 @@ select.chip-add {
 }
 
 .plugin.on {
-  border-color: rgba(255, 79, 163, 0.3);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 
 .plugin-top {
@@ -2069,7 +2275,7 @@ select.chip-add {
 .onboarding .sub:hover,
 .ann-sub:hover,
 .rr-message:hover {
-  border-color: rgba(255, 79, 163, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
 }
 
 /* The first row of a box is its header: title, short description, switch on the right. */
@@ -2334,7 +2540,7 @@ select.chip-add {
   transition: border-color 0.15s;
 }
 .moderation .sub:hover {
-  border-color: rgba(255, 79, 163, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
 }
 .moderation .sub > .sub-head:first-child strong,
 .moderation .sub > .toggle-row:first-child strong {
@@ -2571,7 +2777,7 @@ select.chip-add {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 18px;
-  box-shadow: 0 20px 60px rgba(255, 79, 163, 0.12);
+  box-shadow: 0 20px 60px rgba(var(--accent-rgb), 0.12);
   font-size: 0.9rem;
   transform: rotate(1deg);
 }
@@ -2702,7 +2908,7 @@ select.chip-add {
 }
 
 .lp-feature-card:hover {
-  border-color: rgba(255, 79, 163, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .lp-feature-card-head {
@@ -2791,8 +2997,8 @@ select.chip-add {
 
 .landing-cta {
   text-align: center;
-  background: linear-gradient(135deg, rgba(255, 79, 163, 0.16), rgba(255, 79, 163, 0.04));
-  border: 1px solid rgba(255, 79, 163, 0.3);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.04));
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 20px;
   padding: 48px 24px;
 }
@@ -2898,7 +3104,7 @@ select.chip-add {
 .join-leave .sub:hover,
 .embeds .sub:hover,
 .announcements .sub:hover {
-  border-color: rgba(255, 79, 163, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
 }
 .join-leave .sub > .sub-body,
 .embeds .sub > .sub-body,
@@ -3173,7 +3379,7 @@ select.chip-add {
 .ann-tab.on {
   color: var(--text);
   background: var(--accent-soft);
-  border-color: rgba(255, 79, 163, 0.3);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 .ann-head {
   display: flex;
@@ -3202,7 +3408,7 @@ select.chip-add {
   font: inherit;
 }
 .ann-starter:hover {
-  border-color: rgba(255, 79, 163, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
 }
 .ann-starter-emoji {
   font-size: 1.4rem;
@@ -3647,7 +3853,7 @@ select.chip-add {
   font: inherit;
 }
 .design-card:hover {
-  border-color: rgba(255, 79, 163, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
 }
 .design-card.on {
   border-color: var(--accent);
@@ -4010,7 +4216,7 @@ select.chip-add {
 .cc-tab.on {
   color: var(--text);
   background: var(--accent-soft);
-  border-color: rgba(255, 79, 163, 0.3);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 .custom-commands .cc-editor {
   display: grid;
@@ -4208,8 +4414,46 @@ select.chip-add {
   border-color: var(--accent);
   transform: rotate(-12deg);
 }
-.topbar > .theme-toggle:last-child {
+/* Loading screen has no menu links, so push the buttons to the right. */
+.topbar > .brand + .accent-menu {
   margin-left: auto;
+}
+
+/* 🎨 color presets: a small popover of round swatches under the button. */
+.accent-menu {
+  position: relative;
+  flex: none;
+}
+.accent-dropdown {
+  right: 0;
+  min-width: 0;
+  width: max-content;
+}
+.accent-swatches {
+  display: grid;
+  grid-template-columns: repeat(5, 28px);
+  gap: 10px;
+  padding: 4px 10px 10px;
+}
+.accent-swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.accent-swatch:hover {
+  transform: scale(1.1);
+}
+.accent-swatch.on {
+  border-color: var(--surface);
+  box-shadow: 0 0 0 2px var(--text);
+}
+.accent-swatch:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
 }
 
 /* Timed Undo button: top right, just under the top menu. Small, so it doesn't cover the page. */
@@ -4222,7 +4466,7 @@ select.chip-add {
   padding: 8px 16px 10px;
   background: var(--surface);
   color: var(--accent);
-  border: 1px solid rgba(255, 79, 163, 0.45);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
   border-radius: 10px;
   box-shadow: 0 10px 30px var(--shadow);
   font: inherit;
@@ -4408,7 +4652,7 @@ select.chip-add {
   .topbar .topnav {
     display: none;
   }
-  .topbar > .theme-toggle {
+  .topbar > .accent-menu {
     margin-left: auto;
   }
   .user-menu-btn {

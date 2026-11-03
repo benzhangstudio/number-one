@@ -41,3 +41,7 @@ The **Announcements** page in the top menu is Number One's own news: new modules
 ## Light and dark mode
 
 Use the theme switch in the top bar. Your choice is remembered on that device.
+
+## Colors
+
+Not a fan of pink? Click the 🎨 button in the top bar and pick a color: pink, red, orange, gold, green, teal, blue, purple or mono. It works in both light and dark mode and is remembered on that device. It only changes how the dashboard looks to you, not the bot's messages in Discord.

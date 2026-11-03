@@ -12,7 +12,7 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { ServersPage } from "./pages/ServersPage";
 import { TermsPage } from "./pages/TermsPage";
 import { navigate, usePath } from "./router";
-import { useTheme } from "./theme";
+import { ACCENTS, useAccent, useTheme } from "./theme";
 import { UndoToast } from "./undo";
 
 /** The sun / moon button: switches between light and dark mode. */
@@ -23,6 +23,47 @@ function ThemeToggle() {
     <button className="theme-toggle" onClick={toggle} aria-label={label} title={label}>
       {theme === "light" ? "🌙" : "☀️"}
     </button>
+  );
+}
+
+/** 🎨 button: opens a row of color presets, like Discord's theme colors. */
+function AccentPicker() {
+  const { accent, setAccent } = useAccent();
+  const light = document.documentElement.dataset.theme === "light"; // read live, so it follows the sun / moon button
+  const [open, setOpen] = useState(false);
+  const ref = useDismiss(open, () => setOpen(false));
+  return (
+    <div className="accent-menu" ref={ref}>
+      <button
+        className="theme-toggle"
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Change color"
+        title="Change color"
+        aria-haspopup="true"
+        aria-expanded={open}
+      >
+        🎨
+      </button>
+      {open && (
+        <div className="dropdown accent-dropdown">
+          <div className="dropdown-head">Color</div>
+          <div className="accent-swatches" role="radiogroup" aria-label="Color">
+            {ACCENTS.map((a) => (
+              <button
+                key={a.id}
+                role="radio"
+                aria-checked={accent === a.id}
+                aria-label={a.label}
+                title={a.label}
+                className={`accent-swatch ${accent === a.id ? "on" : ""}`}
+                style={{ background: light ? a.light : a.dark }}
+                onClick={() => setAccent(a.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -176,6 +217,7 @@ export function App() {
           <span className="brand">
             <span className="brand-mark">#1</span> <span className="brand-name">Number One</span>
           </span>
+          <AccentPicker />
           <ThemeToggle />
         </header>
         <main className="content center muted">Loading…</main>
@@ -230,6 +272,7 @@ export function App() {
             <MenuLink key={i.to} item={i} />
           ))}
         </nav>
+        <AccentPicker />
         <ThemeToggle />
         {user ? (
           <UserMenu user={user} />

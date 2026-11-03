@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Number One Dashboard</title>
     <script>
-      // Apply the saved light/dark choice before anything draws, so the page never flashes the wrong theme.
+      // Apply the saved light/dark and color choices before anything draws, so the page never flashes the wrong theme.
       try {
         var saved = localStorage.getItem("theme");
         document.documentElement.dataset.theme = saved === "light" ? "light" : "dark";
+        // Color preset (🎨 button). Pink is the default and uses no attribute. Keep in sync with ACCENTS in src/theme.ts.
+        var accent = localStorage.getItem("accent");
+        if (["red", "orange", "gold", "green", "teal", "blue", "purple", "mono"].indexOf(accent) >= 0) {
+          document.documentElement.dataset.accent = accent;
+        }
       } catch (e) {}
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
