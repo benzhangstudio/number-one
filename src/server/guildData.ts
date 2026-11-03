@@ -20,6 +20,8 @@ import {
   tickets,
   ticketCounters,
   devUpdateDeliveries,
+  applicationPanels,
+  staffApplications,
   guidePosts,
   reactionRoleMessages,
   reactionRoleStats,
@@ -38,7 +40,7 @@ import {
 const GRACE_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** Every table that holds data for a server, by its guild_id column. */
-const guildTables = [featureSettings, guildSetup, reactionRoleMessages, reactionRoleTimers, onboardingProgress, onboardingState, moderationCases, raidState, embedMessages, announcementTemplates, announcements, eventRsvps, events, channelDesigns, customCommands, ruleVerificationPosts, ticketPanels, tickets, ticketCounters, guidePosts, devUpdateDeliveries];
+const guildTables = [featureSettings, guildSetup, reactionRoleMessages, reactionRoleTimers, onboardingProgress, onboardingState, moderationCases, raidState, embedMessages, announcementTemplates, announcements, eventRsvps, events, channelDesigns, customCommands, ruleVerificationPosts, ticketPanels, tickets, ticketCounters, guidePosts, devUpdateDeliveries, applicationPanels, staffApplications];
 
 /** Deletes everything stored about a server. */
 export async function deleteGuildData(guildId: string) {

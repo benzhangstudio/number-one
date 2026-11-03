@@ -474,3 +474,48 @@ export const devUpdateDeliveries = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.updateId, t.guildId] }), index("dev_update_deliveries_guild_idx").on(t.guildId)],
 );
+
+/** Staff applications: each server's apply panel (one per server). */
+export const applicationPanels = sqliteTable("application_panels", {
+  guildId: text("guild_id").primaryKey(),
+  channelId: text("channel_id").notNull(),
+  /** The posted message, or null while it isn't up (feature off, or deleted in Discord). */
+  messageId: text("message_id"),
+  /** Look and positions (JSON, validated by appPanelInput in src/shared/staffApplications.ts). */
+  details: text("details", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+/** Staff applications: one row per application sent. */
+export const staffApplications = sqliteTable(
+  "staff_applications",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    /** Counts up per server: application #1, #2... */
+    number: integer("number").notNull(),
+    positionId: text("position_id").notNull(),
+    /** Kept as it was when they applied, in case the position is renamed or removed later. */
+    positionName: text("position_name").notNull(),
+    applicantId: text("applicant_id").notNull(),
+    applicantTag: text("applicant_tag").notNull(),
+    answers: text("answers", { mode: "json" }).$type<{ question: string; answer: string }[]>().notNull(),
+    status: text("status", { enum: ["pending", "accepted", "denied"] }).notNull().default("pending"),
+    /** The review message in the staff channel. */
+    channelId: text("channel_id"),
+    messageId: text("message_id"),
+    claimedById: text("claimed_by_id"),
+    claimedByTag: text("claimed_by_tag"),
+    decidedById: text("decided_by_id"),
+    decidedByTag: text("decided_by_tag"),
+    decisionReason: text("decision_reason"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    decidedAt: integer("decided_at", { mode: "timestamp_ms" }),
+  },
+  (t) => [
+    uniqueIndex("staff_applications_number_idx").on(t.guildId, t.number),
+    index("staff_applications_applicant_idx").on(t.guildId, t.applicantId, t.positionId),
+    index("staff_applications_status_idx").on(t.guildId, t.status),
+  ],
+);

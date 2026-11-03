@@ -20,6 +20,7 @@ import type { GuideKind, GuideSettings, GuidesResponse } from "../../src/shared/
 import type { TicketPanelInput, TicketSettings, TicketsResponse } from "../../src/shared/tickets";
 import type { ServerLogResponse, ServerLogSettings } from "../../src/shared/serverLogs";
 import type { VoiceLogResponse, VoiceLogSettings } from "../../src/shared/voiceLogs";
+import type { AppPanelInput, ApplicationDecisionInput, StaffApplicationSettings, StaffApplicationsResponse } from "../../src/shared/staffApplications";
 import type { BotUpdateFailure, BotUpdateInput, BotUpdateSettings, BotUpdateSummary, BotUpdatesPanelData, DeveloperOverview } from "../../src/shared/botUpdates";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
@@ -222,6 +223,15 @@ export const api = {
   serverLogs: (guildId: string) => request<ServerLogResponse>(`/api/guilds/${guildId}/server-logs`),
   saveServerLogs: (guildId: string, settings: ServerLogSettings) =>
     undoableSettings<ServerLogResponse, ServerLogSettings>(`/api/guilds/${guildId}/server-logs`, settings),
+  staffApplications: (guildId: string) => request<StaffApplicationsResponse>(`/api/guilds/${guildId}/staff-applications`),
+  saveStaffApplicationSettings: (guildId: string, settings: StaffApplicationSettings) =>
+    request<StaffApplicationsResponse>(`/api/guilds/${guildId}/staff-applications/settings`, { method: "PUT", body: JSON.stringify(settings) }),
+  saveApplicationPanel: (guildId: string, panel: AppPanelInput) =>
+    request<StaffApplicationsResponse>(`/api/guilds/${guildId}/staff-applications/panel`, { method: "PUT", body: JSON.stringify(panel) }),
+  deleteApplicationPanel: (guildId: string) =>
+    request<StaffApplicationsResponse>(`/api/guilds/${guildId}/staff-applications/panel`, { method: "DELETE" }),
+  decideApplication: (guildId: string, id: number, input: ApplicationDecisionInput) =>
+    request<StaffApplicationsResponse & { warnings: string[] }>(`/api/guilds/${guildId}/staff-applications/${id}/decision`, { method: "POST", body: JSON.stringify(input) }),
   botUpdates: (guildId: string) => request<BotUpdatesPanelData>(`/api/guilds/${guildId}/bot-updates`),
   saveBotUpdates: (guildId: string, settings: BotUpdateSettings) =>
     undoableSettings<BotUpdatesPanelData, BotUpdateSettings>(`/api/guilds/${guildId}/bot-updates`, settings),

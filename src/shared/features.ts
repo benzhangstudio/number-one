@@ -14,6 +14,7 @@ import { guidesSettings } from "./guides.js";
 import { ticketSettings } from "./tickets.js";
 import { voiceLogSettings } from "./voiceLogs.js";
 import { botUpdateSettings } from "./botUpdates.js";
+import { staffApplicationSettings } from "./staffApplications.js";
 
 /**
  * The single definition of every feature: its name, description, category and settings shape.
@@ -302,6 +303,16 @@ export const ticketsFeature = defineFeature({
   settings: ticketSettings,
 });
 
+export const staffApplicationsFeature = defineFeature({
+  id: "staff-applications",
+  name: "Staff applications",
+  icon: "📝",
+  description: "Let members apply for staff positions with your own questions. Applications arrive in a staff channel to claim, accept or deny, and accepting gives the roles.",
+  category: "community",
+  recommended: true,
+  settings: staffApplicationSettings,
+});
+
 export const botUpdatesFeature = defineFeature({
   id: "bot-updates",
   name: "Number One updates",
@@ -332,6 +343,7 @@ export const featureCatalog: FeatureInfo[] = [
   voiceLogsFeature,
   customCommandsFeature,
   ticketsFeature,
+  staffApplicationsFeature,
   botUpdatesFeature,
 ];
 
@@ -388,6 +400,7 @@ export * from "./memberLogs.js";
 export * from "./serverLogs.js";
 export * from "./voiceLogs.js";
 export * from "./botUpdates.js";
+export * from "./staffApplications.js";
 export * from "./customCommands.js";
 export * from "./ruleVerification.js";
 export * from "./tickets.js";

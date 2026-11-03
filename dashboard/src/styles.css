@@ -5513,3 +5513,29 @@ select.chip-add {
   vertical-align: -0.3em;
   object-fit: contain;
 }
+
+/* ---------- Staff applications ---------- */
+.sa-answer {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.sa-decide {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sa-page-break {
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  margin-bottom: 4px;
+}
+.rv-preview-button.sa-closed {
+  opacity: 0.55;
+}
+@media (max-width: 640px) {
+  .sa-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -17,6 +17,7 @@ import { OnboardingPanel } from "./OnboardingPanel";
 import { ReactionRolesPanel } from "./ReactionRolesPanel";
 import { RuleVerificationPanel } from "./RuleVerificationPanel";
 import { ServerLogsPanel } from "./ServerLogsPanel";
+import { StaffApplicationsPanel } from "./StaffApplicationsPanel";
 import { TicketsPanel } from "./TicketsPanel";
 import { VoiceLogsPanel } from "./VoiceLogsPanel";
 
@@ -39,6 +40,7 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "custom-commands": CustomCommandsPanel,
   "rule-verification": RuleVerificationPanel,
   tickets: TicketsPanel,
+  "staff-applications": StaffApplicationsPanel,
   guides: GuidesPanel,
   "bot-updates": BotUpdatesPanel,
 };

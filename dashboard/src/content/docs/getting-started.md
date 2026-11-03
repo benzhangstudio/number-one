@@ -11,7 +11,7 @@ Number One combines the jobs of many single-purpose bots into one:
 | Category | Modules |
 | --- | --- |
 | 🛡️ Moderation & Safety | [Moderation](/docs/moderation), [Auto-moderation](/docs/automod), [Anti-raid](/docs/anti-raid) |
-| 👥 Community Settings | [Join & leave messages](/docs/join-leave), [Rule verification](/docs/rule-verification), [Member onboarding](/docs/onboarding) |
+| 👥 Community Settings | [Join & leave messages](/docs/join-leave), [Rule verification](/docs/rule-verification), [Member onboarding](/docs/onboarding), [Staff applications](/docs/staff-applications) |
 | 🎭 Roles Management | [Reaction roles](/docs/reaction-roles) |
 | 📋 Logging & Auditing | [Message logs](/docs/message-logs), [Member logs](/docs/member-logs), [Server logs](/docs/server-logs), [Voice logs](/docs/voice-logs) |
 | 🎉 Engagement & Fun | [Events](/docs/events) |

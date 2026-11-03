@@ -8,7 +8,7 @@ const files = import.meta.glob("./*.md", { query: "?raw", import: "default", eag
 const groups: { name: string; pages: string[] }[] = [
   { name: "Start here", pages: ["getting-started", "dashboard", "commands"] },
   { name: "🛡️ Moderation & Safety", pages: ["moderation", "automod", "anti-raid"] },
-  { name: "👥 Community Settings", pages: ["join-leave", "rule-verification", "onboarding"] },
+  { name: "👥 Community Settings", pages: ["join-leave", "rule-verification", "onboarding", "staff-applications"] },
   { name: "🎭 Roles Management", pages: ["reaction-roles"] },
   { name: "📋 Logging & Auditing", pages: ["message-logs", "member-logs", "server-logs", "voice-logs"] },
   { name: "🎉 Engagement & Fun", pages: ["events"] },
