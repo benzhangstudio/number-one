@@ -472,7 +472,7 @@ function Editor({
       if (match) return { ...r, roleId: match.id, label: "" };
       // Offer to create it only when no role has that name at all (one above my role is picked by hand).
       const exists = guild.roles.some((role) => role.name.toLowerCase() === r.label.toLowerCase());
-      return r.label && !exists ? { ...r, newRoleName: r.label, label: "" } : r; // button text comes from the role
+      return r.label && !exists ? { ...r, newRoleName: r.label } : r;
     });
     setD((x) => ({ ...x, ...made, kind: x.useExisting ? "reactions" : (made.kind ?? x.kind), rows, embed: { ...x.embed, ...made.embed } }));
   };
@@ -672,12 +672,9 @@ function Editor({
                   </div>
                 </div>
                 {!r.roleId && r.newRoleName && (
-                  <label className="rr-create-role">
+                  <label className="check rr-create-role">
                     <input type="checkbox" checked={r.createRole} onChange={(e) => setRow(r.key, { createRole: e.target.checked })} />
-                    <span>
-                      <strong>{r.newRoleName}</strong> isn't a role in this server yet. Create it
-                      <small className="muted"> (when you save, with no permissions)</small>
-                    </span>
+                    <span>Create the “{r.newRoleName}” role in Discord</span>
                   </label>
                 )}
                 {d.kind !== "reactions" && (
