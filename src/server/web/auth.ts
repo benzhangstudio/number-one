@@ -62,26 +62,11 @@ export async function requireSession(request: FastifyRequest, reply: FastifyRepl
 }
 
 /**
- * Permissions Number One asks for when it's added to a server: what moderation, auto-moderation, onboarding
- * and reaction roles need, and no more. Add to this list when a new feature needs another permission.
+ * Permissions Number One asks for when it's added to a server: Administrator, the same as the dashboard's
+ * "Add bot" links. An all-in-one admin bot needs to manage roles, channels, messages and members, and asking
+ * up front avoids features failing later (see docs/getting-started).
  */
-const INVITE_PERMISSIONS = [
-  PermissionFlagsBits.ViewChannel,
-  PermissionFlagsBits.SendMessages,
-  PermissionFlagsBits.EmbedLinks,
-  PermissionFlagsBits.AttachFiles,
-  PermissionFlagsBits.ReadMessageHistory,
-  PermissionFlagsBits.AddReactions,
-  PermissionFlagsBits.UseExternalEmojis,
-  PermissionFlagsBits.ManageMessages,
-  PermissionFlagsBits.ManageChannels,
-  PermissionFlagsBits.ManageRoles,
-  PermissionFlagsBits.KickMembers,
-  PermissionFlagsBits.BanMembers,
-  PermissionFlagsBits.ModerateMembers,
-  PermissionFlagsBits.ViewAuditLog,
-  PermissionFlagsBits.ManageGuild, // auto-moderation creates Discord AutoMod rules
-].reduce((all, p) => all | p, 0n);
+const INVITE_PERMISSIONS = PermissionFlagsBits.Administrator;
 
 export function registerAuthRoutes(app: FastifyInstance) {
   // "Add to Discord" on the landing page: sends the visitor to Discord's add-bot screen.

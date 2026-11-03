@@ -2,7 +2,7 @@
 
 > 💬 **Need help or have a privacy question?** [Join the Official Support Server](https://discord.gg/7GyveHcQdn)
 
-**Effective Date:** November 1, 2026
+**Effective Date:** November 2, 2026
 
 Number One is a free, independent hobby project. This policy explains what information the bot uses, why, and what you can do about it. By inviting or using Number One, you agree to this policy.
 
@@ -21,6 +21,11 @@ Number One only keeps what it needs for its features to work. This may include:
 - Moderation records (cases), such as warnings and bans, with the reason staff gave.
 
 When a server turns on Auto-moderation, Number One reads messages in that server to check them against the server's filters. Message text is checked in memory and is never saved. To spot repeated messages, Number One briefly keeps a scrambled fingerprint of recent messages (not the text itself) for up to 10 minutes. If a server has an alert channel set up, a caught message is posted there for the server's staff to review.
+
+Some features repost message text to a channel the server's staff picked, without saving it in Number One's database:
+
+- **Message logs:** when a message is edited or deleted, its text is posted in the server's log channel.
+- **Tickets:** when a ticket closes, a transcript of its messages is posted in the server's ticket log channel, and can be sent to the member who opened it. Answers to a ticket's starter form are saved with the ticket.
 
 Number One never collects passwords, email addresses, or payment information.
 

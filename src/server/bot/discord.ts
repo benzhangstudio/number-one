@@ -19,7 +19,13 @@ export const client = new Client({
   ],
   // Partials let the bot react to events on messages, reactions and members it hasn't cached (e.g. after a restart).
   partials: [Partials.GuildMember, Partials.Message, Partials.Reaction, Partials.User, Partials.Channel],
+  // Safety net: messages only ping the users they name. @everyone, @here and roles never ping unless a
+  // feature allows them on purpose (announcements, events, tickets...), so text typed by members can't mass-ping.
+  allowedMentions: { parse: ["users"], repliedUser: false },
 });
+
+// Without a listener, a connection error would crash the whole program (bot and dashboard).
+client.on("error", (err) => console.error("[bot] Discord client error:", err));
 
 /**
  * Whether Number One can read what messages say. False when "Message Content Intent" is off in the

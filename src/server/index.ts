@@ -1,3 +1,7 @@
+// Log unexpected errors instead of crashing, so one bad event can't take the bot and dashboard offline.
+process.on("unhandledRejection", (err) => console.error("[process] unhandled rejection:", err));
+process.on("uncaughtException", (err) => console.error("[process] uncaught exception:", err));
+
 import { config, logConfigStatus } from "./config.js";
 import { startBot } from "./bot/client.js";
 import { startBackups } from "./db/backup.js";
@@ -23,4 +27,3 @@ if (config.skipBot) {
   await login();
 }
 
-process.on("unhandledRejection", (err) => console.error("[process] unhandled rejection:", err));

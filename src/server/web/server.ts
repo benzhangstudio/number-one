@@ -16,6 +16,13 @@ export async function startWebServer() {
 
   await app.register(cookie, { secret: config.sessionSecret });
   app.addHook("onRequest", async (request) => learnPublicUrl(request));
+  // Basic browser protections: no embedding the dashboard in other sites (clickjacking), no type guessing.
+  app.addHook("onSend", async (_request, reply) => {
+    reply.header("X-Frame-Options", "DENY");
+    reply.header("Content-Security-Policy", "frame-ancestors 'none'");
+    reply.header("X-Content-Type-Options", "nosniff");
+    reply.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  });
   registerAuthRoutes(app);
   registerApiRoutes(app);
 

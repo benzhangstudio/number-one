@@ -15,7 +15,7 @@
   --warning-text: #ffd99a;
   --topbar-bg: rgba(10, 10, 11, 0.85);
   --bar-bg: rgba(20, 18, 21, 0.95);
-  --shadow: var(--shadow);
+  --shadow: rgba(0, 0, 0, 0.5);
   --hero-from: #ffffff;
   --hero-mid: #ffb3d6;
   --radius: 12px;
