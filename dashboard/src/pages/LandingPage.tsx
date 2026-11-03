@@ -89,8 +89,9 @@ export function LandingPage({ loggedIn = false }: { loggedIn?: boolean }) {
           <span className="lp-pill">Discord administration bot</span>
           <h1>One bot. All server administration.</h1>
           <p className="lead muted">
-            Moderation, auto-moderation, member onboarding and role management. Configured with /setup and this
-            dashboard.
+            Replace your stack of single-purpose bots with one. Tell /setup what your server is for and the right modules
+            switch on, ready to use. Everything else is a few clicks here, with live previews and an undo button, not a wall
+            of commands.
           </p>
           {error === "login_not_configured" && (
             <p className="error">Error: dashboard login is not configured.</p>
