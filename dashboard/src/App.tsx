@@ -68,6 +68,22 @@ function AccentPicker() {
   );
 }
 
+/** Strip under the top bar on every page. Remove it when the bot leaves beta. */
+function BetaBanner() {
+  return (
+    <div className="beta-banner" role="note">
+      <span className="beta-tag">BETA</span>
+      <span>
+        Number One is in open beta. Found a bug or have an idea?{" "}
+        <a href={SUPPORT_SERVER} target="_blank" rel="noopener noreferrer">
+          Tell us in the support server
+        </a>
+        .
+      </span>
+    </div>
+  );
+}
+
 /** One entry in the top menu or the phone menu. External links open in a new tab. */
 interface MenuItem {
   label: string;
@@ -221,6 +237,7 @@ export function App() {
           <AccentPicker />
           <ThemeToggle />
         </header>
+        <BetaBanner />
         <main className="content center muted">Loading…</main>
         <Footer />
       </div>
@@ -285,6 +302,7 @@ export function App() {
           </a>
         )}
       </header>
+      <BetaBanner />
       <main className={`content ${(user && guildMatch) || docsMatch ? "wide" : ""}`}>{page}</main>
       <UndoToast />
       <Footer />
