@@ -5428,3 +5428,88 @@ select.chip-add {
     position: static;
   }
 }
+
+/* ---------- Discord-formatted text in message previews (components/DiscordText) ---------- */
+.dtext {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.dtext-h1,
+.dtext-h2,
+.dtext-h3 {
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 6px 0 2px;
+}
+.dtext-h1 {
+  font-size: 1.4em;
+}
+.dtext-h2 {
+  font-size: 1.2em;
+}
+.dtext-h3 {
+  font-size: 1.05em;
+}
+.dtext-sub {
+  font-size: 0.8em;
+  color: #949ba4;
+}
+.dtext-quote {
+  margin: 2px 0;
+  padding-left: 10px;
+  border-left: 4px solid #4e5058;
+}
+.dtext-li {
+  position: relative;
+}
+.dtext-bullet {
+  position: absolute;
+  margin-left: -16px;
+}
+.dtext-code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.85em;
+  background: #1e1f22;
+  border-radius: 3px;
+  padding: 0 3px;
+}
+.dtext-codeblock {
+  margin: 4px 0;
+  padding: 7px 9px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.85em;
+  background: #1e1f22;
+  border: 1px solid #1e1f22;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+.dtext-spoiler {
+  background: #1e1f22;
+  color: transparent;
+  border-radius: 3px;
+  transition: color 0.1s;
+}
+.dtext-spoiler:hover {
+  color: inherit;
+  background: #3a3c42;
+}
+.dtext-link {
+  color: #00a8fc;
+  text-decoration: none;
+}
+.dtext-link:hover {
+  text-decoration: underline;
+}
+.dtext-mention {
+  color: #c9cdfb;
+  background: rgba(88, 101, 242, 0.3);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 500;
+}
+.dtext-emoji {
+  width: 1.375em;
+  height: 1.375em;
+  vertical-align: -0.3em;
+  object-fit: contain;
+}

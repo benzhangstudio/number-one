@@ -11,6 +11,7 @@ import {
 } from "../../../src/shared/embeds";
 import { type GuildDetails, api } from "../api";
 import { ChannelSelect, Toggle } from "../components/pickers";
+import { DiscordText } from "../components/DiscordText";
 
 type Guild = GuildDetails["guild"];
 
@@ -312,7 +313,7 @@ function EmbedsPreview({ content, embeds }: { content: string; embeds: EmbedData
         <strong>Number One</strong>
         <span className="emb-preview-bot">APP</span>
       </div>
-      {content.trim() && <div className="emb-preview-content">{content}</div>}
+      {content.trim() && <div className="emb-preview-content"><DiscordText text={content} /></div>}
       {embeds.map((e, i) => (
         <div key={i} className="emb-preview-embed" style={{ borderLeftColor: e.color }}>
           <div className="emb-preview-main">
@@ -323,13 +324,13 @@ function EmbedsPreview({ content, embeds }: { content: string; embeds: EmbedData
               </div>
             )}
             {e.title && <div className={`emb-preview-title ${e.url ? "linked" : ""}`}>{e.title}</div>}
-            {e.description.trim() && <div className="emb-preview-desc">{e.description}</div>}
+            {e.description.trim() && <div className="emb-preview-desc"><DiscordText text={e.description} /></div>}
             {e.fields.length > 0 && (
               <div className="emb-preview-fields">
                 {e.fields.map((f, j) => (
                   <div key={j} className={f.inline ? "inline" : ""}>
                     <strong>{f.name || "Name"}</strong>
-                    <span>{f.value || "Value"}</span>
+                    <DiscordText text={f.value || "Value"} />
                   </div>
                 ))}
               </div>

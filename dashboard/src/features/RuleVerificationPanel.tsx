@@ -7,6 +7,7 @@ import {
 } from "../../../src/shared/ruleVerification";
 import { type GuildDetails, api } from "../api";
 import { ChannelSelect, RoleSelect, Toggle } from "../components/pickers";
+import { DiscordText } from "../components/DiscordText";
 
 type Guild = GuildDetails["guild"];
 
@@ -187,7 +188,7 @@ export function RuleVerificationPanel({ guild }: { guild: Guild }) {
             </div>
             <div className="rv-preview-embed" style={{ borderLeftColor: draft.color }}>
               {draft.title && <div className="rv-preview-title">{draft.title}</div>}
-              <div className="rv-preview-desc">{draft.rules.trim() || "Please read and accept the rules."}</div>
+              <div className="rv-preview-desc"><DiscordText text={draft.rules.trim() || "Please read and accept the rules."} guild={guild} /></div>
               {draft.image && <img className="rv-preview-image" src={draft.image} alt="" />}
             </div>
             <span className="rv-preview-button" style={{ background: styleNames[draft.buttonStyle].color }}>

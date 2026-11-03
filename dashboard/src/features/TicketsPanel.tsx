@@ -18,6 +18,7 @@ import {
 import { type GuildDetails, api } from "../api";
 import { EmojiInput, EmojiView } from "../components/emoji";
 import { CategorySelect, ChannelSelect, RolePicker, Toggle } from "../components/pickers";
+import { DiscordText } from "../components/DiscordText";
 
 type Guild = GuildDetails["guild"];
 
@@ -517,7 +518,7 @@ function PanelEditor({
             </div>
             <div className="rv-preview-embed" style={{ borderLeftColor: p.color }}>
               {p.title && <div className="rv-preview-title">{p.title}</div>}
-              <div className="rv-preview-desc">{p.description.trim() || "Open a ticket below."}</div>
+              <div className="rv-preview-desc"><DiscordText text={p.description.trim() || "Open a ticket below."} guild={guild} /></div>
               {p.image && <img className="rv-preview-image" src={p.image} alt="" />}
             </div>
             {p.style === "buttons" ? (

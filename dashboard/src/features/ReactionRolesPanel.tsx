@@ -13,6 +13,7 @@ import {
 } from "../../../src/shared/features";
 import { type GuildDetails, api } from "../api";
 import { refreshGuildData } from "../undo";
+import { DiscordText } from "../components/DiscordText";
 import { EmojiInput, EmojiView } from "../components/emoji";
 import { ChannelSelect, RolePicker, RoleSelect, Toggle } from "../components/pickers";
 
@@ -880,13 +881,6 @@ function Preview({ guild, d }: { guild: Guild; d: Draft }) {
     );
   };
 
-  // Renders <@&id> role mentions in text as Discord-style pills.
-  const rich = (text: string) =>
-    text.split(/(<@&\d{17,20}>)/g).map((part, i) => {
-      const m = part.match(/^<@&(\d+)>$/);
-      return m ? <span key={i}>{mention(m[1])}</span> : <span key={i}>{part}</span>;
-    });
-
   const unique = d.mode === "unique";
   const footer =
     d.embed.footer ||
@@ -900,13 +894,13 @@ function Preview({ guild, d }: { guild: Guild; d: Draft }) {
           Number One <span className="dc-bot">APP</span>
         </div>
         {d.useExisting && <div className="dc-content muted">Your existing message stays exactly as it is. I only add the reactions below.</div>}
-        {!d.useExisting && d.content.trim() && <div className="dc-content">{rich(d.content)}</div>}
+        {!d.useExisting && d.content.trim() && <div className="dc-content"><DiscordText text={d.content} guild={guild} /></div>}
         {!d.useExisting && d.embed.enabled && (
           <div className="dc-embed" style={{ borderLeftColor: d.embed.color }}>
             <div className="dc-embed-main">
               <div>
                 {d.embed.title && <div className="dc-embed-title">{d.embed.title}</div>}
-                {d.embed.description.trim() && <div className="dc-embed-desc">{rich(d.embed.description)}</div>}
+                {d.embed.description.trim() && <div className="dc-embed-desc"><DiscordText text={d.embed.description} guild={guild} /></div>}
                 {d.embed.listRoles && rows.length > 0 && (
                   <div className="dc-embed-desc dc-lines">
                     {rows.map((r) => (

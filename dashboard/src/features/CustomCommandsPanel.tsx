@@ -13,6 +13,7 @@ import {
 } from "../../../src/shared/customCommands";
 import { type GuildDetails, api } from "../api";
 import { RolePicker, Toggle } from "../components/pickers";
+import { DiscordText } from "../components/DiscordText";
 
 type Guild = GuildDetails["guild"];
 
@@ -271,11 +272,11 @@ function CommandEditor({
             <strong>Number One</strong>
             <span className="cc-preview-bot">APP</span>
           </div>
-          {c.content.trim() && <div className="cc-preview-content">{c.content}</div>}
+          {c.content.trim() && <div className="cc-preview-content"><DiscordText text={c.content} /></div>}
           {c.useEmbed && (
             <div className="cc-preview-embed" style={{ borderLeftColor: e.color }}>
               {e.title && <div className="cc-preview-title">{e.title}</div>}
-              {e.description.trim() && <div className="cc-preview-desc">{e.description}</div>}
+              {e.description.trim() && <div className="cc-preview-desc"><DiscordText text={e.description} /></div>}
               {e.image && <img className="cc-preview-image" src={e.image} alt="" />}
               {e.footer && <div className="cc-preview-footer">{e.footer}</div>}
             </div>
@@ -425,7 +426,7 @@ function RulesEditor({ guild, initial, onSaved }: { guild: Guild; initial: Rules
           </div>
           <div className="cc-preview-embed" style={{ borderLeftColor: r.color }}>
             <div className="cc-preview-title">📜 Rule {shown}: {rule?.title || "Be kind"}</div>
-            {rule?.description.trim() && <div className="cc-preview-desc">{rule.description}</div>}
+            {rule?.description.trim() && <div className="cc-preview-desc"><DiscordText text={rule.description} /></div>}
             <div className="cc-preview-footer">{r.heading} · {shown} of {Math.max(1, r.rules.length)}</div>
           </div>
         </div>

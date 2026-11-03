@@ -8,6 +8,7 @@ import {
 } from "../../../src/shared/botUpdates";
 import { api } from "../api";
 import { Toggle } from "../components/pickers";
+import { DiscordText } from "../components/DiscordText";
 
 const blank: BotUpdateInput = { title: "", body: "", url: "", mention: true };
 
@@ -121,7 +122,7 @@ export function DeveloperPage() {
                 <div className="dc-embed-main">
                   <div>
                     <div className="dc-embed-title">{draft.title || "Title"}</div>
-                    <div className="dc-embed-desc">{draft.body || <span className="muted">Your message</span>}</div>
+                    <div className="dc-embed-desc">{draft.body ? <DiscordText text={draft.body} /> : <span className="muted">Your message</span>}</div>
                     <div className="dev-embed-footer">Number One updates</div>
                   </div>
                 </div>

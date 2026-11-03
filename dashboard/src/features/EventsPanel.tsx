@@ -13,6 +13,7 @@ import {
 import { type GuildDetails, api } from "../api";
 import { ChannelSelect, RolePicker, Toggle } from "../components/pickers";
 import { SearchSelect } from "../components/SearchSelect";
+import { DiscordText } from "../components/DiscordText";
 
 type Guild = GuildDetails["guild"];
 
@@ -480,7 +481,7 @@ function EventPreview({ guild, d }: { guild: Guild; d: EventInput }) {
       </div>
       <div className="evt-preview-embed" style={{ borderLeftColor: d.color }}>
         <div className="evt-preview-title">📅 {d.title || "Event name"}</div>
-        {d.description.trim() && <div className="evt-preview-desc">{d.description}</div>}
+        {d.description.trim() && <div className="evt-preview-desc"><DiscordText text={d.description} guild={guild} /></div>}
         <div className="evt-preview-field">
           <strong>🕒 When</strong>
           <span>

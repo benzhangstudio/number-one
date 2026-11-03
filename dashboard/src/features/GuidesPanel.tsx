@@ -12,6 +12,7 @@ import {
 import { type GuildDetails, api } from "../api";
 import { EmojiInput, EmojiView } from "../components/emoji";
 import { ChannelSelect, Toggle } from "../components/pickers";
+import { DiscordText } from "../components/DiscordText";
 
 type Guild = GuildDetails["guild"];
 
@@ -260,7 +261,7 @@ function GuideEditor({ guild, kind, data, onSaved }: { guild: Guild; kind: Guide
             <div className="rv-preview-embed" style={{ borderLeftColor: g.color }}>
               {g.title && <div className="rv-preview-title">{g.title}</div>}
               <div className="rv-preview-desc">
-                {g.intro.trim() && <>{g.intro.trim()}{"\n\n"}</>}
+                {g.intro.trim() && <><DiscordText text={g.intro.trim()} guild={guild} />{"\n"}</>}
                 <strong>Contents</strong>
                 {g.sections.map((s, i) => (
                   <span key={s.id}>
@@ -277,7 +278,7 @@ function GuideEditor({ guild, kind, data, onSaved }: { guild: Guild; kind: Guide
                   <div className="rv-preview-title">{s.emoji && !s.emoji.startsWith("<") ? `${s.emoji} ` : ""}{s.title}</div>
                   <div className="rv-preview-desc">
                     {s.emoji.startsWith("<") && <><EmojiView display={s.emoji} />{" "}</>}
-                    {s.content}
+                    <DiscordText text={s.content} guild={guild} />
                   </div>
                   {s.image && <img className="rv-preview-image" src={s.image} alt="" />}
                   <div className="gd-preview-footer">{i + 1} of {g.sections.length}</div>

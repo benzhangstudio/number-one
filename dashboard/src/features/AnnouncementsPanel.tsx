@@ -15,6 +15,7 @@ import {
 } from "../../../src/shared/announcements";
 import { type GuildDetails, api } from "../api";
 import { ChannelSelect, RolePicker, Toggle } from "../components/pickers";
+import { DiscordText } from "../components/DiscordText";
 
 type Guild = GuildDetails["guild"];
 
@@ -689,7 +690,7 @@ function AnnouncementPreview({ guild, message: m, ping }: { guild: Guild; messag
         <span className="ann-preview-bot">APP</span>
       </div>
       {pingText && <div className="ann-preview-content"><span className="ann-preview-ping">{pingText}</span></div>}
-      {m.content.trim() && <div className="ann-preview-content">{m.content}</div>}
+      {m.content.trim() && <div className="ann-preview-content"><DiscordText text={m.content} guild={guild} /></div>}
       {m.useEmbed && (
         <div className="ann-preview-embed" style={{ borderLeftColor: e.color }}>
           <div className="ann-preview-main">
@@ -700,7 +701,7 @@ function AnnouncementPreview({ guild, message: m, ping }: { guild: Guild; messag
               </div>
             )}
             {e.title && <div className={`ann-preview-title ${e.url ? "linked" : ""}`}>{e.title}</div>}
-            {e.description.trim() && <div className="ann-preview-desc">{e.description}</div>}
+            {e.description.trim() && <div className="ann-preview-desc"><DiscordText text={e.description} guild={guild} /></div>}
             {e.fields.length > 0 && (
               <div className="ann-preview-fields">
                 {e.fields.map((f, j) => (
