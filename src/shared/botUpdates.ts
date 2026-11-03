@@ -36,6 +36,83 @@ export const botUpdateInput = z.object({
 });
 export type BotUpdateInput = z.infer<typeof botUpdateInput>;
 
+/* ------------------------------------------------------------ templates */
+
+export const MAX_UPDATE_TEMPLATE_NAME = 50;
+export const MAX_UPDATE_TEMPLATES = 30;
+
+/** A saved update to start from. */
+export const botUpdateTemplateInput = z.object({
+  name: z.string().trim().min(1, "Name the template").max(MAX_UPDATE_TEMPLATE_NAME, `Keep the name under ${MAX_UPDATE_TEMPLATE_NAME} characters`),
+  title: z.string().trim().max(MAX_UPDATE_TITLE).default(""),
+  body: z.string().trim().max(MAX_UPDATE_BODY).default(""),
+  url: z.string().trim().max(300).default(""),
+  mention: z.boolean().default(true),
+});
+export type BotUpdateTemplateInput = z.infer<typeof botUpdateTemplateInput>;
+
+export interface BotUpdateTemplate extends BotUpdateTemplateInput {
+  id: number;
+}
+
+/**
+ * Starter templates, always offered on the Developer page.
+ * {end} is filled in with the maintenance end time from the Developer page, when one is set.
+ */
+export const starterTemplates: BotUpdateTemplateInput[] = [
+  {
+    name: "Maintenance coming up",
+    title: "🛠️ Planned maintenance",
+    body: "Number One will be under maintenance soon. We expect to be back {end}.\n\nCommands won't work during this time. Your settings and data are safe.",
+    url: "",
+    mention: true,
+  },
+  {
+    name: "Maintenance finished",
+    title: "✅ Maintenance finished",
+    body: "Number One is back and everything works again. Thanks for your patience!",
+    url: "",
+    mention: false,
+  },
+  {
+    name: "New feature",
+    title: "✨ New: ",
+    body: "**What it does:** \n\n**How to start:** Switch it on in the dashboard.",
+    url: "",
+    mention: true,
+  },
+  {
+    name: "Bug fixes",
+    title: "🐛 Fixes",
+    body: "- \n- ",
+    url: "",
+    mention: false,
+  },
+];
+
+/* ------------------------------------------------------------ maintenance mode */
+
+export const MAX_MAINTENANCE_MESSAGE = 300;
+export const DEFAULT_MAINTENANCE_MESSAGE = "Number One is under maintenance right now. Please try again soon!";
+
+/** What the developer sets on the Developer page. */
+export const maintenanceInput = z.object({
+  on: z.boolean(),
+  /** Shown to anyone who uses a command or button. */
+  message: z.string().trim().max(MAX_MAINTENANCE_MESSAGE).default(""),
+  /** ms since 1970: maintenance switches itself off then. Null = until switched off. */
+  until: z.number().int().nullable().default(null),
+});
+export type MaintenanceInput = z.infer<typeof maintenanceInput>;
+
+export interface MaintenanceState {
+  on: boolean;
+  message: string;
+  until: number | null;
+  /** When it was switched on (ms since 1970). */
+  since: number | null;
+}
+
 /** How one server's delivery went. */
 export type BotUpdateOutcome = "sent" | "failed";
 
@@ -60,6 +137,8 @@ export interface BotUpdateFailure {
 /** The Developer page's data. */
 export interface DeveloperOverview {
   updates: BotUpdateSummary[];
+  templates: BotUpdateTemplate[];
+  maintenance: MaintenanceState;
   /** Servers the bot is in, and how many have a channel set (so would get the next update). */
   servers: number;
   receiving: number;

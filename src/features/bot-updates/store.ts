@@ -1,7 +1,7 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../server/db/client.js";
-import { devUpdateDeliveries, devUpdates } from "../../server/db/schema.js";
-import type { BotUpdateInput, BotUpdateOutcome } from "../../shared/botUpdates.js";
+import { devUpdateDeliveries, devUpdateTemplates, devUpdates } from "../../server/db/schema.js";
+import type { BotUpdateInput, BotUpdateOutcome, BotUpdateTemplate, BotUpdateTemplateInput } from "../../shared/botUpdates.js";
 
 export type UpdateRow = typeof devUpdates.$inferSelect;
 
@@ -50,3 +50,17 @@ export const failuresFor = (id: number) =>
     .from(devUpdateDeliveries)
     .where(and(eq(devUpdateDeliveries.updateId, id), eq(devUpdateDeliveries.outcome, "failed")))
     .all();
+
+/* ------------------------------------------------------------ templates */
+
+const toTemplate = (r: typeof devUpdateTemplates.$inferSelect): BotUpdateTemplate => ({ id: r.id, name: r.name, title: r.title, body: r.body, url: r.url, mention: r.mention });
+
+export const listTemplates = async () => (await db.select().from(devUpdateTemplates).orderBy(asc(devUpdateTemplates.name)).all()).map(toTemplate);
+
+export const templateCount = async () => (await db.select({ n: sql<number>`count(*)` }).from(devUpdateTemplates).get())?.n ?? 0;
+
+export const createTemplate = (input: BotUpdateTemplateInput) => db.insert(devUpdateTemplates).values({ ...input, createdAt: new Date() }).run();
+
+export const updateTemplate = (id: number, input: BotUpdateTemplateInput) => db.update(devUpdateTemplates).set(input).where(eq(devUpdateTemplates.id, id)).run();
+
+export const deleteTemplate = (id: number) => db.delete(devUpdateTemplates).where(eq(devUpdateTemplates.id, id)).run();

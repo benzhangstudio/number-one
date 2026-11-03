@@ -6,12 +6,14 @@ import { config, logConfigStatus } from "./config.js";
 import { startBot } from "./bot/client.js";
 import { startBackups } from "./db/backup.js";
 import { runMigrations } from "./db/client.js";
+import { loadMaintenance } from "./maintenance.js";
 import { startWebServer } from "./web/server.js";
 
 logConfigStatus();
 
 // Startup order: database → backups → dashboard → bot.
 await runMigrations();
+await loadMaintenance();
 startBackups();
 await startWebServer();
 

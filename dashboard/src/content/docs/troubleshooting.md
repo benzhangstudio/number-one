@@ -16,6 +16,10 @@ Admins can also only set up roles below their own highest role on the dashboard.
 
 [Moderation](/docs/moderation) can't act on members whose highest role is at or above Number One's role. Move Number One's role higher. Members can't moderate people with roles equal to or higher than their own either, except the server owner.
 
+## Commands say "under maintenance"
+
+Number One is being updated. Commands, buttons and forms pause in every server until it's done, and the dashboard shows a yellow notice with the expected end time. Your settings and data are safe, and things like auto-moderation, logs and XP keep working. Maintenance is announced in the channel you picked for [Number One updates](/docs/bot-updates).
+
 ## A command doesn't show up
 
 - Check the module is **switched on** on the dashboard. Commands from switched-off modules tell you where to switch them on.

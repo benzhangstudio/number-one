@@ -5461,6 +5461,76 @@ select.chip-add {
   gap: 12px;
   flex-wrap: wrap;
 }
+.dev-maintenance {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.dev-maintenance h2 {
+  margin: 0;
+}
+.dev-maintenance p {
+  margin: 0;
+}
+.dev-maintenance.on {
+  border-color: #f0b232;
+  background: linear-gradient(90deg, rgba(240, 178, 50, 0.12), var(--surface) 70%);
+}
+.pill.pill-warn {
+  background: #f0b232;
+  color: #1e1f22;
+}
+.dev-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dev-form .dev-buttons .btn {
+  align-self: auto;
+}
+.dev-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dev-templates .chip {
+  cursor: pointer;
+  font: inherit;
+}
+.dev-templates .chip.saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dev-templates > button.chip {
+  padding: 4px 12px;
+  color: var(--text);
+}
+.dev-templates > button.chip:hover {
+  border-color: var(--accent);
+}
+.dev-templates .chip.saved {
+  padding: 2px 4px 2px 10px;
+}
+.dev-templates .chip.saved .link:first-child {
+  color: var(--text);
+  font-size: 0.85rem;
+  text-decoration: none;
+  padding: 0;
+}
+.maintenance-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13.5px;
+  text-align: center;
+  color: #1e1f22;
+  background: #f0b232;
+}
 .dev-failures {
   margin: 6px 0 0;
   padding-left: 18px;

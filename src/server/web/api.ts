@@ -9,6 +9,7 @@ import { getAccessState } from "../../features/onboarding/access.js";
 import { deleteGuildData } from "../guildData.js";
 import { registerDeveloperApi } from "../../features/bot-updates/index.js";
 import { isDeveloper } from "../../features/bot-updates/developer.js";
+import { getMaintenance } from "../maintenance.js";
 import { applySetup, getAllFeatureStates, getFeatureState, getSetup, saveFeatureState } from "../settings.js";
 import { type Session, discordUserFetch, requireSession } from "./auth.js";
 
@@ -94,6 +95,7 @@ export function registerApiRoutes(app: FastifyInstance) {
     clientId: config.clientId ?? client.application?.id ?? null,
     loginReady: loginReady(),
     botReady: client.isReady(),
+    maintenance: getMaintenance(),
   }));
 
   app.register(async (api) => {

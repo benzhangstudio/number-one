@@ -1,6 +1,8 @@
 import { ActivityType, ApplicationFlags, Events, MessageFlags, Routes } from "discord.js";
+import { isDeveloper } from "../../features/bot-updates/developer.js";
 import { features } from "../../features/index.js";
 import { config, dashboardLink, setPublicUrl } from "../config.js";
+import { isMaintenance, maintenanceReply, onMaintenanceChange } from "../maintenance.js";
 import { isFeatureEnabled } from "../settings.js";
 import { canReadMessages, client, dropMessageContent } from "./discord.js";
 import type { BotFeature, ComponentHandler, SlashCommand } from "./types.js";
@@ -47,9 +49,15 @@ async function detectDashboardAddress() {
  */
 let statusTimer: NodeJS.Timeout | undefined;
 function showStatus() {
+  if (isMaintenance()) {
+    // "Do not disturb" with a custom status, so people can see why commands aren't working.
+    client.user?.setPresence({ status: "dnd", activities: [{ type: ActivityType.Custom, name: "maintenance", state: "🛠️ Under maintenance, back soon" }] });
+    return;
+  }
   const n = client.guilds.cache.size;
   client.user?.setPresence({ status: "online", activities: [{ type: ActivityType.Listening, name: `/setup in ${n} server${n === 1 ? "" : "s"}` }] });
 }
+onMaintenanceChange(() => showStatus());
 function queueStatus() {
   statusTimer ??= setTimeout(() => {
     statusTimer = undefined;
@@ -68,7 +76,16 @@ client.once(Events.ClientReady, async (c) => {
   await detectDashboardAddress().catch(() => {});
 });
 
+/** While maintenance is on, everyone but the bot's developer gets a short notice instead (see src/server/maintenance.ts). */
+async function blockedByMaintenance(interaction: import("discord.js").Interaction) {
+  if (!isMaintenance() || (await isDeveloper(interaction.user.id))) return false;
+  if (interaction.isAutocomplete()) await interaction.respond([]).catch(() => {});
+  else if (interaction.isRepliable()) await interaction.reply({ content: maintenanceReply(), flags: MessageFlags.Ephemeral }).catch(() => {});
+  return true;
+}
+
 client.on(Events.InteractionCreate, async (interaction) => {
+  if (await blockedByMaintenance(interaction)) return;
   if (interaction.isAutocomplete()) {
     const entry = commands.get(interaction.commandName);
     if (!entry?.command.autocomplete) return;

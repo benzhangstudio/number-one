@@ -2,7 +2,9 @@ import { ChannelType, Events, type Guild } from "discord.js";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { client } from "../../server/bot/discord.js";
 import type { BotFeature } from "../../server/bot/types.js";
+import { getMaintenance, setMaintenance } from "../../server/maintenance.js";
 import { getFeatureState, saveFeatureState } from "../../server/settings.js";
+import { MAX_UPDATE_TEMPLATES, botUpdateTemplateInput, maintenanceInput } from "../../shared/botUpdates.js";
 import {
   type BotUpdateFailure,
   type BotUpdateSettings,
@@ -67,11 +69,46 @@ export function registerDeveloperApi(api: FastifyInstance) {
       if (!(await isDeveloper(request.session!.userId))) return reply.code(403).send({ error: "Only the bot's developer can use this." });
     });
 
-    dev.get("/api/developer", async (): Promise<DeveloperOverview> => ({
+    const overview = async (): Promise<DeveloperOverview> => ({
       updates: await summaries(await store.listUpdates(30)),
+      templates: await store.listTemplates(),
+      maintenance: getMaintenance(),
       servers: client.guilds.cache.size,
       receiving: await receivingCount(),
-    }));
+    });
+    const firstIssue = (issues: { message: string }[]) => issues[0]?.message ?? "Check the form and try again.";
+
+    dev.get("/api/developer", overview);
+
+    // Templates: saved updates to start from.
+    dev.post("/api/developer/templates", async (request, reply) => {
+      const input = botUpdateTemplateInput.safeParse(request.body);
+      if (!input.success) return reply.code(400).send({ error: firstIssue(input.error.issues) });
+      if ((await store.templateCount()) >= MAX_UPDATE_TEMPLATES) return reply.code(400).send({ error: `You can save up to ${MAX_UPDATE_TEMPLATES} templates. Delete one first.` });
+      await store.createTemplate(input.data);
+      return overview();
+    });
+    dev.put<{ Params: { id: string } }>("/api/developer/templates/:id", async (request, reply) => {
+      const input = botUpdateTemplateInput.safeParse(request.body);
+      if (!input.success) return reply.code(400).send({ error: firstIssue(input.error.issues) });
+      await store.updateTemplate(Number(request.params.id), input.data);
+      return overview();
+    });
+    dev.delete<{ Params: { id: string } }>("/api/developer/templates/:id", async (request) => {
+      await store.deleteTemplate(Number(request.params.id));
+      return overview();
+    });
+
+    // Maintenance mode for the whole bot.
+    dev.put("/api/developer/maintenance", async (request, reply) => {
+      const input = maintenanceInput.safeParse(request.body);
+      if (!input.success) return reply.code(400).send({ error: firstIssue(input.error.issues) });
+      if (input.data.on && input.data.until !== null && input.data.until <= Date.now() + 60_000) {
+        return reply.code(400).send({ error: "The end time has already passed. Pick a later time, or leave it empty." });
+      }
+      await setMaintenance(input.data);
+      return overview();
+    });
 
     dev.post("/api/developer/updates", async (request, reply) => {
       const input = botUpdateInput.safeParse(request.body);

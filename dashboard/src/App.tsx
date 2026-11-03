@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { DashboardUser } from "../../src/shared/features";
+import type { MaintenanceState } from "../../src/shared/botUpdates";
 import { useHasUnread } from "./announcementsSeen";
 import { api, avatarUrl, inviteUrl } from "./api";
 import { Footer, SUPPORT_SERVER } from "./components/Footer";
@@ -79,6 +80,20 @@ function BetaBanner() {
           Tell us in the support server
         </a>
         .
+      </span>
+    </div>
+  );
+}
+
+/** Shown on every page while the bot's developer has maintenance mode on. */
+function MaintenanceBanner({ state }: { state: MaintenanceState | null }) {
+  if (!state?.on) return null;
+  return (
+    <div className="maintenance-banner" role="status">
+      <strong>🛠️ Under maintenance</strong>
+      <span>
+        {state.message || "Commands in Discord are paused for a little while."}
+        {state.until ? ` Expected back ${new Date(state.until).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}.` : ""}
       </span>
     </div>
   );
@@ -219,12 +234,24 @@ export function App() {
   const path = usePath();
   const [user, setUser] = useState<DashboardUser | null | undefined>(undefined); // undefined = still checking
   const [clientId, setClientId] = useState<string | null>(null);
+  const [maintenance, setMaintenance] = useState<MaintenanceState | null>(null);
   const hasUnread = useHasUnread();
 
   useEffect(() => {
     // Any failure (usually "not logged in") shows the landing page.
     api.me().then(setUser).catch(() => setUser(null));
-    api.config().then((c) => setClientId(c.clientId)).catch(() => {});
+    const loadConfig = () =>
+      api
+        .config()
+        .then((c) => {
+          setClientId(c.clientId);
+          setMaintenance(c.maintenance ?? null);
+        })
+        .catch(() => {});
+    void loadConfig();
+    // Check again now and then, so the maintenance notice appears and goes away without a reload.
+    const t = setInterval(loadConfig, 60_000);
+    return () => clearInterval(t);
   }, []);
 
   if (user === undefined) {
@@ -238,6 +265,7 @@ export function App() {
           <ThemeToggle />
         </header>
         <BetaBanner />
+        <MaintenanceBanner state={maintenance} />
         <main className="content center muted">Loading…</main>
         <Footer />
       </div>
@@ -303,6 +331,7 @@ export function App() {
         )}
       </header>
       <BetaBanner />
+        <MaintenanceBanner state={maintenance} />
       <main className={`content ${(user && guildMatch) || docsMatch ? "wide" : ""}`}>{page}</main>
       <UndoToast />
       <Footer />

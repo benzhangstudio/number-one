@@ -218,6 +218,13 @@
       "when": 1793729894042,
       "tag": "0030_economy_shop",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1793745839184,
+      "tag": "0031_dev_templates_maintenance",
+      "breakpoints": true
     }
   ]
 }

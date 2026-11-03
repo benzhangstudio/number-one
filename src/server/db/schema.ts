@@ -513,6 +513,24 @@ export const devUpdateDeliveries = sqliteTable(
   (t) => [primaryKey({ columns: [t.updateId, t.guildId] }), index("dev_update_deliveries_guild_idx").on(t.guildId)],
 );
 
+/** Number One updates: templates the developer saved on the Developer page. */
+export const devUpdateTemplates = sqliteTable("dev_update_templates", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  title: text("title").notNull().default(""),
+  body: text("body").notNull().default(""),
+  url: text("url").notNull().default(""),
+  mention: integer("mention", { mode: "boolean" }).notNull().default(true),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+/** Bot-wide settings that aren't about one server, like maintenance mode (key → JSON value). */
+export const botState = sqliteTable("bot_state", {
+  key: text("key").primaryKey(),
+  value: text("value", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
 /** Staff applications: each server's apply panel (one per server). */
 export const applicationPanels = sqliteTable("application_panels", {
   guildId: text("guild_id").primaryKey(),

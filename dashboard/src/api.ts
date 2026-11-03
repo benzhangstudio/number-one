@@ -22,7 +22,17 @@ import type { TicketPanelInput, TicketSettings, TicketsResponse } from "../../sr
 import type { ServerLogResponse, ServerLogSettings } from "../../src/shared/serverLogs";
 import type { VoiceLogResponse, VoiceLogSettings } from "../../src/shared/voiceLogs";
 import type { AppPanelInput, ApplicationDecisionInput, StaffApplicationSettings, StaffApplicationsResponse } from "../../src/shared/staffApplications";
-import type { BotUpdateFailure, BotUpdateInput, BotUpdateSettings, BotUpdateSummary, BotUpdatesPanelData, DeveloperOverview } from "../../src/shared/botUpdates";
+import type {
+  BotUpdateFailure,
+  BotUpdateInput,
+  BotUpdateSettings,
+  BotUpdateSummary,
+  BotUpdateTemplateInput,
+  BotUpdatesPanelData,
+  DeveloperOverview,
+  MaintenanceInput,
+  MaintenanceState,
+} from "../../src/shared/botUpdates";
 import type { AutomodResponse, AutomodSettings } from "../../src/shared/automod";
 import type { CaseListResponse, CaseView, ModerationResponse, ModerationSettings } from "../../src/shared/moderation";
 import type { JoinLeaveResponse, JoinLeaveSettings } from "../../src/shared/joinLeave";
@@ -108,7 +118,7 @@ export type EventResult = { event: EventView; warning: string | null };
 export type ReactionRoleSaveResult = { message: ReactionRoleMessageView; warnings: string[] };
 
 export const api = {
-  config: () => request<{ clientId: string | null; loginReady: boolean; botReady: boolean }>("/api/config"),
+  config: () => request<{ clientId: string | null; loginReady: boolean; botReady: boolean; maintenance?: MaintenanceState }>("/api/config"),
   me: () => request<DashboardUser>("/api/me"),
   guilds: () => request<DashboardGuild[]>("/api/guilds"),
   guild: (id: string) => request<GuildDetails>(`/api/guilds/${id}`),
@@ -282,6 +292,12 @@ export const api = {
   sendBotUpdate: (input: BotUpdateInput) =>
     request<BotUpdateSummary>("/api/developer/updates", { method: "POST", body: JSON.stringify(input) }),
   botUpdateFailures: (id: number) => request<{ failures: BotUpdateFailure[] }>(`/api/developer/updates/${id}/failures`),
+  createUpdateTemplate: (input: BotUpdateTemplateInput) =>
+    request<DeveloperOverview>("/api/developer/templates", { method: "POST", body: JSON.stringify(input) }),
+  updateUpdateTemplate: (id: number, input: BotUpdateTemplateInput) =>
+    request<DeveloperOverview>(`/api/developer/templates/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  deleteUpdateTemplate: (id: number) => request<DeveloperOverview>(`/api/developer/templates/${id}`, { method: "DELETE" }),
+  setMaintenance: (input: MaintenanceInput) => request<DeveloperOverview>("/api/developer/maintenance", { method: "PUT", body: JSON.stringify(input) }),
   voiceLogs: (guildId: string) => request<VoiceLogResponse>(`/api/guilds/${guildId}/voice-logs`),
   saveVoiceLogs: (guildId: string, settings: VoiceLogSettings) =>
     undoableSettings<VoiceLogResponse, VoiceLogSettings>(`/api/guilds/${guildId}/voice-logs`, settings),
