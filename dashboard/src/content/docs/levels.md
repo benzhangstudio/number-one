@@ -56,7 +56,7 @@ Give a role when members reach a level. Up to 25 rewards, one role per level.
 
 | Command | Who | What it does |
 | --- | --- | --- |
-| `/rank [member]` | Everyone | Shows a member's level, progress bar, rank and total XP. |
+| `/rank [member]` | Everyone | Shows a rank card: a picture with the member's avatar, rank, level and progress bar, plus their total XP and messages. |
 | `/leaderboard [page]` | Everyone | Shows the members with the most XP, 10 per page. |
 | `/xp give member amount` | Manage Server | Gives a member XP. |
 | `/xp take member amount` | Manage Server | Takes XP away. |

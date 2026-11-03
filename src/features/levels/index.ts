@@ -1,4 +1,5 @@
 import {
+  AttachmentBuilder,
   EmbedBuilder,
   Events,
   type Guild,
@@ -24,6 +25,7 @@ import {
   levelInfo,
   levelsSettings,
 } from "../../shared/levels.js";
+import { renderRankCard } from "./card.js";
 
 /**
  * Levels: members earn XP for chatting (at most once per cooldown), level up, and get reward roles.
@@ -215,21 +217,47 @@ const rankCommand: SlashCommand = {
     const info = levelInfo(xp);
     const [rank, total] = await Promise.all([rankOf(interaction.guildId, xp), rankedCount(interaction.guildId)]);
     const member = interaction.options.getMember("member") ?? (user.id === interaction.user.id ? interaction.member : null);
+    const name = member?.displayName ?? user.globalName ?? user.username;
+    const avatarUrl = (member ?? user).displayAvatarURL({ extension: "png", forceStatic: true, size: 256 });
+    const notYet = `${user.id === interaction.user.id ? "You haven't" : "They haven't"} earned any XP yet. Chat to start levelling up!`;
+    const summary = `Total XP: **${n(xp)}** · Messages: **${n(row?.messages ?? 0)}**${xp ? "" : `\n-# ${notYet}`}`;
+
+    // Drawing can take a moment (it downloads the avatar), so let Discord know an answer is coming.
+    await interaction.deferReply();
+    try {
+      const png = await renderRankCard({
+        name,
+        username: name.toLowerCase() === user.username.toLowerCase() ? undefined : user.username,
+        avatarUrl,
+        level: info.level,
+        rank: xp ? rank : 0,
+        xpIntoLevel: info.xpIntoLevel,
+        xpForNext: info.xpForNext,
+      });
+      const embed = new EmbedBuilder()
+        .setColor(PINK)
+        .setAuthor({ name: `${name}'s rank`, iconURL: avatarUrl })
+        .setDescription(summary)
+        .setImage("attachment://rank.png")
+        .setFooter({ text: xp ? `Rank ${n(rank)} of ${n(total)} · ${n(info.xpForNext - info.xpIntoLevel)} XP to level ${info.level + 1}` : interaction.guild.name });
+      return interaction.editReply({ embeds: [embed], files: [new AttachmentBuilder(png, { name: "rank.png" })], allowedMentions: { parse: [] } });
+    } catch (err) {
+      log("couldn't draw a rank card, sending text instead:", (err as Error).message);
+    }
+
+    // Fallback if the card can't be drawn: the same numbers as text.
     const embed = new EmbedBuilder()
       .setColor(PINK)
-      .setAuthor({ name: member?.displayName ?? user.username, iconURL: user.displayAvatarURL({ size: 128 }) })
+      .setAuthor({ name, iconURL: avatarUrl })
       .setDescription(
         [
           `**Level ${info.level}**${xp ? ` · Rank #${n(rank)} of ${n(total)}` : ""}`,
           `${bar(info.xpIntoLevel, info.xpForNext)}  ${n(info.xpIntoLevel)} / ${n(info.xpForNext)} XP`,
           "",
-          `Total XP: **${n(xp)}** · Messages: **${n(row?.messages ?? 0)}**`,
-          xp ? "" : `-# ${user.id === interaction.user.id ? "You haven't" : "They haven't"} earned any XP yet. Chat to start levelling up!`,
-        ]
-          .filter((line, i, all) => line || i < all.length - 1)
-          .join("\n"),
+          summary,
+        ].join("\n"),
       );
-    return interaction.reply({ embeds: [embed], allowedMentions: { parse: [] } });
+    return interaction.editReply({ embeds: [embed], allowedMentions: { parse: [] } });
   },
 };
 
