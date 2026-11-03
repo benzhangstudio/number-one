@@ -1,6 +1,6 @@
 # Guides
 
-**Category:** 🎀 Cosmetics · **Recommended:** yes
+**Category:** 🎨 Cosmetics · **Recommended:** yes
 
 Two ready-to-edit guides you can post in your server: a **Server guide** for members and a **Staff guide** for your team. Each one is posted as a tidy set of messages with a linked contents list, so it reads like a small handbook.
 

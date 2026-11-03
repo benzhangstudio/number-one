@@ -67,7 +67,7 @@ export const categories = [
   {
     id: "cosmetics",
     name: "Cosmetics",
-    emoji: "🎀",
+    emoji: "🎨",
     description: "Cute designs for your server, like decorated channel names and easy-to-read server and staff guides",
   },
 ] as const;

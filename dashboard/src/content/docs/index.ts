@@ -13,7 +13,7 @@ const groups: { name: string; pages: string[] }[] = [
   { name: "📋 Logging & Auditing", pages: ["message-logs", "member-logs", "server-logs", "voice-logs"] },
   { name: "🎉 Engagement & Fun", pages: ["events"] },
   { name: "🛠️ Utilities & Automation", pages: ["embeds", "announcements", "custom-commands", "tickets"] },
-  { name: "🎀 Cosmetics", pages: ["channel-designs", "guides"] },
+  { name: "🎨 Cosmetics", pages: ["channel-designs", "guides"] },
   { name: "Help", pages: ["permissions", "troubleshooting"] },
 ];
 

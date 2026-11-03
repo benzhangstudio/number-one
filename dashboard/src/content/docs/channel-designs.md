@@ -1,6 +1,6 @@
 # Channel designs
 
-**Category:** 🎀 Cosmetics · **Recommended:** yes
+**Category:** 🎨 Cosmetics · **Recommended:** yes
 
 Adds a cute design around every channel's name in one click, like `general` → `💬・general` or `꒰💬꒱general`. Only the design is added. Everything else about your channels stays the same, and you can remove it any time.
 

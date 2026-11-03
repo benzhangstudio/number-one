@@ -16,7 +16,7 @@ Number One combines the jobs of many single-purpose bots into one:
 | 📋 Logging & Auditing | [Message logs](/docs/message-logs), [Member logs](/docs/member-logs), [Server logs](/docs/server-logs), [Voice logs](/docs/voice-logs) |
 | 🎉 Engagement & Fun | [Events](/docs/events) |
 | 🛠️ Utilities & Automation | [Embed messages](/docs/embeds), [Announcements](/docs/announcements), [Custom commands](/docs/custom-commands), [Tickets](/docs/tickets) |
-| 🎀 Cosmetics | [Channel designs](/docs/channel-designs), [Guides](/docs/guides) |
+| 🎨 Cosmetics | [Channel designs](/docs/channel-designs), [Guides](/docs/guides) |
 
 Number One keeps its slash command list short on purpose. Almost everything is set up on the dashboard, and only the things staff need in the moment (like `/ban` or `/raidmode`) are commands. See [Commands](/docs/commands) for the full list.
 
@@ -40,7 +40,7 @@ Type `/setup` in your server (you need **Manage Server**), or use the "What will
 - 📋 Logging & Auditing
 - 🎉 Engagement & Fun
 - 🛠️ Utilities & Automation
-- 🎀 Cosmetics
+- 🎨 Cosmetics
 
 The recommended modules in each picked category switch on.
 
