@@ -56,7 +56,7 @@ function SetupPreview() {
   return (
     <div className="setup-preview" aria-hidden="true">
       <div className="sp-head">
-        <span className="sp-avatar">#1</span>
+        <img className="sp-avatar" src="/logo.png" alt="" width={36} height={36} />
         <span className="sp-name">Number One</span>
         <span className="sp-tag">APP</span>
       </div>

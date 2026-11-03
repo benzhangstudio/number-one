@@ -366,11 +366,10 @@ html {
 }
 
 .brand-mark {
-  background: var(--accent);
-  color: var(--accent-text);
-  border-radius: 8px;
-  padding: 2px 8px;
-  font-weight: 800;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: block;
 }
 
 .user {
@@ -2797,13 +2796,8 @@ select.chip-add {
 .sp-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--accent);
-  color: var(--accent-text);
-  font-weight: 800;
-  font-size: 0.85rem;
+  flex: none;
+  display: block;
 }
 
 .sp-name {

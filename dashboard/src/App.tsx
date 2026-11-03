@@ -232,7 +232,7 @@ export function App() {
       <div className="app">
         <header className="topbar">
           <span className="brand">
-            <span className="brand-mark">#1</span> <span className="brand-name">Number One</span>
+            <img className="brand-mark" src="/logo.png" alt="" width={28} height={28} /> <span className="brand-name">Number One</span>
           </span>
           <AccentPicker />
           <ThemeToggle />
@@ -285,7 +285,7 @@ export function App() {
             navigate("/");
           }}
         >
-          <span className="brand-mark">#1</span> <span className="brand-name">Number One</span>
+          <img className="brand-mark" src="/logo.png" alt="" width={28} height={28} /> <span className="brand-name">Number One</span>
         </a>
         <nav className="topnav" aria-label="Main menu">
           {items.map((i) => (
