@@ -225,6 +225,13 @@
       "when": 1793745839184,
       "tag": "0031_dev_templates_maintenance",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1793807565921,
+      "tag": "0032_suggestions",
+      "breakpoints": true
     }
   ]
 }

@@ -3817,6 +3817,24 @@ select.chip-add {
   }
 }
 
+/* --- Suggestions (also uses the Events styles) --- */
+.sg-details {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sg-review {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
 /* --- Polls (also uses the Events styles) --- */
 .poll-results {
   list-style: none;

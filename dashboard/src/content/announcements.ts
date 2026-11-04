@@ -21,6 +21,18 @@ export interface Announcement {
 
 export const announcements: Announcement[] = [
   {
+    id: "2026-11-04-suggestions",
+    date: "2026-11-04",
+    title: "Suggestions",
+    tag: "New",
+    emoji: "💡",
+    body: `Let members share ideas and vote on them. Find it in **Engagement & Fun**.
+
+- Members send ideas with **/suggest**, and everyone votes with 👍 and 👎.
+- Each idea gets its own discussion thread.
+- Staff mark ideas as approved, implemented or denied, and the member gets a DM.`,
+  },
+  {
     id: "2026-11-03-channel-designs",
     date: "2026-11-03",
     title: "Text-only channel names and a new design",

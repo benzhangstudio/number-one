@@ -73,6 +73,15 @@ Part of the [Economy](/docs/economy) module.
 | `/economy history member` | Manage Server | Shows a member's latest balance changes. |
 | `/economy take-item member item [quantity]` | Manage Server | Takes a shop item from a member, like when they use it. |
 
+## Suggestions
+
+Part of the [Suggestions](/docs/suggestions) module.
+
+| Command | Who | What it does |
+| --- | --- | --- |
+| `/suggest` | Everyone | Opens a form to send a suggestion. |
+| `/suggestion status number status [reason]` | Reviewers | Sets a suggestion's status, with an optional response. |
+
 ## Polls
 
 Part of the [Polls](/docs/polls) module.

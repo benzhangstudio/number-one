@@ -333,6 +333,52 @@ export const eventRsvps = sqliteTable(
   (t) => [primaryKey({ columns: [t.eventId, t.userId] }), index("event_rsvps_guild_idx").on(t.guildId)],
 );
 
+/** Suggestions: one row per idea a member sent with /suggest. */
+export const suggestions = sqliteTable(
+  "suggestions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    /** The number members see (#1, #2…), counted per server. */
+    number: integer("number").notNull(),
+    channelId: text("channel_id").notNull(),
+    messageId: text("message_id"),
+    threadId: text("thread_id"),
+    authorId: text("author_id").notNull(),
+    authorTag: text("author_tag").notNull(),
+    title: text("title").notNull(),
+    details: text("details").notNull().default(""),
+    /** open, considering, approved, implemented or denied. */
+    status: text("status", { enum: ["open", "considering", "approved", "implemented", "denied"] }).notNull().default("open"),
+    reason: text("reason").notNull().default(""),
+    reviewedBy: text("reviewed_by"),
+    reviewedByTag: text("reviewed_by_tag"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [uniqueIndex("suggestions_number_idx").on(t.guildId, t.number), index("suggestions_author_idx").on(t.guildId, t.authorId, t.createdAt)],
+);
+
+/** Suggestions: each member's 👍 (1) or 👎 (-1) on a suggestion. */
+export const suggestionVotes = sqliteTable(
+  "suggestion_votes",
+  {
+    suggestionId: integer("suggestion_id")
+      .notNull()
+      .references(() => suggestions.id, { onDelete: "cascade" }),
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    vote: integer("vote").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.suggestionId, t.userId] }), index("suggestion_votes_guild_idx").on(t.guildId)],
+);
+
+/** Suggestions: the last number used in each server. */
+export const suggestionCounters = sqliteTable("suggestion_counters", {
+  guildId: text("guild_id").primaryKey(),
+  last: integer("last").notNull().default(0),
+});
+
 /** Polls: a question with answer buttons and live results. */
 export const polls = sqliteTable(
   "polls",

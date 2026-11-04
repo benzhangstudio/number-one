@@ -11,7 +11,7 @@ const groups: { name: string; pages: string[] }[] = [
   { name: "👥 Community Settings", pages: ["community-tools", "onboarding", "rule-verification", "join-leave", "staff-applications"] },
   { name: "🎭 Roles Management", pages: ["reaction-roles"] },
   { name: "📋 Logging & Auditing", pages: ["message-logs", "member-logs", "server-logs", "voice-logs"] },
-  { name: "🎉 Engagement & Fun", pages: ["levels", "economy", "events", "polls"] },
+  { name: "🎉 Engagement & Fun", pages: ["levels", "economy", "events", "suggestions", "polls"] },
   { name: "🛠️ Utilities & Automation", pages: ["tickets", "announcements", "custom-commands", "embeds"] },
   { name: "🎨 Cosmetics", pages: ["guides", "channel-designs"] },
   { name: "🧩 Other", pages: ["bot-updates"] },

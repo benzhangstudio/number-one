@@ -22,6 +22,7 @@ import { ReactionRolesPanel } from "./ReactionRolesPanel";
 import { RuleVerificationPanel } from "./RuleVerificationPanel";
 import { ServerLogsPanel } from "./ServerLogsPanel";
 import { StaffApplicationsPanel } from "./StaffApplicationsPanel";
+import { SuggestionsPanel } from "./SuggestionsPanel";
 import { TicketsPanel } from "./TicketsPanel";
 import { VoiceLogsPanel } from "./VoiceLogsPanel";
 
@@ -36,6 +37,7 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   announcements: AnnouncementsPanel,
   embeds: EmbedsPanel,
   events: EventsPanel,
+  suggestions: SuggestionsPanel,
   polls: PollsPanel,
   levels: LevelsPanel,
   economy: EconomyPanel,

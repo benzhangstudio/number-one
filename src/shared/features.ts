@@ -14,6 +14,7 @@ import { guidesSettings } from "./guides.js";
 import { levelsSettings } from "./levels.js";
 import { economySettings } from "./economy.js";
 import { pollSettings } from "./polls.js";
+import { suggestionSettings } from "./suggestions.js";
 import { ticketSettings } from "./tickets.js";
 import { voiceLogSettings } from "./voiceLogs.js";
 import { botUpdateSettings } from "./botUpdates.js";
@@ -236,6 +237,16 @@ export const pollsFeature = defineFeature({
   settings: pollSettings,
 });
 
+export const suggestionsFeature = defineFeature({
+  id: "suggestions",
+  name: "Suggestions",
+  icon: "💡",
+  description: "Members send ideas with /suggest and vote on them with 👍 and 👎. Staff mark each one as approved, implemented or denied, and the member hears back.",
+  category: "engagement",
+  recommended: true,
+  settings: suggestionSettings,
+});
+
 export const levelsFeature = defineFeature({
   id: "levels",
   name: "Levels",
@@ -393,6 +404,7 @@ export const featureCatalog: FeatureInfo[] = [
   levelsFeature,
   economyFeature,
   eventsFeature,
+  suggestionsFeature,
   pollsFeature,
   // Utilities & Automation
   ticketsFeature,
@@ -467,4 +479,5 @@ export * from "./guides.js";
 export * from "./levels.js";
 export * from "./economy.js";
 export * from "./polls.js";
+export * from "./suggestions.js";
 export * from "./communityTools.js";

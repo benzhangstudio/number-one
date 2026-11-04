@@ -22,8 +22,9 @@ import { reactionRoles } from "./reaction-roles/index.js";
 import { ruleVerification } from "./rule-verification/index.js";
 import { serverLogs } from "./server-logs/index.js";
 import { staffApplicationsBot } from "./staff-applications/index.js";
+import { suggestionsBot } from "./suggestions/index.js";
 import { ticketsBot } from "./tickets/index.js";
 import { voiceLogs } from "./voice-logs/index.js";
 
 /** Every feature the bot runs. Each one also needs an entry in src/shared/features.ts. */
-export const features: BotFeature[] = [core, moderation, automod, antiRaid, joinLeave, onboarding, reactionRoles, announcementsBot, embeds, eventsBot, pollsBot, levelsBot, economyBot, channelDesignsBot, messageLogs, memberLogs, serverLogs, voiceLogs, customCommandsBot, ruleVerification, ticketsBot, staffApplicationsBot, communityToolsBot, guidesBot, botUpdates];
+export const features: BotFeature[] = [core, moderation, automod, antiRaid, joinLeave, onboarding, reactionRoles, announcementsBot, embeds, eventsBot, suggestionsBot, pollsBot, levelsBot, economyBot, channelDesignsBot, messageLogs, memberLogs, serverLogs, voiceLogs, customCommandsBot, ruleVerification, ticketsBot, staffApplicationsBot, communityToolsBot, guidesBot, botUpdates];
