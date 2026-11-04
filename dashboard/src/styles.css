@@ -4858,25 +4858,6 @@ select.chip-add {
   max-width: 760px;
   margin: 0 auto;
 }
-.announcement-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.announcement h3 {
-  margin: 0.4rem 0 0.5rem;
-  font-size: 1.05rem;
-}
-.announcement.compact h3 {
-  font-size: 1rem;
-}
-.announcement-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
 .announcement-tag {
   padding: 2px 9px;
   border-radius: 999px;
@@ -4921,6 +4902,123 @@ select.chip-add {
 .announcement-body a {
   color: var(--accent);
 }
+/* A list of updates: an emoji bubble on a dotted line, then the title, tag and text. */
+.ann-day {
+  margin-top: 1.4rem;
+}
+.ann-day-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ann-day-head span {
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+.ann-day-head::after {
+  content: "";
+  flex: 1;
+  border-top: 1px dashed var(--border);
+}
+.ann-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+/* The soft dotted line that joins the bubbles. */
+.ann-list::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 17px;
+  border-left: 2px dotted rgba(var(--accent-rgb), 0.3);
+}
+.ann-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  padding: 10px 0;
+}
+.ann-bubble {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--accent-rgb), 0.35),
+    0 0 0 4px var(--bg);
+}
+.ann-content {
+  min-width: 0;
+  padding-top: 7px;
+}
+.ann-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 4px;
+}
+.ann-title-row h3 {
+  flex: 0 1 auto;
+  margin: 0;
+  font-size: 1rem;
+}
+.ann-title-row .announcement-tag {
+  margin: 0;
+}
+.ann-date {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.ann-item .announcement-body {
+  color: var(--muted);
+}
+.ann-item .announcement-body strong {
+  color: var(--text);
+}
+.ann-list.compact .ann-item {
+  padding: 8px 0;
+}
+.ann-list.compact .announcement-body {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.88rem;
+}
+/* Inside a card (home and landing pages) the bubbles sit on the card's colour. */
+.ann-card .ann-bubble {
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--accent-rgb), 0.35),
+    0 0 0 4px var(--surface);
+  background: var(--surface-2);
+}
+.ann-card {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+@media (max-width: 560px) {
+  .ann-date {
+    margin-left: 0;
+    width: 100%;
+  }
+}
 .ann-filters {
   display: flex;
   flex-wrap: wrap;
@@ -4946,20 +5044,7 @@ select.chip-add {
   color: var(--text);
 }
 
-/* "What's new" on the landing page: the latest announcements, shortened. */
-.lp-news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-}
-.lp-news-grid .announcement-body {
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  color: var(--muted);
-  font-size: 0.88rem;
-}
+
 .lp-news-more {
   text-align: center;
   margin: 1.5rem 0 0 !important;

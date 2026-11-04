@@ -11,23 +11,43 @@ export function formatDate(date: string) {
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }
 
-/** One update: date, tag, title and text. Used here and on the home dashboard. */
-export function AnnouncementCard({ item, compact = false }: { item: Announcement; compact?: boolean }) {
+/** One update as a list row: an emoji bubble, the title with its tag, and the text. */
+export function AnnouncementItem({ item, compact = false, showDate = false }: { item: Announcement; compact?: boolean; showDate?: boolean }) {
   return (
-    <article className={`announcement card ${compact ? "compact" : ""}`} id={item.id}>
-      <div className="announcement-meta">
-        <span className={`announcement-tag tag-${item.tag.toLowerCase()}`}>{item.tag}</span>
-        <time dateTime={item.date}>{formatDate(item.date)}</time>
+    <li className={`ann-item ${compact ? "compact" : ""}`} id={item.id}>
+      <span className="ann-bubble" aria-hidden="true">
+        {item.emoji}
+      </span>
+      <div className="ann-content">
+        <div className="ann-title-row">
+          <h3>{item.title}</h3>
+          <span className={`announcement-tag tag-${item.tag.toLowerCase()}`}>{item.tag}</span>
+          {showDate && (
+            <time className="ann-date" dateTime={item.date}>
+              {formatDate(item.date)}
+            </time>
+          )}
+        </div>
+        <div className="announcement-body">
+          <Markdown source={item.body} />
+        </div>
       </div>
-      <h3>{item.title}</h3>
-      <div className="announcement-body">
-        <Markdown source={item.body} />
-      </div>
-    </article>
+    </li>
   );
 }
 
-/** /announcements: every Number One update, newest first, with a filter by type. Public. */
+/** A short list of updates (home and landing pages), each with its date. */
+export function AnnouncementList({ items }: { items: Announcement[] }) {
+  return (
+    <ul className="ann-list compact">
+      {items.map((a) => (
+        <AnnouncementItem key={a.id} item={a} compact showDate />
+      ))}
+    </ul>
+  );
+}
+
+/** /announcements: every Number One update, newest first, grouped by day, with a filter by type. Public. */
 export function AnnouncementsPage() {
   const [filter, setFilter] = useState<AnnouncementTag | "All">("All");
 
@@ -37,6 +57,12 @@ export function AnnouncementsPage() {
 
   const shown = filter === "All" ? announcements : announcements.filter((a) => a.tag === filter);
   const used = tags.filter((t) => announcements.some((a) => a.tag === t));
+  const days: { date: string; items: Announcement[] }[] = [];
+  for (const a of shown) {
+    const day = days.at(-1);
+    if (day?.date === a.date) day.items.push(a);
+    else days.push({ date: a.date, items: [a] });
+  }
 
   return (
     <section className="announcements-page">
@@ -54,11 +80,19 @@ export function AnnouncementsPage() {
       {shown.length === 0 ? (
         <p className="muted">No announcements yet.</p>
       ) : (
-        <div className="announcement-list">
-          {shown.map((a) => (
-            <AnnouncementCard key={a.id} item={a} />
-          ))}
-        </div>
+        days.map((d) => (
+          <section key={d.date} className="ann-day">
+            <h2 className="ann-day-head">
+              <span aria-hidden="true">✿</span>
+              <time dateTime={d.date}>{formatDate(d.date)}</time>
+            </h2>
+            <ul className="ann-list">
+              {d.items.map((a) => (
+                <AnnouncementItem key={a.id} item={a} />
+              ))}
+            </ul>
+          </section>
+        ))
       )}
     </section>
   );

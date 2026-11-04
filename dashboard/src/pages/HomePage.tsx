@@ -5,7 +5,7 @@ import { SUPPORT_SERVER } from "../components/Footer";
 import { PageLink } from "../components/PageLink";
 import { announcements } from "../content/announcements";
 import { navigate } from "../router";
-import { AnnouncementCard } from "./AnnouncementsPage";
+import { AnnouncementList } from "./AnnouncementsPage";
 import { GuildIcon } from "./ServersPage";
 
 const SHOWN_SERVERS = 6;
@@ -83,10 +83,8 @@ export function HomePage({ user }: { user: DashboardUser }) {
           {announcements.length === 0 ? (
             <p className="muted">No announcements yet.</p>
           ) : (
-            <div className="announcement-list">
-              {announcements.slice(0, SHOWN_ANNOUNCEMENTS).map((a) => (
-                <AnnouncementCard key={a.id} item={a} compact />
-              ))}
+            <div className="card ann-card">
+              <AnnouncementList items={announcements.slice(0, SHOWN_ANNOUNCEMENTS)} />
             </div>
           )}
         </section>
