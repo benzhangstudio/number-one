@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import {
   type ChannelDesignSettings,
   type ChannelDesignsResponse,
+  type CleanupSettings,
   type DesignChannel,
   MAX_SKIPPED,
   decorate,
   designTemplates,
   includes,
+  plainName,
 } from "../../../src/shared/channelDesigns";
 import { type GuildDetails, api } from "../api";
 import { ChannelPicker, Toggle } from "../components/pickers";
@@ -19,12 +21,16 @@ const icon = (type: number) => (type === 5 ? "📢 " : type === 2 || type === 13
 export function ChannelDesignsPanel({ guild }: { guild: Guild }) {
   const [data, setData] = useState<ChannelDesignsResponse | null>(null);
   const [draft, setDraft] = useState<ChannelDesignSettings | null>(null);
+  const [clean, setClean] = useState<CleanupSettings | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   const load = (r: ChannelDesignsResponse, keepDraft = false) => {
     setData(r);
-    if (!keepDraft) setDraft(structuredClone(r.settings));
+    if (!keepDraft) {
+      setDraft(structuredClone(r.settings));
+      setClean(structuredClone(r.settings.cleanup));
+    }
   };
 
   useEffect(() => {
@@ -42,7 +48,7 @@ export function ChannelDesignsPanel({ guild }: { guild: Guild }) {
   }, [guild.id, running]);
 
   if (error && !data) return <p className="error panel">{error}</p>;
-  if (!data || !draft) return <p className="muted panel">Loading channel designs…</p>;
+  if (!data || !draft || !clean) return <p className="muted panel">Loading channel designs…</p>;
 
   const set = (fn: (d: ChannelDesignSettings) => void) =>
     setDraft((d) => {
@@ -75,6 +81,27 @@ export function ChannelDesignsPanel({ guild }: { guild: Guild }) {
     }
   };
 
+  // "Make names text-only": what each chosen channel would be called with every emoji and decoration taken out.
+  const cleanSkipped = (c: DesignChannel) => clean.skippedChannelIds.includes(c.id) || Boolean(c.parentId && clean.skippedChannelIds.includes(c.parentId));
+  const cleanList = data.channels
+    .filter((c) => includes(clean, c.type) && !cleanSkipped(c))
+    .map((c) => ({ c, plain: plainName(c.currentName) }))
+    .filter(({ c, plain }) => plain !== c.currentName);
+  const cleanable = cleanList.filter((x) => x.plain).length;
+
+  const runClean = async () => {
+    if (!confirm(`Take every emoji and design out of ${cleanable} channel name${cleanable === 1 ? "" : "s"}? The current design is switched off too. This can't be undone, so check the list first.`)) return;
+    setBusy(true);
+    setError("");
+    try {
+      load(await api.cleanChannelNames(guild.id, clean));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const categoryName = (id: string | null) => (id ? guild.channels.find((c) => c.id === id)?.name ?? "" : "");
   const job = data.job;
 
@@ -90,10 +117,10 @@ export function ChannelDesignsPanel({ guild }: { guild: Guild }) {
         <div className={`notice ${job.phase === "failed" || job.skipped.length ? "warning-box" : ""}`}>
           <strong>
             {job.phase === "running"
-              ? `${job.action === "remove" ? "Removing the design" : "Adding the design"}… ${job.done}/${job.total} channels`
+              ? `${job.action === "remove" ? "Removing the design" : job.action === "clean" ? "Making names text-only" : "Adding the design"}… ${job.done}/${job.total} channels`
               : job.phase === "failed"
                 ? job.error
-                : `Done. ${job.total - job.skipped.length} of ${job.total} channels ${job.action === "remove" ? "are back to their own names" : "are up to date"}.`}
+                : `Done. ${job.total - job.skipped.length} of ${job.total} channels ${job.action === "remove" ? "are back to their own names" : job.action === "clean" ? "are text-only now. Pick a design above to style them." : "are up to date"}.`}
           </strong>
           {job.phase === "running" && (
             <span className="small muted">Discord lets each channel be renamed twice every 10 minutes, so switching designs quickly can take a few minutes. You can leave this page.</span>
@@ -186,6 +213,45 @@ export function ChannelDesignsPanel({ guild }: { guild: Guild }) {
           {busy ? "Starting…" : draft.templateId ? "Apply design" : "Save"}
         </button>
       </div>
+
+      <section className="sub">
+        <div className="sub-head">
+          <strong>🧹 Make names text-only</strong>
+          <small className="muted">
+            Takes every emoji and decoration out of channel names, even ones added by hand or by another bot, so all your channels match before you pick
+            a new design. Letters and numbers stay.
+          </small>
+        </div>
+        <div className="sub-body design-options">
+          <div className="sub-head"><strong>Which channels</strong><small className="muted">Text channels are always included.</small></div>
+          <Toggle label="📢 Announcement channels" checked={clean.includeAnnouncements} onChange={(v) => setClean({ ...clean, includeAnnouncements: v })} />
+          <Toggle label="🔊 Voice and stage channels" checked={clean.includeVoice} onChange={(v) => setClean({ ...clean, includeVoice: v })} />
+          <div className="field">
+            <span>Leave these alone (channels or whole categories)</span>
+            <ChannelPicker guild={guild} value={clean.skippedChannelIds} max={MAX_SKIPPED} onChange={(v) => setClean({ ...clean, skippedChannelIds: v })} />
+          </div>
+        </div>
+        <div className="sub-head">
+          <strong>Preview</strong>
+          <small className="muted">{cleanList.length === 0 ? "Every chosen channel is already text-only." : `${cleanable} channel name${cleanable === 1 ? "" : "s"} will change.`}</small>
+        </div>
+        {cleanList.length > 0 && (
+          <ul className="sub-body design-preview">
+            {cleanList.map(({ c, plain }) => (
+              <li key={c.id} className={plain ? "change" : "muted"}>
+                <span className="design-cat small muted">{categoryName(c.parentId)}</span>
+                <span>{icon(c.type)}{c.currentName}</span>
+                {plain ? <span>→ {icon(c.type)}{plain}</span> : <span className="small warning">only emojis, left as is</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="design-buttons">
+          <button className="btn primary small" disabled={busy || running || cleanable === 0} onClick={runClean}>
+            {busy ? "Starting…" : "Make names text-only"}
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

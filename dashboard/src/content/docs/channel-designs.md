@@ -21,7 +21,7 @@ Adds a cute design around every channel's name in one click, like `general` → 
 | Corner brackets | `「💬」general` | 🍡 |
 | Dotted line | `💬┊general` | 🌷 |
 | Little hearts | `♡💬︰general` | 💗 |
-| Bows | `🎀・general・💬` | 🍓 |
+| Butterfly wings | `ʚ💬ɞgeneral` | 🦋 |
 
 Each design picks an emoji that fits the channel's name: 💬 for general, 📜 for rules, 📢 for announcements, 🎮 for gaming, and about 30 more. When nothing fits, the design's own emoji is used.
 
@@ -36,6 +36,21 @@ Each design picks an emoji that fits the channel's name: 💬 for general, 📜 
 | Design new channels | Off | Channels created later get the design too. |
 
 Categories and forums are never renamed. Names that would go over Discord's 100-character limit are skipped.
+
+## Make names text-only
+
+If your channels already have emojis or decorations (added by hand, by another bot, or by an old design), a new design would be added on top of them. **Make names text-only** cleans them up first, so every channel starts from the same plain name:
+
+`💬・general` → `general` · `꒰🎮꒱gaming-chat` → `gaming-chat` · `🔊 | Music Room` → `Music Room`
+
+1. Under **Make names text-only**, pick which channels to clean (text channels are always included, announcement and voice channels are on by default) and any channels or categories to leave alone.
+2. Check the preview.
+3. Click **Make names text-only**, wait for it to finish, then pick a design.
+
+- Every emoji, flag and decoration symbol is taken out. Letters and numbers in any language stay, and so do normal keyboard symbols like `-`, `_`, `&` and `( )`.
+- Channels whose names are only emojis are left as they are, so they don't end up without a name.
+- The current design is switched off, and the cleaned names become each channel's own name.
+- This can't be undone, so check the preview first.
 
 ## Safe by design
 
@@ -54,3 +69,7 @@ Switching the module off leaves names as they are. Use **Remove design** first i
 ## Permissions
 
 **Manage Channels**, for both Number One and the admin applying the design.
+
+## Bows
+
+The Bows design was replaced by **Butterfly wings**. Servers that used Bows now have Butterfly wings picked: click **Apply design** to switch the channels over.

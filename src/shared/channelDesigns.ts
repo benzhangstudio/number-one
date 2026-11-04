@@ -30,8 +30,11 @@ export const designTemplates: DesignTemplate[] = [
   { id: "bracket", name: "Corner brackets", pattern: "「{emoji}」{name}", fallback: "🍡" },
   { id: "line", name: "Dotted line", pattern: "{emoji}┊{name}", fallback: "🌷" },
   { id: "heart", name: "Little hearts", pattern: "♡{emoji}︰{name}", fallback: "💗" },
-  { id: "bow", name: "Bows", pattern: "🎀・{name}・{emoji}", fallback: "🍓" },
+  { id: "butterfly", name: "Butterfly wings", pattern: "ʚ{emoji}ɞ{name}", fallback: "🦋" },
 ];
+
+/** Designs that were replaced, and the one servers that had them now get. */
+const replacedTemplates: Record<string, string> = { bow: "butterfly" };
 
 /** Emojis picked from words in a channel's name. The first match wins, so more specific words come first. */
 const EMOJI_WORDS: [RegExp, string][] = [
@@ -82,6 +85,31 @@ export function decorate(name: string, template: DesignTemplate): string | null 
   return [...result].length <= MAX_CHANNEL_NAME ? result : null;
 }
 
+/**
+ * A channel's name with every emoji and decoration taken out, for "Make names text-only":
+ * "💬・general" → "general", "꒰🎮꒱gaming-chat" → "gaming-chat", "˚₊‧🎵‧₊˚music" → "music".
+ * Letters and numbers in any language are kept, and so are plain keyboard symbols like - _ ' & ( ).
+ * Returns "" when nothing would be left (a name that's only emojis).
+ */
+export function plainName(name: string): string {
+  return (
+    name
+      // Keycaps like 1️⃣, then emoji, flags and the invisible characters that join or style them.
+      .replace(/[#*0-9]\uFE0F?\u20E3/gu, "")
+      .replace(/\p{Extended_Pictographic}|\p{Regional_Indicator}|[\u200B-\u200D\u2060\uFE0E\uFE0F\u{1F3FB}-\u{1F3FF}\u{E0020}-\u{E007F}]/gu, "")
+      // Decorative letters that are really pictures (ʚɞ wings and friends).
+      .replace(/[ʚɞʕʔᐟᐠᐡᐢᵔᴗ˖ᵕ]/gu, " ")
+      // Decorations: symbols, and any punctuation that isn't on a normal keyboard (・ 「 」 ┊ ︰ ‧ ˚ ₊ ꒰ ꒱ …).
+      .replace(/[\p{S}\p{P}]/gu, (ch) => (/^[\x20-\x7E]$/.test(ch) && ch !== "|" && ch !== "~" && ch !== "^" && ch !== "`" ? ch : " "))
+      // Tidy up what's left: no separators at the ends, no doubled ones in the middle.
+      .replace(/\s+/g, " ")
+      .replace(/-{2,}/g, "-")
+      .replace(/_{2,}/g, "_")
+      .replace(/^[\s\-_.,:;·]+|[\s\-_.,:;·]+$/g, "")
+      .trim()
+  );
+}
+
 export const designKinds = ["text", "announcement", "voice"] as const;
 export type DesignKind = (typeof designKinds)[number];
 
@@ -92,9 +120,19 @@ export const kindTypes: Record<DesignKind, number[]> = {
   voice: [2, 13],
 };
 
+/** Which channels "Make names text-only" cleans up. */
+export const cleanupSettings = z.object({
+  /** Text channels are always included. */
+  includeAnnouncements: z.boolean().default(true),
+  includeVoice: z.boolean().default(true),
+  /** Channels (or whole categories) left exactly as they are. */
+  skippedChannelIds: z.array(snowflake).max(MAX_SKIPPED).default([]),
+});
+export type CleanupSettings = z.infer<typeof cleanupSettings>;
+
 export const channelDesignSettings = z.object({
   /** The design currently on the server's channels. Null = none. */
-  templateId: z.string().nullable().default(null),
+  templateId: z.preprocess((v) => (typeof v === "string" ? (replacedTemplates[v] ?? v) : v), z.string().nullable().default(null)),
   /** Text channels are always included. */
   includeAnnouncements: z.boolean().default(false),
   includeVoice: z.boolean().default(false),
@@ -102,6 +140,8 @@ export const channelDesignSettings = z.object({
   skippedChannelIds: z.array(snowflake).max(MAX_SKIPPED).default([]),
   /** Also decorate channels created later. */
   decorateNew: z.boolean().default(false),
+  /** The options last used for "Make names text-only". */
+  cleanup: cleanupSettings.prefault({}),
 });
 export type ChannelDesignSettings = z.infer<typeof channelDesignSettings>;
 
@@ -128,8 +168,8 @@ export interface DesignChannel {
 
 export interface DesignJob {
   phase: "running" | "done" | "failed";
-  /** "apply" or "remove". */
-  action: "apply" | "remove";
+  /** "apply", "remove" or "clean" (make names text-only). */
+  action: "apply" | "remove" | "clean";
   done: number;
   total: number;
   /** Channels that couldn't be changed, with why. */

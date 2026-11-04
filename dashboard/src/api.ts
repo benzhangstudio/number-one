@@ -9,7 +9,7 @@ import type {
 } from "../../src/shared/features";
 import type { AnnouncementInput, AnnouncementMessage, AnnouncementView, AnnouncementsResponse, TemplateInput, TemplateView } from "../../src/shared/announcements";
 import type { AntiRaidResponse, AntiRaidSettings } from "../../src/shared/antiRaid";
-import type { ChannelDesignSettings, ChannelDesignsResponse } from "../../src/shared/channelDesigns";
+import type { ChannelDesignSettings, ChannelDesignsResponse, CleanupSettings } from "../../src/shared/channelDesigns";
 import type { CustomCommandInput, CustomCommandsResponse, RulesSettings } from "../../src/shared/customCommands";
 import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embeds";
 import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
@@ -258,6 +258,8 @@ export const api = {
   endPoll: (guildId: string, id: number) => request<PollView>(`/api/guilds/${guildId}/polls/${id}/end`, { method: "POST", body: "{}" }),
   deletePoll: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/polls/${id}`, { method: "DELETE" }),
   channelDesigns: (guildId: string) => request<ChannelDesignsResponse>(`/api/guilds/${guildId}/channel-designs`),
+  cleanChannelNames: (guildId: string, cleanup: CleanupSettings) =>
+    request<ChannelDesignsResponse>(`/api/guilds/${guildId}/channel-designs/clean`, { method: "POST", body: JSON.stringify(cleanup) }),
   applyChannelDesign: (guildId: string, settings: ChannelDesignSettings) =>
     undoable<ChannelDesignsResponse, ChannelDesignSettings>(
       () => request(`/api/guilds/${guildId}/channel-designs`),
