@@ -4,8 +4,9 @@ import { z } from "zod";
  * Guides: settings shared by the bot and the dashboard.
  * Each server has two guides, a Server guide for members and a Staff guide for the team. Admins pick the
  * channel for each, and Number One posts it there as plain messages anyone in that channel can read:
- * a contents message at the top that links to every section, then one message per section with links
- * back to the contents and on to the next section. Nothing to press to read it.
+ * one message per section, then a contents message at the bottom that links to every section (Discord opens
+ * a channel at its newest message, so readers see the contents first). Each section links down to the
+ * contents and on to the next section. Nothing to press to read it.
  */
 
 const snowflake = z.string().regex(/^\d{17,20}$/);
@@ -41,7 +42,7 @@ const guideShape = (defaults: { title: string; intro: string; color: string; sec
       /** Posted in the channel. Off = taken down (the text stays saved). */
       enabled: z.boolean().default(false),
       channelId: snowflake.nullable().default(null),
-      /** The contents message at the top. */
+      /** The contents message at the bottom. */
       title: z.string().trim().max(256).default(defaults.title),
       intro: z.string().max(1500).default(defaults.intro),
       color: z.string().regex(/^#[0-9a-f]{6}$/i, "Pick a colour").default(defaults.color),
@@ -68,7 +69,7 @@ const guideShape = (defaults: { title: string; intro: string; color: string; sec
 export const guideDefaults: Record<GuideKind, { title: string; intro: string; color: string; sections: GuideSection[] }> = {
   server: {
     title: "📖 Server guide",
-    intro: "New here? Everything you need to know is below. Tap a section to jump straight to it.",
+    intro: "New here? Everything you need to know is in this channel. Tap a section to jump straight to it.",
     color: "#ff4fa3",
     sections: [
       section("welcome", "👋", "Welcome", "Welcome to the server! We're glad you're here.\n\nThis is a friendly place to hang out, share and meet people. Take a minute to read the rules, then grab some roles."),
@@ -92,6 +93,98 @@ export const guideDefaults: Record<GuideKind, { title: string; intro: string; co
   },
 };
 
+/** A starting point for a guide's text, picked on the dashboard. Picking one replaces the text, not the channel. */
+export interface GuideTemplate {
+  id: string;
+  name: string;
+  emoji: string;
+  /** One line on what it's for. */
+  about: string;
+  title: string;
+  intro: string;
+  color: string;
+  sections: GuideSection[];
+}
+
+const blankSection = (n: number) => section(`blank${n}`, "", `Section ${n}`, "");
+
+export const guideTemplates: GuideTemplate[] = [
+  {
+    id: "blank",
+    name: "Blank",
+    emoji: "📄",
+    about: "Empty sections, already linked together. Write your own.",
+    title: "📖 Guide",
+    intro: "",
+    color: "#ff4fa3",
+    sections: [blankSection(1), blankSection(2), blankSection(3)],
+  },
+  { id: "server", name: "Server guide", emoji: "👥", about: "Welcome, rules, roles, channels and help.", ...guideDefaults.server },
+  { id: "staff", name: "Staff guide", emoji: "🛡️", about: "How to moderate, handle tickets and escalate.", ...guideDefaults.staff },
+  {
+    id: "faq",
+    name: "FAQ",
+    emoji: "❓",
+    about: "Answers to the questions members ask most.",
+    title: "❓ Frequently asked questions",
+    intro: "Got a question? It might be answered here. Tap one to jump to it.",
+    color: "#f0b232",
+    sections: [
+      section("faqjoin", "🙋", "How do I get started?", "Read the rules, pick your roles, then say hi in the general chat. That's it!"),
+      section("faqroles", "🎭", "How do I get more roles?", "Pick roles in the roles channel. Some roles are earned by being active, and staff roles are given by the team."),
+      section("faqhelp", "🆘", "How do I contact staff?", "Open a ticket in the support channel. Please don't DM staff members directly."),
+      section("faqpromo", "📣", "Can I promote my own stuff?", "Only in the channel made for it. Self-promotion anywhere else is removed."),
+      section("faqban", "⚖️", "I was warned or muted. What now?", "Read the reason you were given. If you think it was a mistake, open a ticket and calmly explain what happened."),
+    ],
+  },
+  {
+    id: "rules",
+    name: "Rules",
+    emoji: "📜",
+    about: "Your rules, one per section, easy to link to.",
+    title: "📜 Server rules",
+    intro: "By being here you agree to these rules. Tap a rule to read it.",
+    color: "#ed4245",
+    sections: [
+      section("rule1", "🤝", "1. Be respectful", "Treat everyone kindly. No harassment, hate speech or personal attacks."),
+      section("rule2", "🔇", "2. No spam", "No flooding, repeated messages, mass mentions or unwanted ads."),
+      section("rule3", "🔞", "3. Keep it safe", "No NSFW, gore or shocking content anywhere in the server."),
+      section("rule4", "🗂️", "4. Use the right channels", "Keep conversations in the channel they belong to. Check the channel topic if you're unsure."),
+      section("rule5", "📘", "5. Follow Discord's rules", "Follow Discord's Terms of Service and Community Guidelines at all times."),
+    ],
+  },
+  {
+    id: "roles",
+    name: "Roles",
+    emoji: "🎭",
+    about: "What each role means and how to get it.",
+    title: "🎭 Roles in this server",
+    intro: "What every role means and how to get it.",
+    color: "#9b59b6",
+    sections: [
+      section("rolestaff", "🛡️", "Staff roles", "**Owner** — runs the server\n**Admin** — manages settings and staff\n**Moderator** — keeps chats safe and helps members"),
+      section("rolelevel", "🏆", "Level roles", "Earned by chatting. Check your progress with **/rank**."),
+      section("roleself", "🎨", "Roles you can pick", "Colours, pings and interests. Pick them in the roles channel and change them anytime."),
+      section("rolespecial", "✨", "Special roles", "Given for events, boosting the server or helping out. Ask staff if you have questions."),
+    ],
+  },
+  {
+    id: "events",
+    name: "Events",
+    emoji: "🎉",
+    about: "How your events, game nights and giveaways work.",
+    title: "🎉 Events",
+    intro: "Everything about our events. Tap a section to jump to it.",
+    color: "#3ba55d",
+    sections: [
+      section("evwhat", "📅", "What we host", "Game nights, movie nights, contests and giveaways. Check the events channel for what's coming up."),
+      section("evjoin", "✅", "How to join", "Press **Going** on the event post so you get a reminder before it starts."),
+      section("evrules", "📜", "Event rules", "Be on time, be a good sport, and follow the server rules. Hosts can remove people who spoil it for others."),
+      section("evhost", "🎤", "Host your own", "Have an idea? Open a ticket and tell us about it."),
+    ],
+  },
+];
+
 export const guideSettings = {
   server: guideShape(guideDefaults.server),
   staff: guideShape(guideDefaults.staff),
@@ -110,5 +203,7 @@ export interface GuidesResponse {
   settings: GuidesSettings;
   /** Link to each guide's contents message, if it's posted. */
   posted: Record<GuideKind, string | null>;
+  /** Posted the old way, with the contents at the top: saving posts it again with the contents at the bottom. */
+  outdated: Record<GuideKind, boolean>;
   problems: string[];
 }

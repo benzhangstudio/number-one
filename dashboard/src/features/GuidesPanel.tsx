@@ -5,9 +5,10 @@ import {
   type GuideSection,
   type GuideSettings,
   type GuidesResponse,
+  type GuideTemplate,
   MAX_GUIDE_SECTIONS,
-  guideDefaults,
   guideKinds,
+  guideTemplates,
 } from "../../../src/shared/guides";
 import { type GuildDetails, api } from "../api";
 import { EmojiInput, EmojiView } from "../components/emoji";
@@ -108,9 +109,8 @@ function GuideEditor({ guild, kind, data, onSaved }: { guild: Guild; kind: Guide
     }
   };
 
-  const resetText = () => {
-    if (!confirm(`Replace this guide's text with the ready-made ${GUIDE_NAMES[kind]}? Your channel and switches stay the same.`)) return;
-    const d = guideDefaults[kind];
+  const applyTemplate = (d: GuideTemplate) => {
+    if (!confirm(`Start from the ${d.name} template? It replaces this guide's title, intro and sections. Your channel and switches stay the same.`)) return;
     set((x) => {
       x.title = d.title;
       x.intro = d.intro;
@@ -157,9 +157,27 @@ function GuideEditor({ guild, kind, data, onSaved }: { guild: Guild; kind: Guide
           </section>
 
           <section className="sub">
-            <div className="sub-head gd-pages-head">
+            <div className="sub-head">
+              <strong>✨ Start from a template</strong>
+              <small className="muted">Replaces the text below. Blank gives you empty sections, already linked together.</small>
+            </div>
+            <div className="sub-body gd-templates">
+              {guideTemplates.map((t) => (
+                <button key={t.id} className="gd-template" title={t.about} onClick={() => applyTemplate(t)}>
+                  <span className="gd-template-emoji">{t.emoji}</span>
+                  <span>
+                    <strong>{t.name}</strong>
+                    <small className="muted">{t.about}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="sub">
+            <div className="sub-head">
               <strong>📑 Contents message</strong>
-              <button className="link small" onClick={resetText}>Use the ready-made text</button>
+              <small className="muted">Posted at the bottom of the channel, under the sections, so readers see it first.</small>
             </div>
             <div className="sub-body rv-fields">
               <div className="mod-row">
@@ -182,7 +200,7 @@ function GuideEditor({ guild, kind, data, onSaved }: { guild: Guild; kind: Guide
               </label>
               <Toggle
                 label="Contents and Next buttons under each section"
-                hint="Readers can jump back to the contents or on to the next section."
+                hint="Readers can jump down to the contents or on to the next section."
                 checked={g.navButtons}
                 onChange={(v) => set((d) => { d.navButtons = v; })}
               />
@@ -258,20 +276,6 @@ function GuideEditor({ guild, kind, data, onSaved }: { guild: Guild; kind: Guide
               <strong>Number One</strong>
               <span className="rv-preview-bot">APP</span>
             </div>
-            <div className="rv-preview-embed" style={{ borderLeftColor: g.color }}>
-              {g.title && <div className="rv-preview-title">{g.title}</div>}
-              <div className="rv-preview-desc">
-                {g.intro.trim() && <><DiscordText text={g.intro.trim()} guild={guild} />{"\n"}</>}
-                <strong>Contents</strong>
-                {g.sections.map((s, i) => (
-                  <span key={s.id}>
-                    {"\n"}
-                    <button className="gd-toc-link" onClick={() => setCurrent(i)}>{sectionTitle(s, i)}</button>
-                  </span>
-                ))}
-              </div>
-              {g.image && <img className="rv-preview-image" src={g.image} alt="" />}
-            </div>
             {g.sections.map((s, i) => (
               <div key={s.id} className={`gd-section ${i === index ? "on" : ""}`} onClick={() => setCurrent(i)}>
                 <div className="rv-preview-embed" style={{ borderLeftColor: g.color }}>
@@ -291,6 +295,22 @@ function GuideEditor({ guild, kind, data, onSaved }: { guild: Guild; kind: Guide
                 )}
               </div>
             ))}
+            <div className="gd-contents-last">
+              <div className="rv-preview-embed" style={{ borderLeftColor: g.color }}>
+                {g.title && <div className="rv-preview-title">{g.title}</div>}
+                <div className="rv-preview-desc">
+                  {g.intro.trim() && <><DiscordText text={g.intro.trim()} guild={guild} />{"\n"}</>}
+                  <strong>Contents</strong>
+                  {g.sections.map((s, i) => (
+                    <span key={s.id}>
+                      {"\n"}
+                      <button className="gd-toc-link" onClick={() => setCurrent(i)}>{sectionTitle(s, i)}</button>
+                    </span>
+                  ))}
+                </div>
+                {g.image && <img className="rv-preview-image" src={g.image} alt="" />}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -307,8 +327,13 @@ function GuideEditor({ guild, kind, data, onSaved }: { guild: Guild; kind: Guide
                 : "Switched off: not posted."}
         </span>
         <button className="btn ghost small" disabled={saving || !dirty} onClick={() => { setG(structuredClone(saved)); setError(""); }}>Discard</button>
-        <button className="btn primary small" disabled={saving || Boolean(problem) || (!dirty && (Boolean(posted) || !g.enabled))} title={problem ?? undefined} onClick={save}>
-          {saving ? "Saving…" : g.enabled && !posted ? "Save and post" : "Save changes"}
+        <button
+          className="btn primary small"
+          disabled={saving || Boolean(problem) || (!dirty && !data.outdated[kind] && (Boolean(posted) || !g.enabled))}
+          title={problem ?? undefined}
+          onClick={save}
+        >
+          {saving ? "Saving…" : g.enabled && (!posted || data.outdated[kind]) ? "Save and post" : "Save changes"}
         </button>
       </div>
       {problem && <small className="muted">{problem}</small>}

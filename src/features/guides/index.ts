@@ -30,8 +30,11 @@ import {
 
 /**
  * Guides: a Server guide and a Staff guide, each posted as plain messages in the channel the admin picks.
- * The first message is the contents, linking to every section; each section links back to the contents
- * and on to the next one. Readers just scroll or tap links; there's nothing to press.
+ * One message per section, then the contents at the bottom, linking to every section: Discord opens a channel
+ * at its newest message, so readers see the contents without scrolling up. Each section links down to the
+ * contents and on to the next one. Readers just scroll or tap links; there's nothing to press.
+ *
+ * Saved message IDs are always [contents, ...sections], whatever order they were posted in.
  */
 
 type Req = FastifyRequest<{ Params: { guildId: string; kind?: string } }>;
@@ -126,9 +129,12 @@ async function linkUp(guild: Guild, g: GuideSettings, channelId: string, message
   for (const [i, m] of sections.entries()) await m.edit(sectionMessage(g, i, urls[0], urls[i + 2] ?? null));
 }
 
+/** Guides posted before the contents moved to the bottom have their contents first (an older, smaller message ID). */
+const contentsAtBottom = (post: PostRow) => post.messageIds.length < 2 || BigInt(post.messageIds[0]) > BigInt(post.messageIds[1]);
+
 /**
- * Posts a guide, or updates it in place when it's already up with the same number of sections.
- * Otherwise the old messages are removed and the guide is posted fresh, so it always reads top to bottom.
+ * Posts a guide, or updates it in place when it's already up with the same number of sections and the contents
+ * at the bottom. Otherwise the old messages are removed and the guide is posted fresh, so it always reads top to bottom.
  */
 async function publish(guild: Guild, kind: GuideKind, g: GuideSettings) {
   const channel = postableChannel(guild, g.channelId);
@@ -137,7 +143,7 @@ async function publish(guild: Guild, kind: GuideKind, g: GuideSettings) {
   };
   const post = await postOf(guild.id, kind);
 
-  if (post && post.channelId === channel.id && post.messageIds.length === g.sections.length + 1) {
+  if (post && post.channelId === channel.id && post.messageIds.length === g.sections.length + 1 && contentsAtBottom(post)) {
     const existing = await Promise.all(post.messageIds.map((id) => channel.messages.fetch(id).catch(() => null)));
     if (existing.every((m) => m !== null)) {
       await linkUp(guild, g, channel.id, existing as Message[]).catch(fail);
@@ -148,8 +154,10 @@ async function publish(guild: Guild, kind: GuideKind, g: GuideSettings) {
   if (post) await deleteMessages(guild, post);
   const sent: Message[] = [];
   try {
-    sent.push(await channel.send(contentsMessage(g, null)));
+    // Sections first, then the contents at the bottom. `sent` keeps the contents first, as it's saved.
     for (let i = 0; i < g.sections.length; i++) sent.push(await channel.send(sectionMessage(g, i, null, null)));
+    const contents = await channel.send(contentsMessage(g, null));
+    sent.unshift(contents);
     await linkUp(guild, g, channel.id, sent);
   } catch (err) {
     for (const m of sent) await m.delete().catch(() => {}); // nothing half-posted
@@ -186,6 +194,7 @@ async function respond(guild: Guild): Promise<GuidesResponse> {
   const state = await stateOf(guild.id);
   const s = state.settings as GuidesSettings;
   const posted = { server: null, staff: null } as Record<GuideKind, string | null>;
+  const outdated = { server: false, staff: false } as Record<GuideKind, boolean>;
   const problems: string[] = [];
   for (const kind of guideKinds) {
     const g = s[kind];
@@ -194,6 +203,10 @@ async function respond(guild: Guild): Promise<GuidesResponse> {
     if (!state.enabled || !g.enabled) continue;
     if (!post) problems.push(`The ${GUIDE_NAMES[kind]} isn't posted. Save it to post it.`);
     else if (post.messageIds.length !== g.sections.length + 1) problems.push(`Part of the ${GUIDE_NAMES[kind]} was deleted in Discord. Save it to post it again.`);
+    else if (!contentsAtBottom(post)) {
+      outdated[kind] = true;
+      problems.push(`The ${GUIDE_NAMES[kind]}'s contents is still at the top. Save it once to post it again with the contents at the bottom.`);
+    }
     const channel = g.channelId ? guild.channels.cache.get(g.channelId) : null;
     if (!channel) problems.push(`The ${GUIDE_NAMES[kind]}'s channel was deleted. Pick another one.`);
     else if (kind === "staff" && channel.permissionsFor(guild.roles.everyone).has(PermissionFlagsBits.ViewChannel)) {
@@ -201,7 +214,7 @@ async function respond(guild: Guild): Promise<GuidesResponse> {
     }
   }
   if (!state.enabled && (s.server.enabled || s.staff.enabled)) problems.push("Guides is switched off, so nothing is posted. Switch it on to post your guides.");
-  return { settings: s, posted, problems };
+  return { settings: s, posted, outdated, problems };
 }
 
 async function guarded(reply: FastifyReply, run: () => Promise<unknown>) {
