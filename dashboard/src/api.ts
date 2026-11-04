@@ -15,6 +15,7 @@ import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embed
 import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
 import type { PollInput, PollSettings, PollView, PollVoterView, PollsResponse } from "../../src/shared/polls";
 import type { SuggestionSettings, SuggestionStatusInput, SuggestionsResponse } from "../../src/shared/suggestions";
+import type { ForumAutomation, ForumInput, ForumsResponse, PostAction } from "../../src/shared/forums";
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
 import type { RuleVerificationResponse, RuleVerificationSettings } from "../../src/shared/ruleVerification";
@@ -246,6 +247,16 @@ export const api = {
     request<EventResult>(`/api/guilds/${guildId}/events/${id}/discord`, { method: "POST", body: "{}" }),
   cancelEvent: (guildId: string, id: number) => request<EventResult>(`/api/guilds/${guildId}/events/${id}/cancel`, { method: "POST", body: "{}" }),
   deleteEvent: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/events/${id}`, { method: "DELETE" }),
+  forums: (guildId: string) => request<ForumsResponse>(`/api/guilds/${guildId}/forums`),
+  createForum: (guildId: string, input: ForumInput) => request<ForumsResponse>(`/api/guilds/${guildId}/forums`, { method: "POST", body: JSON.stringify(input) }),
+  updateForum: (guildId: string, id: string, input: ForumInput) =>
+    request<ForumsResponse>(`/api/guilds/${guildId}/forums/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  saveForumHelpers: (guildId: string, id: string, input: Omit<ForumAutomation, "channelId">) =>
+    request<ForumsResponse>(`/api/guilds/${guildId}/forums/${id}/automation`, { method: "PUT", body: JSON.stringify(input) }),
+  forumPostAction: (guildId: string, forumId: string, postId: string, action: PostAction) =>
+    request<ForumsResponse>(`/api/guilds/${guildId}/forums/${forumId}/posts/${postId}`, { method: "POST", body: JSON.stringify({ action }) }),
+  deleteForumPost: (guildId: string, forumId: string, postId: string) =>
+    request<ForumsResponse>(`/api/guilds/${guildId}/forums/${forumId}/posts/${postId}`, { method: "DELETE" }),
   suggestions: (guildId: string) => request<SuggestionsResponse>(`/api/guilds/${guildId}/suggestions`),
   saveSuggestionSettings: (guildId: string, settings: SuggestionSettings) =>
     undoable<SuggestionsResponse, SuggestionSettings>(

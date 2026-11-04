@@ -91,6 +91,17 @@ Part of the [Polls](/docs/polls) module.
 | `/poll create question answers [duration] [multiple] [anonymous] [hide_results] [channel]` | Staff (or who the settings allow) | Posts a poll with answer buttons and live results. Split answers with `\|`. |
 | `/poll end poll` | Who made it, or Manage Messages | Ends a poll now and posts the result. |
 
+## Forums
+
+Part of the [Forums](/docs/forums) module. Used inside a forum post.
+
+| Command | Who | What it does |
+| --- | --- | --- |
+| `/post solved` | Who made the post, or Manage Threads | Adds the Solved tag, and closes the post if that's switched on. |
+| `/post close` | Who made the post, or Manage Threads | Closes the post. |
+| `/post lock` / `/post unlock` | Manage Threads | Locks or unlocks the post. |
+| `/post pin` / `/post unpin` | Manage Threads | Pins or unpins the post. |
+
 ## Tickets
 
 Part of the [Tickets](/docs/tickets) module. Used inside a ticket channel.

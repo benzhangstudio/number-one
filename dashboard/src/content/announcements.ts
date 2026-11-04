@@ -21,6 +21,18 @@ export interface Announcement {
 
 export const announcements: Announcement[] = [
   {
+    id: "2026-11-04-forums",
+    date: "2026-11-04",
+    title: "Forums",
+    tag: "New",
+    emoji: "🧵",
+    body: `Manage your forum channels from the dashboard. Find it in **Utilities & Automation**.
+
+- Create forums and edit their tags, guidelines and layout.
+- Pin, lock, close, reopen or delete posts.
+- **Helpers:** welcome new posts, let people mark a post solved with **/post solved**, and close posts that go quiet.`,
+  },
+  {
     id: "2026-11-04-suggestions",
     date: "2026-11-04",
     title: "Suggestions",

@@ -13,6 +13,7 @@ import { serverLogSettings } from "./serverLogs.js";
 import { guidesSettings } from "./guides.js";
 import { levelsSettings } from "./levels.js";
 import { economySettings } from "./economy.js";
+import { forumSettings } from "./forums.js";
 import { pollSettings } from "./polls.js";
 import { suggestionSettings } from "./suggestions.js";
 import { ticketSettings } from "./tickets.js";
@@ -247,6 +248,16 @@ export const suggestionsFeature = defineFeature({
   settings: suggestionSettings,
 });
 
+export const forumsFeature = defineFeature({
+  id: "forums",
+  name: "Forums",
+  icon: "🧵",
+  description: "Manage your forum channels from the dashboard: tags, guidelines and posts. Add a welcome message to new posts, a /post solved command, and close quiet posts.",
+  category: "utility",
+  recommended: true,
+  settings: forumSettings,
+});
+
 export const levelsFeature = defineFeature({
   id: "levels",
   name: "Levels",
@@ -408,6 +419,7 @@ export const featureCatalog: FeatureInfo[] = [
   pollsFeature,
   // Utilities & Automation
   ticketsFeature,
+  forumsFeature,
   announcementsFeature,
   customCommandsFeature,
   embedsFeature,
@@ -479,5 +491,6 @@ export * from "./guides.js";
 export * from "./levels.js";
 export * from "./economy.js";
 export * from "./polls.js";
+export * from "./forums.js";
 export * from "./suggestions.js";
 export * from "./communityTools.js";

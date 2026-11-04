@@ -5,6 +5,7 @@ import { AntiRaidPanel } from "./AntiRaidPanel";
 import { EconomyPanel } from "./EconomyPanel";
 import { EmbedsPanel } from "./EmbedsPanel";
 import { EventsPanel } from "./EventsPanel";
+import { ForumsPanel } from "./ForumsPanel";
 import { GuidesPanel } from "./GuidesPanel";
 import { AutomodPanel } from "./AutomodPanel";
 import { BotUpdatesPanel } from "./BotUpdatesPanel";
@@ -49,6 +50,7 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "custom-commands": CustomCommandsPanel,
   "rule-verification": RuleVerificationPanel,
   tickets: TicketsPanel,
+  forums: ForumsPanel,
   "staff-applications": StaffApplicationsPanel,
   "community-tools": CommunityToolsPanel,
   guides: GuidesPanel,
