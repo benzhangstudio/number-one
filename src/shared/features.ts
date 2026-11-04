@@ -366,31 +366,43 @@ export const botUpdatesFeature = defineFeature({
   settings: botUpdateSettings,
 });
 
+/**
+ * Every feature, in the order the dashboard, landing page and /setup show them. Within each category,
+ * the biggest and most important come first.
+ */
 export const featureCatalog: FeatureInfo[] = [
   coreFeature,
+  // Moderation & Safety
   moderationFeature,
   automodFeature,
   antiRaidFeature,
-  joinLeaveFeature,
-  ruleVerificationFeature,
+  // Community Settings
+  communityToolsFeature,
   onboardingFeature,
+  ruleVerificationFeature,
+  joinLeaveFeature,
+  staffApplicationsFeature,
+  // Roles Management
   reactionRolesFeature,
-  announcementsFeature,
-  embedsFeature,
-  eventsFeature,
-  pollsFeature,
-  levelsFeature,
-  economyFeature,
-  channelDesignsFeature,
-  guidesFeature,
+  // Logging & Auditing
   messageLogsFeature,
   memberLogsFeature,
   serverLogsFeature,
   voiceLogsFeature,
-  customCommandsFeature,
+  // Engagement & Fun
+  levelsFeature,
+  economyFeature,
+  eventsFeature,
+  pollsFeature,
+  // Utilities & Automation
   ticketsFeature,
-  staffApplicationsFeature,
-  communityToolsFeature,
+  announcementsFeature,
+  customCommandsFeature,
+  embedsFeature,
+  // Cosmetics
+  guidesFeature,
+  channelDesignsFeature,
+  // Other
   botUpdatesFeature,
 ];
 

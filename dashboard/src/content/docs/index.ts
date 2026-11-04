@@ -8,12 +8,12 @@ const files = import.meta.glob("./*.md", { query: "?raw", import: "default", eag
 const groups: { name: string; pages: string[] }[] = [
   { name: "Start here", pages: ["getting-started", "dashboard", "commands"] },
   { name: "🛡️ Moderation & Safety", pages: ["moderation", "automod", "anti-raid"] },
-  { name: "👥 Community Settings", pages: ["join-leave", "rule-verification", "onboarding", "staff-applications", "community-tools"] },
+  { name: "👥 Community Settings", pages: ["community-tools", "onboarding", "rule-verification", "join-leave", "staff-applications"] },
   { name: "🎭 Roles Management", pages: ["reaction-roles"] },
   { name: "📋 Logging & Auditing", pages: ["message-logs", "member-logs", "server-logs", "voice-logs"] },
   { name: "🎉 Engagement & Fun", pages: ["levels", "economy", "events", "polls"] },
-  { name: "🛠️ Utilities & Automation", pages: ["embeds", "announcements", "custom-commands", "tickets"] },
-  { name: "🎨 Cosmetics", pages: ["channel-designs", "guides"] },
+  { name: "🛠️ Utilities & Automation", pages: ["tickets", "announcements", "custom-commands", "embeds"] },
+  { name: "🎨 Cosmetics", pages: ["guides", "channel-designs"] },
   { name: "🧩 Other", pages: ["bot-updates"] },
   { name: "Help", pages: ["permissions", "troubleshooting"] },
 ];
