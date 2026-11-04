@@ -11,7 +11,7 @@ Fork this repository on GitHub, then:
 ```bash
 git clone https://github.com/<your-username>/number-one.git
 cd number-one
-npm install        # also builds the bot and the dashboard
+npm install
 ```
 
 You need **Node.js 22.13 or newer**.
