@@ -16,6 +16,11 @@ const sql = {
   player: "SELECT team, last_daily_at, wins_day, wins_today, wins, losses FROM card_players WHERE guild_id = ? AND user_id = ?",
   makePlayer: "INSERT INTO card_players (guild_id, user_id, team) VALUES (?, ?, '[]') ON CONFLICT DO NOTHING",
   setTeam: "UPDATE card_players SET team = ? WHERE guild_id = ? AND user_id = ?",
+  bag: "SELECT standard_packs, premium_packs FROM card_players WHERE guild_id = ? AND user_id = ?",
+  addStandard: "UPDATE card_players SET standard_packs = standard_packs + ? WHERE guild_id = ? AND user_id = ?",
+  addPremium: "UPDATE card_players SET premium_packs = premium_packs + ? WHERE guild_id = ? AND user_id = ?",
+  takeStandard: "UPDATE card_players SET standard_packs = standard_packs - 1 WHERE guild_id = ? AND user_id = ? AND standard_packs > 0",
+  takePremium: "UPDATE card_players SET premium_packs = premium_packs - 1 WHERE guild_id = ? AND user_id = ? AND premium_packs > 0",
   setDaily: "UPDATE card_players SET last_daily_at = ? WHERE guild_id = ? AND user_id = ?",
   setWins: "UPDATE card_players SET wins_day = ?, wins_today = ?, wins = wins + ?, losses = losses + ? WHERE guild_id = ? AND user_id = ?",
   top: `SELECT user_id, COUNT(*) AS uniq, SUM(quantity) AS total FROM card_inventory WHERE guild_id = ?
@@ -71,15 +76,37 @@ export function collectionOf(guildId: string, userId: string) {
   return new Map(rows.map((r) => [r.card_id, r.quantity]));
 }
 
-export type BuyResult = { ok: true; balance: number } | { ok: false; balance: number };
+export type StoredPack = "standard" | "premium";
+export type Bag = Record<StoredPack, number>;
 
-/** Takes the pack's price and adds its cards, all or nothing. */
-export function buyPack(guildId: string, userId: string, price: number, cardIds: string[], startingBalance: number): BuyResult {
+/** Packs a member bought and hasn't opened yet. */
+export function bagOf(guildId: string, userId: string): Bag {
+  q("makePlayer").run(guildId, userId);
+  const r = q("bag").get(guildId, userId) as { standard_packs: number; premium_packs: number };
+  return { standard: r.standard_packs, premium: r.premium_packs };
+}
+
+export type BuyResult = { ok: true; balance: number; bag: Bag } | { ok: false; balance: number };
+
+/** Takes the price of `amount` packs and puts them in the member's bag, all or nothing. */
+export function buyPacks(guildId: string, userId: string, kind: StoredPack, amount: number, priceEach: number, startingBalance: number): BuyResult {
   return atomic(() => {
-    const paid = price > 0 ? economy.spend(guildId, userId, price, "cards", startingBalance) : { ok: true as const, balance: economy.peek(guildId, userId, startingBalance).balance };
+    const total = priceEach * amount;
+    const paid = total > 0 ? economy.spend(guildId, userId, total, "cards", startingBalance) : { ok: true as const, balance: economy.peek(guildId, userId, startingBalance).balance };
     if (!paid.ok) return paid;
+    q("makePlayer").run(guildId, userId);
+    q(kind === "standard" ? "addStandard" : "addPremium").run(amount, guildId, userId);
+    return { ok: true as const, balance: paid.balance, bag: bagOf(guildId, userId) };
+  });
+}
+
+/** Opens one pack from the bag: takes it out and adds its cards. Null when they have none of that kind. */
+export function openFromBag(guildId: string, userId: string, kind: StoredPack, cardIds: string[]): Bag | null {
+  return atomic(() => {
+    q("makePlayer").run(guildId, userId);
+    if (q(kind === "standard" ? "takeStandard" : "takePremium").run(guildId, userId).changes === 0) return null;
     addInside(guildId, userId, cardIds);
-    return paid;
+    return bagOf(guildId, userId);
   });
 }
 

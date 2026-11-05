@@ -157,21 +157,71 @@ async function daily(i: ChatInputCommandInteraction<"cached">, s: CardSettings, 
   return i.editReply(await packReply(i.user.id, "🎁 Daily pack", list, before, "Come back in 20 hours for another one.", paid.note));
 }
 
-async function open(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
+const bagText = (bag: store.Bag) =>
+  bag.standard || bag.premium
+    ? `🎒 Unopened: ${packInfo.standard.emoji} ${bag.standard} Standard · ${packInfo.premium.emoji} ${bag.premium} Premium`
+    : "🎒 No unopened packs left";
+
+/** "Open" buttons for the packs left in a member's bag (only they can press them). */
+function openButtons(userId: string, bag: store.Bag) {
+  const kinds = (["standard", "premium"] as const).filter((k) => bag[k] > 0);
+  if (!kinds.length) return [];
+  return [
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      kinds.map((k) =>
+        new ButtonBuilder()
+          .setCustomId(`${PREFIX}:open:${userId}:${k}`)
+          .setLabel(`Open ${packInfo[k].name.toLowerCase()} (${bag[k]} left)`)
+          .setEmoji(packInfo[k].emoji)
+          .setStyle(k === "premium" ? ButtonStyle.Primary : ButtonStyle.Secondary),
+      ),
+    ),
+  ];
+}
+
+/** Buys packs and puts them in the member's bag, to open whenever they like. */
+async function buy(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
   if (mode !== "economy") return i.reply("Packs aren't sold in this server. Use `/cards daily` for your free pack!");
-  const kind = i.options.getString("pack", true) as Exclude<PackKind, "daily">;
-  const list = openPack(s, kind);
-  if (!list) return i.reply(notReady);
+  if (!activeCount()) return i.reply(notReady);
+  const kind = i.options.getString("pack", true) as store.StoredPack;
+  const amount = i.options.getInteger("amount") ?? 1;
   const eco = await economyOf(i.guildId);
   const price = s.prices[kind];
-  const before = store.collectionOf(i.guildId, i.user.id);
-  const r = store.buyPack(i.guildId, i.user.id, price, list.map((c) => c.id), eco.startingBalance);
-  if (!r.ok) return i.reply({ content: `You need ${formatMoney(eco.currency, price)} for a ${packInfo[kind].name.toLowerCase()}. You have ${formatMoney(eco.currency, r.balance)}.`, allowedMentions: { parse: [] } });
+  const r = store.buyPacks(i.guildId, i.user.id, kind, amount, price, eco.startingBalance);
+  const what = `${amount} ${packInfo[kind].name.toLowerCase()}${amount === 1 ? "" : "s"}`;
+  if (!r.ok) {
+    return i.reply({ content: `You need ${formatMoney(eco.currency, price * amount)} for ${what}. You have ${formatMoney(eco.currency, r.balance)}.`, allowedMentions: { parse: [] } });
+  }
+  const embed = new EmbedBuilder()
+    .setColor(PINK)
+    .setTitle(`${packInfo[kind].emoji} Bought ${what}!`)
+    .setDescription(`Paid ${formatMoney(eco.currency, price * amount)} · Balance: ${formatMoney(eco.currency, r.balance)}\n\n${bagText(r.bag)}\nOpen them one at a time with \`/cards open\` or the button below.`);
+  return i.reply({ embeds: [embed], components: openButtons(i.user.id, r.bag), allowedMentions: { parse: [] } });
+}
+
+/** Opens one pack from the bag and shows it. Used by /cards open and the "Open" buttons. */
+async function openOne(guildId: string, user: { id: string }, s: CardSettings, mode: CardMode, asked: store.StoredPack | null) {
+  const bag = store.bagOf(guildId, user.id);
+  // No pack picked: open a Standard first, so the Premium ones are saved for last.
+  const kind = asked ?? (bag.standard ? "standard" : bag.premium ? "premium" : null);
+  if (!kind || !bag[kind]) {
+    const none = asked ? `You don't have any unopened ${packInfo[asked].name.toLowerCase()}s.` : "You don't have any unopened packs.";
+    return { content: `${none} Buy some with \`/cards buy\`${s.daily ? ", or open your free one with `/cards daily`" : ""}.` };
+  }
+  const list = openPack(s, kind);
+  if (!list) return { content: notReady };
+  const before = store.collectionOf(guildId, user.id);
+  const left = store.openFromBag(guildId, user.id, kind, list.map((c) => c.id));
+  if (!left) return { content: `You don't have any unopened ${packInfo[kind].name.toLowerCase()}s.` };
+  const paid = await payPulls(guildId, user.id, s, mode, list);
+  const reply = await packReply(user.id, `${packInfo[kind].emoji} ${packInfo[kind].name}`, list, before, bagText(left).replace("🎒 ", ""), paid.note);
+  return { ...reply, components: openButtons(user.id, left) };
+}
+
+async function open(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
   await i.deferReply();
-  const name = `${packInfo[kind].emoji} ${packInfo[kind].name}`;
-  const paid = await payPulls(i.guildId, i.user.id, s, mode, list);
-  const balance = paid.balance ?? r.balance;
-  return i.editReply(await packReply(i.user.id, name, list, before, `Paid ${price.toLocaleString("en-US")} · Balance: ${balance.toLocaleString("en-US")}`, paid.note));
+  const reply = await openOne(i.guildId, i.user, s, mode, i.options.getString("pack") as store.StoredPack | null);
+  return i.editReply({ allowedMentions: { parse: [] }, ...reply });
 }
 
 const pullRange = (s: CardSettings, r: Rarity) => {
@@ -193,7 +243,7 @@ async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, 
         s.pullRewards.enabled
           ? `💰 **Every card you pull pays coins**\n${rarities.map((r) => `${rarityInfo[r].name}: ${pullRange(s, r)}`).join(" · ")}`
           : "",
-        "Buy one with `/cards buy`. Sell duplicates with `/cards sell-duplicates`.",
+        "Buy packs with `/cards buy` (several at once if you like) and open them one at a time with `/cards open`. Sell duplicates with `/cards sell-duplicates`.",
       ]
         .filter(Boolean)
         .join("\n\n"),
@@ -203,8 +253,10 @@ async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, 
       [`${packInfo.daily.emoji} **Daily pack** · free\n${packInfo.daily.about} Open it with \`/cards daily\`.`, "Beat Number One in `/cards battle` for a bonus card (a few times a day)."].join("\n\n"),
     );
   }
+  const bag = store.bagOf(i.guildId, i.user.id);
+  if (bag.standard || bag.premium) embed.addFields({ name: "Your bag", value: bagText(bag) });
   embed.setFooter({ text: `${ready.toLocaleString("en-US")} cards to collect, with more added over time · ★ Common to ★★★★★ Mythic` });
-  return i.reply({ embeds: [embed], allowedMentions: { parse: [] } });
+  return i.reply({ embeds: [embed], components: openButtons(i.user.id, bag), allowedMentions: { parse: [] } });
 }
 
 /** A member's cards in browsing order: best rarity first, then newest card first. */
@@ -442,12 +494,24 @@ const cardsCommand: SlashCommand = {
     .addSubcommand((c) =>
       c
         .setName("buy")
-        .setDescription("Buy a card pack and open it")
+        .setDescription("Buy card packs to open whenever you like")
         .addStringOption((o) =>
           o
             .setName("pack")
             .setDescription("Which pack")
             .setRequired(true)
+            .addChoices({ name: "📦 Standard pack", value: "standard" }, { name: "💝 Premium pack", value: "premium" }),
+        )
+        .addIntegerOption((o) => o.setName("amount").setDescription("How many (1 if empty)").setMinValue(1).setMaxValue(25)),
+    )
+    .addSubcommand((c) =>
+      c
+        .setName("open")
+        .setDescription("Open one of the packs you bought")
+        .addStringOption((o) =>
+          o
+            .setName("pack")
+            .setDescription("Which pack (Standard first if empty)")
             .addChoices({ name: "📦 Standard pack", value: "standard" }, { name: "💝 Premium pack", value: "premium" }),
         ),
     )
@@ -516,7 +580,8 @@ const cardsCommand: SlashCommand = {
     const mode = await modeOf(interaction.guildId, s);
     const sub = interaction.options.getSubcommand();
     if (sub === "daily") return daily(interaction, s, mode);
-    if (sub === "buy") return open(interaction, s, mode);
+    if (sub === "buy") return buy(interaction, s, mode);
+    if (sub === "open") return open(interaction, s, mode);
     if (sub === "packs") return packs(interaction, s, mode);
     if (sub === "collection") return collection(interaction);
     if (sub === "view") return view(interaction);
@@ -539,6 +604,18 @@ const answers: ComponentHandler = {
   prefix: PREFIX,
   async handle(interaction: MessageComponentInteraction) {
     if (!interaction.inCachedGuild() || !interaction.isButton()) return;
+    if (interaction.customId.startsWith(`${PREFIX}:open:`)) {
+      // "Open another pack" buttons.
+      const [, , ownerId, kind] = interaction.customId.split(":");
+      if (interaction.user.id !== ownerId) {
+        return interaction.reply({ content: "These are someone else's packs. Buy your own with `/cards buy`!", flags: MessageFlags.Ephemeral });
+      }
+      const s = await settingsOf(interaction.guildId);
+      const mode = await modeOf(interaction.guildId, s);
+      await interaction.update({ components: [] }); // the next pack comes as a new message, so earlier pulls stay visible
+      const reply = await openOne(interaction.guildId, interaction.user, s, mode, kind as store.StoredPack);
+      return interaction.followUp({ allowedMentions: { parse: [] }, ...reply });
+    }
     if (interaction.customId.startsWith(`${PREFIX}:col:`)) {
       // Flipping through a collection.
       const [, , ownerId, viewerId, index] = interaction.customId.split(":");

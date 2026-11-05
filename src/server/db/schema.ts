@@ -362,6 +362,9 @@ export const cardPlayers = sqliteTable(
     winsToday: integer("wins_today").notNull().default(0),
     wins: integer("wins").notNull().default(0),
     losses: integer("losses").notNull().default(0),
+    /** Bought packs not opened yet. */
+    standardPacks: integer("standard_packs").notNull().default(0),
+    premiumPacks: integer("premium_packs").notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.guildId, t.userId] })],
 );

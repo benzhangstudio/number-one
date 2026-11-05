@@ -75,7 +75,8 @@ Each member has a **team of 3**, picked with `/cards team`. Empty spots are fill
 | Command | What it does |
 | --- | --- |
 | `/cards daily` | Opens your free daily pack. |
-| `/cards buy pack` | Buys a pack and opens it (With Economy). |
+| `/cards buy pack [amount]` | Buys up to 25 packs at once and keeps them in your bag (With Economy). |
+| `/cards open [pack]` | Opens one pack from your bag. Press **Open** under it to open the next one. |
 | `/cards packs` | Shows the packs and prices. |
 | `/cards collection [member] [card]` | Flips through a collection one card at a time, with ◀ Back and Next ▶ buttons. |
 | `/cards view card` | Shows a card up close. |
