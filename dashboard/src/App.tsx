@@ -1,18 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import type { DashboardUser } from "../../src/shared/features";
 import type { MaintenanceState } from "../../src/shared/botUpdates";
 import { useHasUnread } from "./announcementsSeen";
 import { api, avatarUrl, inviteUrl } from "./api";
 import { Footer, SUPPORT_SERVER } from "./components/Footer";
-import { GuildPage } from "./pages/GuildPage";
 import { AnnouncementsPage } from "./pages/AnnouncementsPage";
-import { DeveloperPage } from "./pages/DeveloperPage";
-import { DocsPage } from "./pages/DocsPage";
 import { HomePage } from "./pages/HomePage";
 import { LandingPage } from "./pages/LandingPage";
-import { PrivacyPage } from "./pages/PrivacyPage";
-import { ServersPage } from "./pages/ServersPage";
-import { TermsPage } from "./pages/TermsPage";
+
+// Bigger pages load only when they're opened, so the first visit stays quick.
+const GuildPage = lazy(() => import("./pages/GuildPage").then((m) => ({ default: m.GuildPage })));
+const DeveloperPage = lazy(() => import("./pages/DeveloperPage").then((m) => ({ default: m.DeveloperPage })));
+const DocsPage = lazy(() => import("./pages/DocsPage").then((m) => ({ default: m.DocsPage })));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage").then((m) => ({ default: m.PrivacyPage })));
+const ServersPage = lazy(() => import("./pages/ServersPage").then((m) => ({ default: m.ServersPage })));
+const TermsPage = lazy(() => import("./pages/TermsPage").then((m) => ({ default: m.TermsPage })));
 import { navigate, usePath } from "./router";
 import { ACCENTS, useAccent, useTheme } from "./theme";
 import { UndoToast } from "./undo";
@@ -332,7 +334,7 @@ export function App() {
       </header>
       <BetaBanner />
         <MaintenanceBanner state={maintenance} />
-      <main className={`content ${(user && guildMatch) || docsMatch ? "wide" : ""}`}>{page}</main>
+      <main className={`content ${(user && guildMatch) || docsMatch ? "wide" : ""}`}><Suspense fallback={<p className="muted">Loading…</p>}>{page}</Suspense></main>
       <UndoToast />
       <Footer />
     </div>
