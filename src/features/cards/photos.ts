@@ -28,10 +28,15 @@ export function isPhotoKey(key: string) {
   return !extra && Boolean(groupById.get(groupId)?.members.some((m) => m.id === memberId));
 }
 
-/** Reads which photos exist, once at start-up. */
-export async function loadPhotoList() {
-  mkdirSync(dir, { recursive: true });
-  for (const row of await db.select().from(cardPhotos).all()) info.set(row.key, { credit: row.credit, updatedAt: row.updatedAt.getTime() });
+let loading: Promise<void> | null = null;
+
+/** Reads which photos exist, once at start-up (calling it again does nothing). */
+export function loadPhotoList() {
+  loading ??= (async () => {
+    mkdirSync(dir, { recursive: true });
+    for (const row of await db.select().from(cardPhotos).all()) info.set(row.key, { credit: row.credit, updatedAt: row.updatedAt.getTime() });
+  })();
+  return loading;
 }
 
 /** The photo a card shows: its own, or its member's. */

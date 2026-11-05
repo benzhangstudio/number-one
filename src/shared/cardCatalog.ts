@@ -108,3 +108,63 @@ export const cardGroups: CardGroup[] = rows.map(([id, name, gen, debut, color, m
 export const groupById = new Map(cardGroups.map((g) => [g.id, g]));
 
 export const generationNames: Record<CardGroup["gen"], string> = { 2: "2nd gen", 3: "3rd gen", 4: "4th gen", 5: "5th gen" };
+
+/* ------------------------------------------------------------ matching photo file names */
+
+/** Other names people use for groups in file names. */
+const groupAliases: Record<string, string> = {
+  bp: "blackpink",
+  snsd: "girlsgeneration",
+  gg: "girlsgeneration",
+  gidle: "idle",
+  gidl: "idle",
+  sj: "superjunior",
+  dbsk: "tvxq",
+  tvxq: "tvxq",
+  txt: "txt",
+  tomorrowxtogether: "txt",
+  skz: "straykids",
+  zb1: "zerobaseone",
+  bnd: "boynextdoor",
+  kiof: "kissoflife",
+  nct: "nct127",
+  dream: "nctdream",
+  lsf: "lesserafim",
+  rv: "redvelvet",
+  mmm: "mamamoo",
+  svt: "seventeen",
+  ohmygirl: "ohmygirl",
+  omg: "ohmygirl",
+  bm: "babymonster",
+  beast: "highlight",
+};
+
+/**
+ * Works out which card a photo is for from its file name, like "blackpink-jennie.jpg" (all of Jennie's cards)
+ * or "blackpink_jennie_legend.png" (just that version). Spaces, dashes, dots and underscores all work, and
+ * so do accents and capitals. Returns the photo key ("blackpink.jennie" or "blackpink.jennie.legend"), or null.
+ */
+export function photoKeyFromFileName(fileName: string, versionIds: { id: string; name: string }[]): string | null {
+  const base = fileName.replace(/\.[a-z0-9]+$/i, "").replace(/\s*\(\d+\)$/, "");
+  const parts = base
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  for (let g = 1; g <= Math.min(4, parts.length - 1); g++) {
+    const joined = parts.slice(0, g).join("");
+    const group = groupById.get(groupAliases[joined] ?? joined);
+    if (!group) continue;
+    for (let m = 1; m <= Math.min(3, parts.length - g); m++) {
+      const memberId = parts.slice(g, g + m).join("");
+      const member = group.members.find((x) => x.id === memberId);
+      if (!member) continue;
+      const rest = parts.slice(g + m).join("");
+      if (!rest) return `${group.id}.${member.id}`;
+      const version = versionIds.find((v) => v.id === rest || slug(v.name) === rest);
+      if (version) return `${group.id}.${member.id}.${version.id}`;
+    }
+  }
+  return null;
+}

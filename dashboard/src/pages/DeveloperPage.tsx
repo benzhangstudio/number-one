@@ -13,6 +13,7 @@ import {
   starterTemplates,
 } from "../../../src/shared/botUpdates";
 import { api } from "../api";
+import { CardPhotos } from "./CardPhotos";
 import { Toggle } from "../components/pickers";
 import { DiscordText } from "../components/DiscordText";
 
@@ -258,6 +259,8 @@ export function DeveloperPage() {
           ))}
         </div>
       )}
+
+      <CardPhotos />
     </section>
   );
 }

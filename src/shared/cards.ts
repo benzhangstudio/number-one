@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { type CardGroup, cardGroups, generationNames, groupById } from "./cardCatalog.js";
+import { type CardGroup, cardGroups, generationNames, groupById, photoKeyFromFileName } from "./cardCatalog.js";
 
 export { generationNames };
 
@@ -261,3 +261,9 @@ export interface CardPhotosResponse {
   ready: number;
   total: number;
 }
+
+/** Every version a card can have, for matching photo file names. */
+export const allVersions = [...versions, ...Object.values(specialVersions).flat()];
+
+/** The photo key a file is for, from its name (see photoKeyFromFileName). */
+export const photoKeyForFile = (fileName: string) => photoKeyFromFileName(fileName, allVersions);
