@@ -340,6 +340,23 @@ function askButtons(id: string, yes: string) {
   );
 }
 
+/** A live countdown: Discord counts it down on everyone's screen ("in 2 minutes" … "in 5 seconds"). */
+const countdown = (id: string) => {
+  const end = Math.ceil(pending.get(id)!.expires / 1000);
+  return `⏳ **Answer <t:${end}:R>** (by <t:${end}:T>)`;
+};
+
+/** When nobody answers in time, the offer edits itself to say so and its buttons go away. */
+function endWhenUnanswered(i: ChatInputCommandInteraction<"cached">, id: string, ended: string) {
+  const offer = pending.get(id);
+  if (!offer) return;
+  setTimeout(() => {
+    if (pending.get(id) !== offer) return; // answered or cancelled already
+    pending.delete(id);
+    i.editReply({ content: ended, components: [], allowedMentions: { parse: [] } }).catch(() => {});
+  }, offer.expires - Date.now() + 500).unref?.();
+}
+
 async function challenge(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
   const other = i.options.getMember("opponent");
   if (!other || other.user.bot) return i.reply("Pick a member to battle, or leave it empty to battle Number One.");
@@ -349,11 +366,9 @@ async function challenge(i: ChatInputCommandInteraction<"cached">, s: CardSettin
   const id = String(nextId++);
   pending.set(id, { kind: "battle", guildId: i.guildId, from: i.user.id, to: other.id, bet, expires: Date.now() + CHALLENGE_MS });
   const eco = bet ? await economyOf(i.guildId) : null;
-  return i.reply({
-    content: `⚔️ <@${other.id}>, <@${i.user.id}> wants to battle!${bet && eco ? ` The bet is ${formatMoney(eco.currency, bet)} each, winner takes all.` : ""}\n-# This offer ends <t:${Math.ceil((Date.now() + CHALLENGE_MS) / 1000)}:R>.`,
-    components: [askButtons(id, "Battle!")],
-    allowedMentions: { users: [other.id] },
-  });
+  const ask = `⚔️ <@${other.id}>, <@${i.user.id}> wants to battle!${bet && eco ? ` The bet is ${formatMoney(eco.currency, bet)} each, winner takes all.` : ""}`;
+  await i.reply({ content: `${ask}\n${countdown(id)}`, components: [askButtons(id, "Battle!")], allowedMentions: { users: [other.id] } });
+  endWhenUnanswered(i, id, `${ask}\n⌛ **Offer ended:** <@${other.id}> didn't answer in time.`);
 }
 
 async function trade(i: ChatInputCommandInteraction<"cached">, s: CardSettings) {
@@ -366,11 +381,9 @@ async function trade(i: ChatInputCommandInteraction<"cached">, s: CardSettings) 
   if (!get || !store.ownedCount(i.guildId, other.id, get.id)) return i.reply(`<@${other.id}> doesn't have that card. Pick one from the list.`);
   const id = String(nextId++);
   pending.set(id, { kind: "trade", guildId: i.guildId, from: i.user.id, to: other.id, bet: 0, give: give.id, get: get.id, expires: Date.now() + CHALLENGE_MS });
-  return i.reply({
-    content: `🔁 <@${other.id}>, <@${i.user.id}> wants to trade:\nThey give: ${line(give)}\nYou give: ${line(get)}\n-# This offer ends <t:${Math.ceil((Date.now() + CHALLENGE_MS) / 1000)}:R>.`,
-    components: [askButtons(id, "Trade")],
-    allowedMentions: { users: [other.id] },
-  });
+  const ask = `🔁 <@${other.id}>, <@${i.user.id}> wants to trade:\nThey give: ${line(give)}\nYou give: ${line(get)}`;
+  await i.reply({ content: `${ask}\n${countdown(id)}`, components: [askButtons(id, "Trade")], allowedMentions: { users: [other.id] } });
+  endWhenUnanswered(i, id, `${ask}\n⌛ **Offer ended:** <@${other.id}> didn't answer in time.`);
 }
 
 async function gift(i: ChatInputCommandInteraction<"cached">, s: CardSettings) {
@@ -543,7 +556,8 @@ const answers: ComponentHandler = {
     const p = pending.get(id);
     if (!p || p.expires < Date.now()) {
       pending.delete(id);
-      return interaction.update({ content: "This offer has ended.", components: [] });
+      const was = interaction.message.content.replace(/\n⏳.*$/s, "");
+      return interaction.update({ content: `${was}\n⌛ **Offer ended:** nobody answered in time.`.slice(0, 2000), components: [], allowedMentions: { parse: [] } });
     }
     if (interaction.user.id !== p.to) {
       if (answer === "no" && interaction.user.id === p.from) {
