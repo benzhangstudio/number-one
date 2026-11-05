@@ -12,6 +12,7 @@ import {
   replyProblem,
 } from "../../../src/shared/customCommands";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { RolePicker, Toggle } from "../components/pickers";
 import { DiscordText } from "../components/DiscordText";
 
@@ -413,7 +414,7 @@ function RulesEditor({ guild, initial, onSaved }: { guild: Guild; initial: Rules
       <div className="cc-preview-wrap">
         <div className="muted small cc-preview-pick">
           Preview of <code>/rule</code>
-          <input type="number" min={1} max={Math.max(1, r.rules.length)} value={shown} onChange={(e) => setPreviewNumber(e.target.valueAsNumber || 1)} />
+          <NumberInput min={1} max={Math.max(1, r.rules.length)} value={shown} onChange={(v) => setPreviewNumber(v)} />
         </div>
         <div className="cc-preview">
           <div className="cc-preview-used">

@@ -9,6 +9,7 @@ import {
   totalXpFor,
 } from "../../../src/shared/levels";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { ChannelPicker, ChannelSelect, RolePicker, RoleSelect, Toggle } from "../components/pickers";
 
 type Guild = GuildDetails["guild"];
@@ -118,11 +119,11 @@ export function LevelsPanel({ guild }: { guild: Guild }) {
           <div className="mod-row">
             <label className="field">
               <span>XP per message, from</span>
-              <input type="number" min={1} max={100} value={draft.xpMin} onChange={(e) => set((d) => { d.xpMin = clamp(e.target.valueAsNumber, 1, 100); })} />
+              <NumberInput min={1} max={100} value={draft.xpMin} onChange={(v) => set((d) => { d.xpMin = v; })} />
             </label>
             <label className="field">
               <span>to</span>
-              <input type="number" min={1} max={100} value={draft.xpMax} onChange={(e) => set((d) => { d.xpMax = clamp(e.target.valueAsNumber, 1, 100); })} />
+              <NumberInput min={1} max={100} value={draft.xpMax} onChange={(v) => set((d) => { d.xpMax = v; })} />
             </label>
           </div>
           <label className="field">
@@ -186,12 +187,11 @@ export function LevelsPanel({ guild }: { guild: Guild }) {
         {draft.rewards.map((reward, i) => (
           <div className="levels-reward" key={i}>
             <span className="muted small">At level</span>
-            <input
-              type="number"
+            <NumberInput
               min={1}
               max={MAX_LEVEL}
               value={reward.level}
-              onChange={(e) => set((d) => { d.rewards[i].level = clamp(e.target.valueAsNumber, 1, MAX_LEVEL); })}
+              onChange={(v) => set((d) => { d.rewards[i].level = v; })}
             />
             <span className="muted small">give</span>
             <RoleSelect
@@ -269,4 +269,3 @@ export function LevelsPanel({ guild }: { guild: Guild }) {
   );
 }
 
-const clamp = (v: number, min: number, max: number) => (Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : min);

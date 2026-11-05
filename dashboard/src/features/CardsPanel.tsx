@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { type CardSettings, type CardsResponse, packInfo, rarities, rarityInfo } from "../../../src/shared/cards";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { Toggle } from "../components/pickers";
 
 type Guild = GuildDetails["guild"];
 
 const n = (x: number) => x.toLocaleString("en-US");
-const clamp = (v: number, max: number) => (Number.isFinite(v) ? Math.max(0, Math.min(max, Math.round(v))) : 0);
 
 /** Dashboard section for BLACKPINK Poker: the mode, prices, rewards and the top collectors. */
 export function CardsPanel({ guild }: { guild: Guild }) {
@@ -34,7 +34,7 @@ export function CardsPanel({ guild }: { guild: Guild }) {
   const dirty = JSON.stringify(draft) !== JSON.stringify(data.settings);
   const money = (x: number) => `${data.currency.emoji} ${n(x)} ${x === 1 ? data.currency.singular : data.currency.plural}`;
   const num = (value: number, onChange: (v: number) => void, max = 1_000_000) => (
-    <input type="number" min={0} max={max} value={value} onChange={(e) => onChange(clamp(e.target.valueAsNumber, max))} />
+    <NumberInput min={0} max={max} value={value} onChange={(v) => onChange(v)} />
   );
   const economy = draft.mode === "economy";
 

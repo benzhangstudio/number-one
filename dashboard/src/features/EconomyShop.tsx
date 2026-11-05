@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { type CurrencySettings, type EconomyResponse, SHOP_LIMITS, type ShopItemInput, type ShopItemView, formatMoney } from "../../../src/shared/economy";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { RoleSelect, Toggle } from "../components/pickers";
 
 type Guild = GuildDetails["guild"];
@@ -76,7 +77,7 @@ export function EconomyShop({
         <div className="mod-row">
           <label className="field">
             <span>Price</span>
-            <input type="number" min={1} value={d.price} onChange={(e) => set({ price: Math.max(1, Math.round(e.target.valueAsNumber) || 1) })} />
+            <NumberInput min={1} value={d.price} onChange={(v) => set({ price: v })} />
             <small className="muted">{formatMoney(cur, d.price, false)}</small>
           </label>
           <label className="field">
@@ -90,21 +91,21 @@ export function EconomyShop({
         <div className="mod-row">
           <label className="field">
             <span>Stock (empty = unlimited)</span>
-            <input
-              type="number"
+            <NumberInput
+              empty
               min={0}
-              value={d.stock ?? ""}
-              onChange={(e) => set({ stock: e.target.value === "" ? null : Math.max(0, Math.round(e.target.valueAsNumber) || 0) })}
+              value={d.stock}
+              onChange={(v) => set({ stock: v })}
             />
           </label>
           <label className="field">
             <span>Most per member (empty = no limit)</span>
-            <input
-              type="number"
+            <NumberInput
+              empty
               min={1}
               disabled={Boolean(d.roleId)}
-              value={d.roleId ? 1 : (d.maxPerMember ?? "")}
-              onChange={(e) => set({ maxPerMember: e.target.value === "" ? null : Math.max(1, Math.round(e.target.valueAsNumber) || 1) })}
+              value={d.roleId ? 1 : d.maxPerMember}
+              onChange={(v) => set({ maxPerMember: v })}
             />
             {d.roleId && <small className="muted">Roles can only be bought once.</small>}
           </label>

@@ -19,6 +19,7 @@ import {
 } from "../../../src/shared/automod";
 import { durationChoices, formatDuration } from "../../../src/shared/moderation";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { ChannelPicker, ChannelSelect, RolePicker, Toggle } from "../components/pickers";
 
 type Guild = GuildDetails["guild"];
@@ -77,7 +78,7 @@ export function AutomodPanel({ guild }: { guild: Guild }) {
   const number = (label: string, value: number, min: number, max: number, apply: (d: Draft, v: number) => void) => (
     <label className="field">
       <span>{label}</span>
-      <input type="number" min={min} max={max} value={value} onChange={(e) => set((d) => apply(d, clamp(e.target.valueAsNumber, min, max)))} />
+      <NumberInput min={min} max={max} value={value} onChange={(v) => set((d) => apply(d, v))} />
     </label>
   );
 
@@ -135,12 +136,11 @@ export function AutomodPanel({ guild }: { guild: Guild }) {
             <>
               <label className="field">
                 <span>Most mentions allowed in one message</span>
-                <input
-                  type="number"
+                <NumberInput
                   min={2}
                   max={50}
                   value={draft.mentions.limit}
-                  onChange={(e) => set((d) => { d.mentions.limit = clamp(e.target.valueAsNumber, 2, 50); })}
+                  onChange={(v) => set((d) => { d.mentions.limit = v; })}
                 />
               </label>
               <label className="check">
@@ -166,27 +166,27 @@ export function AutomodPanel({ guild }: { guild: Guild }) {
             <div className="mod-row">
               <label className="field">
                 <span>Capital letters (%)</span>
-                <input type="number" min={50} max={100} value={draft.caps.percent} onChange={(e) => set((d) => { d.caps.percent = clamp(e.target.valueAsNumber, 50, 100); })} />
+                <NumberInput min={50} max={100} value={draft.caps.percent} onChange={(v) => set((d) => { d.caps.percent = v; })} />
               </label>
               <label className="field">
                 <span>Only check messages with at least this many letters</span>
-                <input type="number" min={5} max={200} value={draft.caps.minLetters} onChange={(e) => set((d) => { d.caps.minLetters = clamp(e.target.valueAsNumber, 5, 200); })} />
+                <NumberInput min={5} max={200} value={draft.caps.minLetters} onChange={(v) => set((d) => { d.caps.minLetters = v; })} />
               </label>
             </div>
           ) : key === "emoji" ? (
             <label className="field">
               <span>Most emojis allowed in one message</span>
-              <input type="number" min={3} max={100} value={draft.emoji.max} onChange={(e) => set((d) => { d.emoji.max = clamp(e.target.valueAsNumber, 3, 100); })} />
+              <NumberInput min={3} max={100} value={draft.emoji.max} onChange={(v) => set((d) => { d.emoji.max = v; })} />
             </label>
           ) : key === "repeated" ? (
             <div className="mod-row">
               <label className="field">
                 <span>Same message this many times</span>
-                <input type="number" min={2} max={10} value={draft.repeated.count} onChange={(e) => set((d) => { d.repeated.count = clamp(e.target.valueAsNumber, 2, 10); })} />
+                <NumberInput min={2} max={10} value={draft.repeated.count} onChange={(v) => set((d) => { d.repeated.count = v; })} />
               </label>
               <label className="field">
                 <span>Within (seconds)</span>
-                <input type="number" min={5} max={600} value={draft.repeated.seconds} onChange={(e) => set((d) => { d.repeated.seconds = clamp(e.target.valueAsNumber, 5, 600); })} />
+                <NumberInput min={5} max={600} value={draft.repeated.seconds} onChange={(v) => set((d) => { d.repeated.seconds = v; })} />
               </label>
             </div>
           ) : null,
@@ -238,7 +238,6 @@ export function AutomodPanel({ guild }: { guild: Guild }) {
   );
 }
 
-const clamp = (n: number, min: number, max: number) => (Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : min);
 
 /** One filter: on/off, its own fields, then what happens and who it skips. */
 function RuleCard({

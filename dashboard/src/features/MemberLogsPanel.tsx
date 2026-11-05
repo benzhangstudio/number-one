@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { MemberLogResponse, MemberLogSettings } from "../../../src/shared/memberLogs";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { ChannelSelect, Toggle } from "../components/pickers";
 
 type Guild = GuildDetails["guild"];
@@ -74,12 +75,11 @@ export function MemberLogsPanel({ guild }: { guild: Guild }) {
           {draft.joins && (
             <label className="field memlog-days">
               <span>Mark accounts younger than this many days as new (0 = never)</span>
-              <input
-                type="number"
+              <NumberInput
                 min={0}
                 max={90}
                 value={draft.newAccountDays}
-                onChange={(e) => set((d) => { d.newAccountDays = Math.max(0, Math.min(90, Math.round(e.target.valueAsNumber) || 0)); })}
+                onChange={(v) => set((d) => { d.newAccountDays = v; })}
               />
             </label>
           )}

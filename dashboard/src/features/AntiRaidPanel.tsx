@@ -11,6 +11,7 @@ import {
 } from "../../../src/shared/antiRaid";
 import { durationChoices, formatDuration } from "../../../src/shared/moderation";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { ChannelSelect, RoleSelect, Toggle } from "../components/pickers";
 
 type Guild = GuildDetails["guild"];
@@ -19,7 +20,6 @@ type Draft = AntiRaidSettings;
 const TIMEOUT_CHOICES = durationChoices.filter((c) => c.minutes <= 28 * 24 * 60);
 const RAID_LENGTHS = [5, 10, 15, 30, 60, 120, 360, 720, MAX_RAID_MINUTES];
 
-const clamp = (n: number, min: number, max: number) => (Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : min);
 
 /** Dashboard section for Anti-raid: live status with start/end buttons, then the settings. */
 export function AntiRaidPanel({ guild }: { guild: Guild }) {
@@ -76,7 +76,7 @@ export function AntiRaidPanel({ guild }: { guild: Guild }) {
   const number = (label: string, value: number, min: number, max: number, apply: (d: Draft, v: number) => void) => (
     <label className="field">
       <span>{label}</span>
-      <input type="number" min={min} max={max} value={value} onChange={(e) => set((d) => apply(d, clamp(e.target.valueAsNumber, min, max)))} />
+      <NumberInput min={min} max={max} value={value} onChange={(v) => set((d) => apply(d, v))} />
     </label>
   );
 

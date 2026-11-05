@@ -11,6 +11,7 @@ import {
   rsvpChoices,
 } from "../../../src/shared/events";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { ChannelSelect, RolePicker, Toggle } from "../components/pickers";
 import { SearchSelect } from "../components/SearchSelect";
 import { DiscordText } from "../components/DiscordText";
@@ -417,12 +418,11 @@ function EventEditor({
         <div className="mod-row">
           <label className="field">
             <span>Most people going (0 = no limit)</span>
-            <input
-              type="number"
+            <NumberInput
               min={0}
               max={EVENT_LIMITS.maxAttendees}
               value={d.maxAttendees}
-              onChange={(e) => set((x) => { x.maxAttendees = Math.max(0, Math.min(EVENT_LIMITS.maxAttendees, Math.round(e.target.valueAsNumber) || 0)); })}
+              onChange={(v) => set((x) => { x.maxAttendees = v; })}
             />
           </label>
           <label className="field">

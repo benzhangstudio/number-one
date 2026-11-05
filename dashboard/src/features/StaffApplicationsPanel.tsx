@@ -16,6 +16,7 @@ import {
   appButtonStyles,
 } from "../../../src/shared/staffApplications";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { DiscordText } from "../components/DiscordText";
 import { EmojiInput, EmojiView } from "../components/emoji";
 import { ChannelSelect, RolePicker, Toggle } from "../components/pickers";
@@ -283,7 +284,6 @@ function SettingsEditor({ guild, initial, onSaved }: { guild: Guild; initial: St
     }
   };
 
-  const days = (v: string) => Math.max(0, Math.min(3650, Math.floor(Number(v) || 0)));
 
   return (
     <div className="rv-form">
@@ -323,15 +323,15 @@ function SettingsEditor({ guild, initial, onSaved }: { guild: Guild; initial: St
           <div className="mod-row">
             <label className="field">
               <span>Discord account at least (days old)</span>
-              <input type="number" min={0} max={3650} value={draft.minAccountAgeDays} onChange={(e) => set((d) => { d.minAccountAgeDays = days(e.target.value); })} />
+              <NumberInput min={0} max={3650} value={draft.minAccountAgeDays} onChange={(v) => set((d) => { d.minAccountAgeDays = v; })} />
             </label>
             <label className="field">
               <span>In the server at least (days)</span>
-              <input type="number" min={0} max={3650} value={draft.minMemberDays} onChange={(e) => set((d) => { d.minMemberDays = days(e.target.value); })} />
+              <NumberInput min={0} max={3650} value={draft.minMemberDays} onChange={(v) => set((d) => { d.minMemberDays = v; })} />
             </label>
             <label className="field">
               <span>Wait after a denial (days)</span>
-              <input type="number" min={0} max={365} value={draft.cooldownDays} onChange={(e) => set((d) => { d.cooldownDays = Math.min(365, days(e.target.value)); })} />
+              <NumberInput min={0} max={365} value={draft.cooldownDays} onChange={(v) => set((d) => { d.cooldownDays = v; })} />
             </label>
           </div>
           <small className="muted">0 means no limit. Members can only have one application per position waiting at a time.</small>

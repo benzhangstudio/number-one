@@ -9,6 +9,7 @@ import {
   transactionKinds,
 } from "../../../src/shared/economy";
 import { type GuildDetails, api } from "../api";
+import { NumberInput } from "../components/NumberInput";
 import { ChannelPicker, Toggle } from "../components/pickers";
 import { EconomyShop } from "./EconomyShop";
 
@@ -16,7 +17,6 @@ type Guild = GuildDetails["guild"];
 type Draft = EconomySettings;
 
 const n = (x: number) => x.toLocaleString("en-US");
-const clamp = (v: number, min: number, max: number) => (Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : min);
 const when = (ms: number) => new Date(ms).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 /** Custom emoji like <:gem:123> can't show as text on the website, so show their name instead. */
 const plainEmoji = (e: string) => e.replace(/<a?:(\w+):\d+>/g, ":$1:");
@@ -83,7 +83,7 @@ export function EconomyPanel({ guild }: { guild: Guild }) {
   };
 
   const num = (value: number, max: number, onChange: (v: number) => void, min = 0) => (
-    <input type="number" min={min} max={max} value={value} onChange={(e) => onChange(clamp(e.target.valueAsNumber, min, max))} />
+    <NumberInput min={min} max={max} value={value} onChange={(v) => onChange(v)} />
   );
 
   return (
