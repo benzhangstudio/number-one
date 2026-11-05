@@ -26,7 +26,7 @@ export const announcements: Announcement[] = [
     title: "BLACKPINK Poker",
     tag: "New",
     emoji: "🃏",
-    body: `Collect BLACKPINK photo cards, from Common to Mythic. Find it in the new **K-pop** section.
+    body: `Collect BLACKPINK photo cards: each member, all six ships like Chaelisa, and the whole group, from Common to Mythic. Find it in the new **K-pop** section.
 
 - Open packs with **/cards daily** and **/cards open**.
 - Build a team of 3 and **battle** Number One or your friends, Pokémon-style.

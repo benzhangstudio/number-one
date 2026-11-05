@@ -10,8 +10,8 @@ import { type CardGroup, cardGroups, photoKeyFromFileName } from "./cardCatalog.
  * - With Economy: packs cost the server's Economy currency, duplicates sell for it, and battle wins pay it.
  * - Cards only: no money at all. Members get a free daily pack and play just for fun.
  *
- * Every card is made from the catalog (src/shared/cardCatalog.ts): seven versions for each BLACKPINK member,
- * from Common to Mythic. Stats come from a hash of the card's ID, so they never change between restarts.
+ * Every card is made from the catalog (src/shared/cardCatalog.ts): seven versions, from Common to Mythic, for each
+ * BLACKPINK member, each ship (like Chaelisa) and the whole group. Stats come from a hash of the card's ID, so they never change between restarts.
  * Each card shows a photo the bot's developer uploaded; cards without a photo aren't in packs yet.
  */
 
@@ -74,6 +74,10 @@ export interface Card {
   groupName: string;
   gen: CardGroup["gen"];
   memberName: string;
+  /** "member", "ship" or "group". */
+  kind: "member" | "ship" | "group";
+  /** Who's on a ship or group card, like "Rosé & Lisa". Empty for members. */
+  about: string;
   version: string;
   rarity: Rarity;
   type: CardType;
@@ -109,10 +113,13 @@ function makeCards() {
           groupName: g.name,
           gen: g.gen,
           memberName: m.name,
+          kind: m.kind,
+          about: m.about,
           version: v.name,
           rarity: v.rarity,
           type: cardTypes[h % cardTypes.length],
-          hp: Math.round(between(r.hp, h >>> 3) / 5) * 5,
+          // Ship and group cards are a little sturdier: more people, more HP.
+          hp: Math.round(between(r.hp, h >>> 3) / 5) * 5 + (m.kind === "ship" ? 10 : m.kind === "group" ? 20 : 0),
           power: between(r.power, h >>> 11),
           color: g.color,
         });

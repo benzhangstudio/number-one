@@ -21,7 +21,13 @@ With Economy needs the Economy module. While Economy is off, the game runs as Ca
 
 ## The cards
 
-There are **28 cards**: seven for each of Jisoo, Jennie, Rosé and Lisa.
+There are **77 cards** in three piles, each with seven cards:
+
+| Pile | Who |
+| --- | --- |
+| 👤 Members | Jisoo, Jennie, Rosé and Lisa |
+| 💞 Ships | Jensoo (Jisoo & Jennie), Chaesoo (Jisoo & Rosé), Lisoo (Jisoo & Lisa), Chaennie (Jennie & Rosé), Jenlisa (Jennie & Lisa) and Chaelisa (Rosé & Lisa) |
+| 👯 Group | BLACKPINK, all four together |
 
 | Card | Rarity |
 | --- | --- |
@@ -31,7 +37,7 @@ There are **28 cards**: seven for each of Jisoo, Jennie, Rosé and Lisa.
 | Legend | ★★★★ Legendary |
 | Pink Crown | ★★★★★ Mythic |
 
-Each card shows a photo, the member's name, HP, a type and a move with its power.
+Each card shows a photo, the name, HP, a type and a move with its power. Ship cards have 10 more HP and the group card 20 more.
 
 ## Packs
 

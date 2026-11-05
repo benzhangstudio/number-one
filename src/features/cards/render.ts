@@ -154,7 +154,8 @@ async function drawCard(ctx: SKRSContext2D, card: Card) {
   // Version and number.
   ctx.font = `400 14px ${FONT}`;
   ctx.fillStyle = MUTED;
-  ctx.fillText(fit(ctx, card.version, 230), 24, 400);
+  const who = card.kind === "group" ? "Group" : card.about;
+  ctx.fillText(fit(ctx, who ? `${who} · ${card.version}` : card.version, 230), 24, 400);
   ctx.textAlign = "right";
   ctx.fillText(`#${String(card.number).padStart(4, "0")} / ${CARD_COUNT}`, CARD_W - 24, 400);
   ctx.textAlign = "left";

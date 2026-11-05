@@ -3923,11 +3923,21 @@ select.chip-add {
   color: #3ba55d;
   font-weight: 700;
 }
+.kc-piles {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 12px 12px;
+}
+.kc-pile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .kc-members {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 10px;
-  padding: 4px 12px 12px;
 }
 .kc-member {
   display: flex;
@@ -3956,10 +3966,12 @@ select.chip-add {
 .kc-member-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px 10px;
+}
+.kc-member-actions .link {
+  margin: 0;
 }
 .kc-versions {
-  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
