@@ -127,6 +127,27 @@ export function CardsPanel({ guild }: { guild: Guild }) {
 
       {economy && (
         <section className="sub">
+          <div className="sub-head"><strong>💰 Coins for pulling cards</strong><small className="muted">Every card from a pack or the daily pack pays a random amount between these, by rarity.</small></div>
+          <Toggle label="Pay coins for pulled cards" checked={draft.pullRewards.enabled} onChange={(v) => set((d) => { d.pullRewards.enabled = v; })} />
+          {draft.pullRewards.enabled && (
+            <div className="kc-sell">
+              {rarities.map((r) => (
+                <label key={r} className="field">
+                  <span style={{ color: rarityInfo[r].color }}>{"★".repeat(rarityInfo[r].stars)} {rarityInfo[r].name}</span>
+                  <span className="kc-range">
+                    {num(draft.pullRewards[r].min, (v) => set((d) => { d.pullRewards[r].min = v; }))}
+                    <small className="muted">to</small>
+                    {num(draft.pullRewards[r].max, (v) => set((d) => { d.pullRewards[r].max = v; }))}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {economy && (
+        <section className="sub">
           <div className="sub-head"><strong>💸 What cards sell for</strong><small className="muted">Members sell with <code>/cards sell</code> and <code>/cards sell-duplicates</code>.</small></div>
           <div className="kc-sell">
             {rarities.map((r) => (

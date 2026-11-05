@@ -36,6 +36,7 @@ import {
   piles,
   rarities,
   rarityInfo,
+  rollPullReward,
   typeInfo,
 } from "../../shared/cards.js";
 import { battle, openPack, rivalTeam, shortLog, teamOf } from "./game.js";
@@ -99,16 +100,30 @@ async function autocomplete(interaction: AutocompleteInteraction) {
   return interaction.respond(searchCards(ownedList(interaction.guildId, interaction.user.id), typed));
 }
 
+/**
+ * Pays the coins for pulled cards (With Economy mode, when pull rewards are on).
+ * Returns the line to show under the pack, or "" when nothing was paid.
+ */
+async function payPulls(guildId: string, userId: string, s: CardSettings, mode: CardMode, list: Card[]) {
+  if (mode !== "economy" || !s.pullRewards.enabled || !list.length) return { total: 0, note: "", balance: null as number | null };
+  const total = list.reduce((sum, c) => sum + rollPullReward(s, c.rarity), 0);
+  if (total <= 0) return { total: 0, note: "", balance: null };
+  const eco = await economyOf(guildId);
+  const { credit } = await import("../economy/store.js");
+  const { balance } = credit(guildId, userId, total, "cards", { startingBalance: eco.startingBalance });
+  return { total, note: `💰 You also earned ${formatMoney(eco.currency, total)} from these cards.`, balance };
+}
+
 /* ------------------------------------------------------------ replies */
 
-async function packReply(owner: string, title: string, list: Card[], before: Map<string, number>, footer: string) {
+async function packReply(owner: string, title: string, list: Card[], before: Map<string, number>, footer: string, note = "") {
   const png = await renderRow(list);
   const lines = list.map((c) => `${line(c)}${before.has(c.id) ? "" : " · **NEW!**"}`);
   const best = list.reduce((a, b) => (rarities.indexOf(b.rarity) > rarities.indexOf(a.rarity) ? b : a));
   const embed = new EmbedBuilder()
     .setColor(Number.parseInt(rarityInfo[best.rarity].color.slice(1), 16))
     .setTitle(title)
-    .setDescription(`<@${owner}> got:\n${lines.join("\n")}`)
+    .setDescription(`<@${owner}> got:\n${lines.join("\n")}${note ? `\n\n${note}` : ""}`)
     .setImage("attachment://pack.png")
     .setFooter({ text: footer });
   return { embeds: [embed], files: [new AttachmentBuilder(png, { name: "pack.png" })], allowedMentions: { parse: [] as never[] } };
@@ -127,7 +142,7 @@ async function cardReply(card: Card, note = "") {
 
 /* ------------------------------------------------------------ subcommands */
 
-async function daily(i: ChatInputCommandInteraction<"cached">, s: CardSettings) {
+async function daily(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
   if (!s.daily) return i.reply("The daily pack is switched off in this server.");
   const p = store.playerOf(i.guildId, i.user.id);
   if (p.lastDailyAt && Date.now() - p.lastDailyAt < DAILY_MS) {
@@ -138,7 +153,8 @@ async function daily(i: ChatInputCommandInteraction<"cached">, s: CardSettings) 
   await i.deferReply();
   const before = store.collectionOf(i.guildId, i.user.id);
   if (!store.claimDaily(i.guildId, i.user.id, DAILY_MS, list.map((c) => c.id))) return i.editReply("You already opened today's pack.");
-  return i.editReply(await packReply(i.user.id, "🎁 Daily pack", list, before, "Come back in 20 hours for another one."));
+  const paid = await payPulls(i.guildId, i.user.id, s, mode, list);
+  return i.editReply(await packReply(i.user.id, "🎁 Daily pack", list, before, "Come back in 20 hours for another one.", paid.note));
 }
 
 async function open(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
@@ -153,8 +169,16 @@ async function open(i: ChatInputCommandInteraction<"cached">, s: CardSettings, m
   if (!r.ok) return i.reply({ content: `You need ${formatMoney(eco.currency, price)} for a ${packInfo[kind].name.toLowerCase()}. You have ${formatMoney(eco.currency, r.balance)}.`, allowedMentions: { parse: [] } });
   await i.deferReply();
   const name = `${packInfo[kind].emoji} ${packInfo[kind].name}`;
-  return i.editReply(await packReply(i.user.id, name, list, before, `Paid ${price.toLocaleString("en-US")} · Balance: ${r.balance.toLocaleString("en-US")}`));
+  const paid = await payPulls(i.guildId, i.user.id, s, mode, list);
+  const balance = paid.balance ?? r.balance;
+  return i.editReply(await packReply(i.user.id, name, list, before, `Paid ${price.toLocaleString("en-US")} · Balance: ${balance.toLocaleString("en-US")}`, paid.note));
 }
+
+const pullRange = (s: CardSettings, r: Rarity) => {
+  const { min, max } = s.pullRewards[r];
+  const [lo, hi] = [Math.min(min, max), Math.max(min, max)].map((x) => x.toLocaleString("en-US"));
+  return lo === hi ? lo : `${lo}–${hi}`;
+};
 
 async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
   const ready = activeCount();
@@ -166,6 +190,9 @@ async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, 
         `${packInfo.standard.emoji} **Standard pack** · ${formatMoney(eco.currency, s.prices.standard)}\n${packInfo.standard.about}`,
         `${packInfo.premium.emoji} **Premium pack** · ${formatMoney(eco.currency, s.prices.premium)}\n${packInfo.premium.about}`,
         s.daily ? `${packInfo.daily.emoji} **Daily pack** · free\n${packInfo.daily.about}` : "",
+        s.pullRewards.enabled
+          ? `💰 **Every card you pull pays coins**\n${rarities.map((r) => `${rarityInfo[r].name}: ${pullRange(s, r)}`).join(" · ")}`
+          : "",
         "Open one with `/cards open`. Sell duplicates with `/cards sell-duplicates`.",
       ]
         .filter(Boolean)
@@ -475,7 +502,7 @@ const cardsCommand: SlashCommand = {
     const s = await settingsOf(interaction.guildId);
     const mode = await modeOf(interaction.guildId, s);
     const sub = interaction.options.getSubcommand();
-    if (sub === "daily") return daily(interaction, s);
+    if (sub === "daily") return daily(interaction, s, mode);
     if (sub === "open") return open(interaction, s, mode);
     if (sub === "packs") return packs(interaction, s, mode);
     if (sub === "collection") return collection(interaction);

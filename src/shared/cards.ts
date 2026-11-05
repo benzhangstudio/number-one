@@ -152,6 +152,17 @@ export const packInfo: Record<PackKind, { name: string; emoji: string; size: num
 
 const price = z.number().int().min(0).max(1_000_000);
 
+/** A random coin amount between min and max (swapped round if entered backwards). */
+const coinRange = (min: number, max: number) => z.object({ min: price.default(min), max: price.default(max) }).prefault({});
+
+/** Rolls the coins one pulled card is worth. */
+export function rollPullReward(s: CardSettings, rarity: Rarity) {
+  const { min, max } = s.pullRewards[rarity];
+  const low = Math.min(min, max);
+  const high = Math.max(min, max);
+  return low + Math.floor(Math.random() * (high - low + 1));
+}
+
 export const cardModes = ["economy", "cards"] as const;
 export type CardMode = (typeof cardModes)[number];
 
@@ -173,6 +184,17 @@ export const cardSettings = z.object({
       epic: price.default(75),
       legendary: price.default(300),
       mythic: price.default(1500),
+    })
+    .prefault({}),
+  /** Coins paid for every card pulled (packs, the daily pack, battle bonus cards), a random amount by rarity (With Economy mode). */
+  pullRewards: z
+    .object({
+      enabled: z.boolean().default(true),
+      common: coinRange(1, 5),
+      rare: coinRange(5, 15),
+      epic: coinRange(15, 40),
+      legendary: coinRange(50, 120),
+      mythic: coinRange(250, 500),
     })
     .prefault({}),
   /** A free pack of 3 cards every 20 hours. */

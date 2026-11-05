@@ -14,7 +14,7 @@ Collect BLACKPINK photo cards from Common to Mythic. Open packs, build a team of
 
 | Mode | How it works |
 | --- | --- |
-| 💰 With Economy | Packs cost your server's [Economy](/docs/economy) currency, duplicates sell for it, and beating Number One pays a reward. Members can bet on battles against each other. |
+| 💰 With Economy | Packs cost your server's [Economy](/docs/economy) currency, every card pulled pays a few coins (more for rarer cards), duplicates sell for it, and beating Number One pays a reward. Members can bet on battles against each other. |
 | 🃏 Cards only | No money at all. Members get a free daily pack, and a bonus card for beating Number One (a few times a day). |
 
 With Economy needs the Economy module. While Economy is off, the game runs as Cards only.
@@ -48,6 +48,18 @@ Packs are a gacha: for each card, the pack rolls a rarity using its odds, then p
 | 🎁 Daily | 3 | Free every 20 hours, in both modes. |
 | 📦 Standard | 5 | With Economy. 200 by default. |
 | 💝 Premium | 5 | With Economy. 750 by default. Much better odds, and at least one Epic or better. |
+
+### Coins for pulling cards
+
+With Economy, every card pulled from a pack (including the daily pack) pays a random amount of coins based on its rarity. You can change each range, or turn it off, on the dashboard.
+
+| Rarity | Coins by default |
+| --- | --- |
+| Common | 1–5 |
+| Rare | 5–15 |
+| Epic | 15–40 |
+| Legendary | 50–120 |
+| Mythic | 250–500 |
 
 ## Battles
 
