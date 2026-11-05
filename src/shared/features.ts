@@ -261,9 +261,9 @@ export const forumsFeature = defineFeature({
 
 export const cardsFeature = defineFeature({
   id: "cards",
-  name: "K-pop Cards",
+  name: "BLACKPINK Cards",
   icon: "🃏",
-  description: "Collect K-pop photo cards from 2nd gen to today, starring BLACKPINK. Open packs, build a team and battle Pokémon-style, and trade with friends. Works with Economy or on its own.",
+  description: "Collect BLACKPINK photo cards from Common to Mythic. Open packs, build a team and battle Pokémon-style, and trade with friends. Works with Economy or on its own.",
   category: "engagement",
   recommended: true,
   settings: cardSettings,

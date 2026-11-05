@@ -23,12 +23,12 @@ export const announcements: Announcement[] = [
   {
     id: "2026-11-04-cards",
     date: "2026-11-04",
-    title: "K-pop Cards",
+    title: "BLACKPINK Cards",
     tag: "New",
     emoji: "🃏",
-    body: `Collect K-pop cards from 2nd gen to today, starring **BLACKPINK**. Find it in **Engagement & Fun**.
+    body: `Collect BLACKPINK photo cards, from Common to Mythic. Find it in **Engagement & Fun**.
 
-- Open packs with **/cards daily** and **/cards open**, from Common to Mythic.
+- Open packs with **/cards daily** and **/cards open**.
 - Build a team of 3 and **battle** Number One or your friends, Pokémon-style.
 - **Trade** and gift cards, and play **With Economy** or **Cards only**.`,
   },

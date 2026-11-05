@@ -1,12 +1,12 @@
-# K-pop Cards
+# BLACKPINK Cards
 
 **Category:** 🎉 Engagement & Fun · **Recommended:** yes
 
-Collect K-pop photo cards from 2nd gen to today, starring BLACKPINK. Open packs, build a team of 3 and battle Pokémon-style, and trade with friends.
+Collect BLACKPINK photo cards from Common to Mythic. Open packs, build a team of 3 and battle Pokémon-style, and trade with friends.
 
 ## Quick setup
 
-1. Switch on **K-pop Cards** on the dashboard.
+1. Switch on **BLACKPINK Cards** on the dashboard.
 2. Pick a mode: **With Economy** or **Cards only**.
 3. Click **Save changes**. Members can start with `/cards daily`.
 
@@ -21,19 +21,17 @@ With Economy needs the Economy module. While Economy is off, the game runs as Ca
 
 ## The cards
 
-- **57 groups, 328 members, 1,972 cards**, from 2nd gen (TVXQ!, BIGBANG, Girls' Generation…) to 5th gen (RIIZE, ILLIT, BABYMONSTER…). Lineups are the current or final ones.
-- Every member has six cards: **Debut Day** and **Practice Room** (Common), **Comeback** and **Live Stage** (Rare), **Award Night** (Epic) and **Legend** (Legendary).
-- **BLACKPINK** members also have a **Pink Crown** card, the only Mythics in the game.
-- Each card shows a photo, the member's name and group, HP, a type and a move with its power.
-- Cards appear in packs once they have a photo. The number of ready cards is shown on the dashboard and in `/cards packs`.
+There are **28 cards**: seven for each of Jisoo, Jennie, Rosé and Lisa.
 
-| Rarity | Stars |
+| Card | Rarity |
 | --- | --- |
-| Common | ★ |
-| Rare | ★★ |
-| Epic | ★★★ |
-| Legendary | ★★★★ |
-| Mythic | ★★★★★ |
+| Debut Day, Practice Room | ★ Common |
+| Comeback, Live Stage | ★★ Rare |
+| Award Night | ★★★ Epic |
+| Legend | ★★★★ Legendary |
+| Pink Crown | ★★★★★ Mythic |
+
+Each card shows a photo, the member's name, HP, a type and a move with its power.
 
 ## Packs
 
@@ -42,9 +40,6 @@ With Economy needs the Economy module. While Economy is off, the game runs as Ca
 | 🎁 Daily | 3 | Free every 20 hours, in both modes. |
 | 📦 Standard | 5 | With Economy. 200 by default. |
 | 💝 Premium | 5 | With Economy. 750 by default. Much better odds, and at least one Epic or better. |
-| 🌟 Featured | 5 | With Economy. 500 by default. Every card is from the featured group (BLACKPINK by default). |
-
-You can pick which generations are in packs. BLACKPINK is always in.
 
 ## Battles
 
@@ -62,7 +57,7 @@ Each member has a **team of 3**, picked with `/cards team`. Empty spots are fill
 | `/cards daily` | Opens your free daily pack. |
 | `/cards open pack` | Buys and opens a pack (With Economy). |
 | `/cards packs` | Shows the packs and prices. |
-| `/cards collection [member] [group] [page]` | Shows a collection. |
+| `/cards collection [member] [page]` | Shows a collection. |
 | `/cards view card` | Shows a card up close. |
 | `/cards team [first] [second] [third]` | Shows or sets your battle team. |
 | `/cards battle [opponent] [bet]` | Battles Number One, or challenges a member. |
@@ -78,11 +73,9 @@ Each member has a **team of 3**, picked with `/cards team`. Empty spots are fill
 | --- | --- |
 | Mode | With Economy |
 | Daily pack | On |
-| Featured pack group | BLACKPINK |
-| Pack prices | 200 / 750 / 500 |
+| Pack prices | Standard 200, Premium 750 |
 | Sell prices | Common 5, Rare 20, Epic 75, Legendary 300, Mythic 1,500 |
 | Battles | On, 40 per win, 5 rewarded wins a day, bets on |
 | Trading and gifts | On |
-| Generations | All |
 
 Collections are per server. Deleting the server's data deletes them too.

@@ -1,10 +1,8 @@
 import { z } from "zod";
-import { type CardGroup, cardGroups, generationNames, groupById, photoKeyFromFileName } from "./cardCatalog.js";
-
-export { generationNames };
+import { type CardGroup, cardGroups, photoKeyFromFileName } from "./cardCatalog.js";
 
 /**
- * The K-pop card game: shapes shared by the bot and the dashboard.
+ * The BLACKPINK card game: shapes shared by the bot and the dashboard.
  * Members open packs, collect cards, build a team of 3 and battle Number One or each other, Pokémon-style:
  * each card has a type, HP and a move, and types beat each other in a cycle. Cards can be traded and gifted.
  *
@@ -12,9 +10,9 @@ export { generationNames };
  * - With Economy: packs cost the server's Economy currency, duplicates sell for it, and battle wins pay it.
  * - Cards only: no money at all. Members get a free daily pack and play just for fun.
  *
- * Every card is made from the catalog (src/shared/cardCatalog.ts): six versions per member, plus a Mythic
- * for BLACKPINK. Stats come from a hash of the card's ID, so they never change between restarts. Each card
- * shows a real photo the bot's developer uploaded; cards without a photo aren't in packs yet.
+ * Every card is made from the catalog (src/shared/cardCatalog.ts): seven versions for each BLACKPINK member,
+ * from Common to Mythic. Stats come from a hash of the card's ID, so they never change between restarts.
+ * Each card shows a photo the bot's developer uploaded; cards without a photo aren't in packs yet.
  */
 
 /* ------------------------------------------------------------ rarities, types and versions */
@@ -136,21 +134,19 @@ export const cardScore = (c: Card) => c.hp + c.power * 3;
 
 /* ------------------------------------------------------------ packs */
 
-export const packKinds = ["standard", "premium", "featured", "daily"] as const;
+export const packKinds = ["standard", "premium", "daily"] as const;
 export type PackKind = (typeof packKinds)[number];
 
 /** Chance of each rarity per card, in percent. */
 export const packOdds: Record<PackKind, Record<Rarity, number>> = {
   standard: { common: 70, rare: 22, epic: 6.4, legendary: 1.5, mythic: 0.1 },
   premium: { common: 40, rare: 35, epic: 18, legendary: 6, mythic: 1 },
-  featured: { common: 55, rare: 28, epic: 12, legendary: 4.5, mythic: 0.5 },
   daily: { common: 70, rare: 22, epic: 6.4, legendary: 1.5, mythic: 0.1 },
 };
 
 export const packInfo: Record<PackKind, { name: string; emoji: string; size: number; about: string }> = {
-  standard: { name: "Standard pack", emoji: "📦", size: 5, about: "5 cards from every group." },
+  standard: { name: "Standard pack", emoji: "📦", size: 5, about: "5 cards." },
   premium: { name: "Premium pack", emoji: "💝", size: 5, about: "5 cards with much better odds. At least one Epic or better." },
-  featured: { name: "Featured pack", emoji: "🌟", size: 5, about: "5 cards, all from the featured group." },
   daily: { name: "Daily pack", emoji: "🎁", size: 3, about: "3 free cards every day." },
 };
 
@@ -169,11 +165,8 @@ export const cardSettings = z.object({
     .object({
       standard: price.default(200),
       premium: price.default(750),
-      featured: price.default(500),
     })
     .prefault({}),
-  /** The group in the Featured pack. */
-  featuredGroup: z.string().default("blackpink"),
   /** What one card sells for, by rarity (With Economy mode). */
   sell: z
     .object({
@@ -197,23 +190,15 @@ export const cardSettings = z.object({
     })
     .prefault({}),
   trading: z.boolean().default(true),
-  /** Which generations' groups are in packs. */
-  generations: z
-    .array(z.union([z.literal(2), z.literal(3), z.literal(4), z.literal(5)]))
-    .min(1, "Keep at least one generation")
-    .default([2, 3, 4, 5]),
 });
 export type CardSettings = z.infer<typeof cardSettings>;
 
 /** The member a card belongs to, like "blackpink.jennie": a photo uploaded for it is used for all their cards. */
 export const memberKey = (cardId: string) => cardId.split(".").slice(0, 2).join(".");
 
-/** The cards packs can give in a server: only cards with a photo, from its generations (or the featured group). */
-export function packPool(s: CardSettings, kind: PackKind, hasPhoto: (c: Card) => boolean) {
-  const featured = groupById.has(s.featuredGroup) ? s.featuredGroup : "blackpink";
-  if (kind === "featured") return cards.filter((c) => c.groupId === featured && hasPhoto(c));
-  // BLACKPINK is always in packs, even when 3rd gen is switched off.
-  return cards.filter((c) => (s.generations.includes(c.gen) || c.groupId === "blackpink") && hasPhoto(c));
+/** The cards packs can give: only cards with a photo. */
+export function packPool(_s: CardSettings, _kind: PackKind, hasPhoto: (c: Card) => boolean) {
+  return cards.filter(hasPhoto);
 }
 
 /* ------------------------------------------------------------ dashboard */

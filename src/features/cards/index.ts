@@ -35,14 +35,13 @@ import {
   rarityInfo,
   typeInfo,
 } from "../../shared/cards.js";
-import { cardGroups, groupById } from "../../shared/cardCatalog.js";
 import { battle, openPack, rivalTeam, shortLog, teamOf } from "./game.js";
 import { deletePhoto, hasPhoto, isPhotoKey, loadPhotoList, photoFile, photoList, readyCount, savePhoto, setCredit } from "./photos.js";
 import { renderCard, renderRow } from "./render.js";
 import * as store from "./store.js";
 
 /**
- * K-pop Cards: /cards to open packs, collect, build a team, battle, trade and gift.
+ * BLACKPINK Cards: /cards to open packs, collect, build a team, battle, trade and gift.
  * With Economy, packs cost the server's currency and duplicates sell for it; in Cards only mode there's
  * no money, just a free daily pack (and a bonus card for beating Number One).
  * Photos are uploaded by the bot's developer on the Developer page (registerCardsDeveloperApi below).
@@ -89,14 +88,6 @@ async function autocomplete(interaction: AutocompleteInteraction) {
   if (!interaction.inCachedGuild()) return interaction.respond([]);
   const focused = interaction.options.getFocused(true);
   const typed = String(focused.value);
-  if (focused.name === "group") {
-    return interaction.respond(
-      cardGroups
-        .filter((g) => g.name.toLowerCase().includes(typed.toLowerCase()))
-        .slice(0, 25)
-        .map((g) => ({ name: g.name, value: g.id })),
-    );
-  }
   const sub = interaction.options.getSubcommand();
   if (sub === "view") return interaction.respond(searchCards(cards.filter(hasPhoto).map((card) => ({ card })), typed));
   if (sub === "trade" && focused.name === "get") {
@@ -159,21 +150,19 @@ async function open(i: ChatInputCommandInteraction<"cached">, s: CardSettings, m
   const r = store.buyPack(i.guildId, i.user.id, price, list.map((c) => c.id), eco.startingBalance);
   if (!r.ok) return i.reply({ content: `You need ${formatMoney(eco.currency, price)} for a ${packInfo[kind].name.toLowerCase()}. You have ${formatMoney(eco.currency, r.balance)}.`, allowedMentions: { parse: [] } });
   await i.deferReply();
-  const name = kind === "featured" ? `${packInfo[kind].emoji} ${groupById.get(s.featuredGroup)?.name ?? "BLACKPINK"} pack` : `${packInfo[kind].emoji} ${packInfo[kind].name}`;
+  const name = `${packInfo[kind].emoji} ${packInfo[kind].name}`;
   return i.editReply(await packReply(i.user.id, name, list, before, `Paid ${price.toLocaleString("en-US")} · Balance: ${r.balance.toLocaleString("en-US")}`));
 }
 
 async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
   const ready = readyCount();
-  const embed = new EmbedBuilder().setColor(PINK).setTitle("🃏 K-pop Cards");
+  const embed = new EmbedBuilder().setColor(PINK).setTitle("🖤💗 BLACKPINK Cards");
   if (mode === "economy") {
     const eco = await economyOf(i.guildId);
-    const featured = groupById.get(s.featuredGroup)?.name ?? "BLACKPINK";
     embed.setDescription(
       [
         `${packInfo.standard.emoji} **Standard pack** · ${formatMoney(eco.currency, s.prices.standard)}\n${packInfo.standard.about}`,
         `${packInfo.premium.emoji} **Premium pack** · ${formatMoney(eco.currency, s.prices.premium)}\n${packInfo.premium.about}`,
-        `${packInfo.featured.emoji} **${featured} pack** · ${formatMoney(eco.currency, s.prices.featured)}\n5 cards, all ${featured}.`,
         s.daily ? `${packInfo.daily.emoji} **Daily pack** · free\n${packInfo.daily.about}` : "",
         "Open one with `/cards open`. Sell duplicates with `/cards sell-duplicates`.",
       ]
@@ -191,22 +180,18 @@ async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, 
 
 async function collection(i: ChatInputCommandInteraction<"cached">) {
   const user = i.options.getUser("member") ?? i.user;
-  const groupId = i.options.getString("group");
-  const list = ownedList(i.guildId, user.id)
-    .filter(({ card }) => !groupId || card.groupId === groupId)
-    .sort((a, b) => a.card.number - b.card.number);
+  const list = ownedList(i.guildId, user.id).sort((a, b) => a.card.number - b.card.number);
   const self = user.id === i.user.id;
   if (!list.length) {
-    return i.reply({ content: groupId ? `No ${groupById.get(groupId)?.name ?? ""} cards yet.` : self ? "You don't have any cards yet. Try `/cards daily`!" : `<@${user.id}> doesn't have any cards yet.`, allowedMentions: { parse: [] } });
+    return i.reply({ content: self ? "You don't have any cards yet. Try `/cards daily`!" : `<@${user.id}> doesn't have any cards yet.`, allowedMentions: { parse: [] } });
   }
   const pages = Math.ceil(list.length / PAGE);
   const page = Math.min(i.options.getInteger("page") ?? 1, pages);
-  const unique = ownedList(i.guildId, user.id).length;
   const embed = new EmbedBuilder()
     .setColor(PINK)
-    .setAuthor({ name: `${user.displayName}'s collection${groupId ? ` · ${groupById.get(groupId)?.name}` : ""}`, iconURL: user.displayAvatarURL({ size: 64 }) })
+    .setAuthor({ name: `${user.displayName}'s collection`, iconURL: user.displayAvatarURL({ size: 64 }) })
     .setDescription(list.slice((page - 1) * PAGE, page * PAGE).map(({ card, qty }) => line(card, qty)).join("\n"))
-    .setFooter({ text: `${unique} of ${CARD_COUNT} cards · Page ${page} of ${pages} · See one with /cards view` });
+    .setFooter({ text: `${list.length} of ${CARD_COUNT} cards · Page ${page} of ${pages} · See one with /cards view` });
   return i.reply({ embeds: [embed], allowedMentions: { parse: [] } });
 }
 
@@ -371,7 +356,7 @@ const cardOpt = (o: import("discord.js").SlashCommandStringOption, name: string,
 const cardsCommand: SlashCommand = {
   data: new SlashCommandBuilder()
     .setName("cards")
-    .setDescription("Collect K-pop cards, build a team and battle.")
+    .setDescription("Collect BLACKPINK cards, build a team and battle.")
     .setContexts(0)
     .addSubcommand((c) => c.setName("daily").setDescription("Open your free daily pack"))
     .addSubcommand((c) =>
@@ -383,7 +368,7 @@ const cardsCommand: SlashCommand = {
             .setName("pack")
             .setDescription("Which pack")
             .setRequired(true)
-            .addChoices({ name: "📦 Standard pack", value: "standard" }, { name: "💝 Premium pack", value: "premium" }, { name: "🌟 Featured pack", value: "featured" }),
+            .addChoices({ name: "📦 Standard pack", value: "standard" }, { name: "💝 Premium pack", value: "premium" }),
         ),
     )
     .addSubcommand((c) => c.setName("packs").setDescription("See the packs and what they cost"))
@@ -392,7 +377,6 @@ const cardsCommand: SlashCommand = {
         .setName("collection")
         .setDescription("See your cards (or someone else's)")
         .addUserOption((o) => o.setName("member").setDescription("Whose collection (yours if empty)"))
-        .addStringOption((o) => o.setName("group").setDescription("Only this group").setAutocomplete(true))
         .addIntegerOption((o) => o.setName("page").setDescription("Which page").setMinValue(1)),
     )
     .addSubcommand((c) => c.setName("view").setDescription("Look at a card up close").addStringOption((o) => cardOpt(o, "card", "Which card")))
@@ -640,7 +624,6 @@ export const cardsBot: BotFeature = {
       const parsed = cardSettings.safeParse(request.body);
       if (!parsed.success) return reply.code(400).send({ error: parsed.error.issues[0]?.message ?? "Check the form and try again." });
       const s = parsed.data;
-      if (!groupById.has(s.featuredGroup)) s.featuredGroup = "blackpink";
       const state = await getFeatureState(guild.id, cardsFeature);
       await saveFeatureState(guild.id, cardsFeature, { enabled: state.enabled, settings: s }, request.session!.userId);
       return respond(guild);

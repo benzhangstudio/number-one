@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import { type SKRSContext2D, GlobalFonts, createCanvas } from "@napi-rs/canvas";
-import { CARD_COUNT, type Card, cardTypes, generationNames, rarityInfo, typeInfo } from "../../shared/cards.js";
+import { CARD_COUNT, type Card, cardTypes, rarityInfo, typeInfo } from "../../shared/cards.js";
 import { photoImage, photoOf } from "./photos.js";
 
 /**
@@ -154,7 +154,7 @@ async function drawCard(ctx: SKRSContext2D, card: Card) {
   // Version and number.
   ctx.font = `400 14px ${FONT}`;
   ctx.fillStyle = MUTED;
-  ctx.fillText(fit(ctx, `${card.version} · ${generationNames[card.gen]}`, 230), 24, 400);
+  ctx.fillText(fit(ctx, card.version, 230), 24, 400);
   ctx.textAlign = "right";
   ctx.fillText(`#${String(card.number).padStart(4, "0")} / ${CARD_COUNT}`, CARD_W - 24, 400);
   ctx.textAlign = "left";

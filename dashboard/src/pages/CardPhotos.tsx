@@ -95,9 +95,10 @@ export function CardPhotos() {
         <span className="pill">{data.ready.toLocaleString("en-US")} of {data.total.toLocaleString("en-US")} cards ready</span>
       </div>
       <p className="muted small">
-        Only cards with a photo appear in packs. Name each file after the group and member, like <code>blackpink-jennie.jpg</code> (used on all of
-        Jennie's cards), or add a version for one card, like <code>blackpink-jennie-legend.jpg</code>. Spaces, dashes and underscores all work. Photos
-        are cropped to a square, keeping the top part where faces usually are.
+        Only cards with a photo appear in packs, so 4 photos (one per member) are enough to start. Name the files <code>jisoo.jpg</code>,{" "}
+        <code>jennie.jpg</code>, <code>rose.jpg</code> and <code>lisa.jpg</code>. Each one is used on all of that member's cards. To give one card its
+        own photo, add the card's name, like <code>jennie-legend.jpg</code> or <code>lisa-pink-crown.jpg</code>. Photos are cropped to a square, keeping
+        the top part where faces usually are.
       </p>
 
       <div className="kc-upload">

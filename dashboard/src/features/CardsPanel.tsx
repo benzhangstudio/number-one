@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { type CardSettings, type CardsResponse, packInfo, rarities, rarityInfo } from "../../../src/shared/cards";
-import { cardGroups, generationNames } from "../../../src/shared/cardCatalog";
 import { type GuildDetails, api } from "../api";
 import { Toggle } from "../components/pickers";
 
@@ -9,7 +8,7 @@ type Guild = GuildDetails["guild"];
 const n = (x: number) => x.toLocaleString("en-US");
 const clamp = (v: number, max: number) => (Number.isFinite(v) ? Math.max(0, Math.min(max, Math.round(v))) : 0);
 
-/** Dashboard section for K-pop Cards: the mode, prices, rewards and the top collectors. */
+/** Dashboard section for BLACKPINK Cards: the mode, prices, rewards and the top collectors. */
 export function CardsPanel({ guild }: { guild: Guild }) {
   const [data, setData] = useState<CardsResponse | null>(null);
   const [draft, setDraft] = useState<CardSettings | null>(null);
@@ -88,16 +87,9 @@ export function CardsPanel({ guild }: { guild: Guild }) {
         <section className="sub">
           <div className="sub-head"><strong>📦 Packs</strong></div>
           <Toggle label={`${packInfo.daily.emoji} Free daily pack`} hint="3 cards every 20 hours, in both modes." checked={draft.daily} onChange={(v) => set((d) => { d.daily = v; })} />
-          <label className="field">
-            <span>Featured pack group</span>
-            <select value={draft.featuredGroup} onChange={(e) => set((d) => { d.featuredGroup = e.target.value; })}>
-              {cardGroups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-            </select>
-            <small className="muted">Every card in the Featured pack is from this group.</small>
-          </label>
           {economy && (
             <div className="mod-row">
-              {(["standard", "premium", "featured"] as const).map((k) => (
+              {(["standard", "premium"] as const).map((k) => (
                 <label key={k} className="field">
                   <span>{packInfo[k].emoji} {packInfo[k].name}</span>
                   {num(draft.prices[k], (v) => set((d) => { d.prices[k] = v; }))}
@@ -106,23 +98,6 @@ export function CardsPanel({ guild }: { guild: Guild }) {
               ))}
             </div>
           )}
-          <div className="field">
-            <span>Generations in packs</span>
-            <div className="kc-gens">
-              {([2, 3, 4, 5] as const).map((g) => (
-                <label key={g} className="check small">
-                  <input
-                    type="checkbox"
-                    checked={draft.generations.includes(g)}
-                    disabled={draft.generations.length === 1 && draft.generations.includes(g)}
-                    onChange={(e) => set((d) => { d.generations = e.target.checked ? [...d.generations, g].sort() : d.generations.filter((x) => x !== g); })}
-                  />
-                  <span>{generationNames[g]}</span>
-                </label>
-              ))}
-            </div>
-            <small className="muted">BLACKPINK is always in packs.</small>
-          </div>
         </section>
 
         <section className="sub">
