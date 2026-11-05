@@ -276,6 +276,7 @@ export function App() {
 
   const guildMatch = path.match(/^\/servers\/(\d+)(?:\/([\w-]+))?/);
   const docsMatch = path.match(/^\/docs(?:\/([\w-]*))?\/?$/);
+  const devMatch = path.match(/^\/developer(?:\/([\w-]*))?\/?$/);
   // Every page is rendered inside the layout below (top bar, page, footer). Add new pages to this list.
   let page;
   if (path === "/terms") page = <TermsPage />; // public: readable without logging in
@@ -283,7 +284,7 @@ export function App() {
   else if (path === "/announcements") page = <AnnouncementsPage />; // public too
   else if (docsMatch) page = <DocsPage slug={docsMatch[1] ?? ""} />; // public too
   else if (!user) page = <LandingPage />;
-  else if (path === "/developer") page = user.isDeveloper ? <DeveloperPage /> : <HomePage user={user} />; // the bot's developer only
+  else if (devMatch) page = user.isDeveloper ? <DeveloperPage section={devMatch[1] ?? ""} /> : <HomePage user={user} />; // the bot's developer only
   else if (guildMatch) page = <GuildPage guildId={guildMatch[1]} page={guildMatch[2] ?? ""} />;
   else if (path.startsWith("/servers")) page = <ServersPage />;
   else page = <HomePage user={user} />;
@@ -300,7 +301,7 @@ export function App() {
     { label: "Announcements", to: "/announcements", active: path === "/announcements", dot: hasUnread },
     ...(clientId ? [{ label: "Add bot", to: inviteUrl(clientId), external: true }] : []),
     { label: "Support", to: SUPPORT_SERVER, external: true, wideOnly: true },
-    ...(user?.isDeveloper ? [{ label: "Developer", to: "/developer", active: path === "/developer" }] : []),
+    ...(user?.isDeveloper ? [{ label: "Developer", to: "/developer", active: Boolean(devMatch) }] : []),
   ];
 
   return (
@@ -334,7 +335,7 @@ export function App() {
       </header>
       <BetaBanner />
         <MaintenanceBanner state={maintenance} />
-      <main className={`content ${(user && guildMatch) || docsMatch ? "wide" : ""}`}><Suspense fallback={<p className="muted">Loading…</p>}>{page}</Suspense></main>
+      <main className={`content ${(user && (guildMatch || (devMatch && user.isDeveloper))) || docsMatch ? "wide" : ""}`}><Suspense fallback={<p className="muted">Loading…</p>}>{page}</Suspense></main>
       <UndoToast />
       <Footer />
     </div>

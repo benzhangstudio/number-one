@@ -131,7 +131,7 @@ export function CardManager() {
   return (
     <div className="card kc-photos">
       <div className="dev-item-head">
-        <h2>🃏 BLACKPINK Poker cards</h2>
+        <h2>Piles</h2>
         <span className="pill">
           {data.total} card{data.total === 1 ? "" : "s"} · {data.active} in
           packs

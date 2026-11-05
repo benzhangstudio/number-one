@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import {
   type BotUpdateFailure,
   type BotUpdateInput,
@@ -13,6 +13,7 @@ import {
   starterTemplates,
 } from "../../../src/shared/botUpdates";
 import { api } from "../api";
+import { navigate } from "../router";
 import { CardManager } from "./CardManager";
 import { Toggle } from "../components/pickers";
 import { DiscordText } from "../components/DiscordText";
@@ -36,7 +37,24 @@ function fillTemplate(t: BotUpdateTemplateInput, end: number | null): BotUpdateI
  * Developer console: only the bot's developer (the owner of its Discord application) can open it.
  * Sends a "Number One updates" post to every server that picked a channel, mentioning their chosen role.
  */
-export function DeveloperPage() {
+/** The developer console's sections, in menu order. "" is the overview. */
+const sections = [
+  { id: "", icon: "🏠", name: "Overview" },
+  { id: "maintenance", icon: "🛠️", name: "Maintenance" },
+  { id: "update", icon: "📣", name: "New update" },
+  { id: "sent", icon: "📬", name: "Sent updates" },
+  { id: "cards", icon: "🃏", name: "BLACKPINK Poker cards" },
+] as const;
+type SectionId = (typeof sections)[number]["id"];
+
+export function DeveloperPage({ section: asked = "" }: { section?: string }) {
+  const section: SectionId = sections.some((x) => x.id === asked) ? (asked as SectionId) : "";
+  const [menuOpen, setMenuOpen] = useState(false);
+  const go = (id: SectionId) => {
+    setMenuOpen(false);
+    navigate(id ? `/developer/${id}` : "/developer");
+    window.scrollTo(0, 0);
+  };
   const [data, setData] = useState<DeveloperOverview | null>(null);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState<BotUpdateInput>(blank);
@@ -67,6 +85,7 @@ export function DeveloperPage() {
     if ((draft.title.trim() || draft.body.trim()) && !confirm(`Replace what you've written with "${t.name}"?`)) return;
     setDraft(fillTemplate(t, end));
     setFormError("");
+    if (section !== "update") go("update");
   };
 
   const saveTemplate = async () => {
@@ -102,6 +121,7 @@ export function DeveloperPage() {
       await api.sendBotUpdate(draft);
       setDraft(blank);
       await load();
+      go("sent");
     } catch (err) {
       setFormError((err as Error).message);
     } finally {
@@ -118,27 +138,104 @@ export function DeveloperPage() {
     }
   };
 
+  const current = sections.find((x) => x.id === section)!;
+  const badge: Partial<Record<SectionId, ReactNode>> = {
+    maintenance: <span className={`nav-dot ${data.maintenance.on ? "warn" : ""}`} title={data.maintenance.on ? "On" : "Off"} />,
+    update: draft.title.trim() || draft.body.trim() ? <span className="nav-badge" title="You have an unsent draft">Draft</span> : null,
+    sent: inProgress ? <span className="nav-badge">Sending</span> : data.updates.length ? <span className="nav-count">{data.updates.length}</span> : null,
+  };
+  const intro: Record<SectionId, ReactNode> = {
+    "": "Everything for running Number One, in one place.",
+    maintenance: "Take the bot offline for updates. Members see your message instead of their commands working.",
+    update: (
+      <>
+        Post news about Number One. It goes to the {data.receiving} of {data.servers} servers that picked a channel in{" "}
+        <strong>Other → Number One updates</strong>, and mentions their chosen role.
+      </>
+    ),
+    sent: "Updates you've posted, with how many servers got them.",
+    cards: "Add, edit and remove the cards members can pull.",
+  };
+  const last = data.updates[0];
+
   return (
-    <section className="dev-page">
+    <div className="guild-layout dev-layout">
+      <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
+        <div className="dev-side-title">
+          <span className="dev-side-icon">1</span>
+          <span>
+            <strong>Developer console</strong>
+            <small className="muted">Only you can see this</small>
+          </span>
+        </div>
+        <button className="menu-toggle" aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}>
+          <span>{current.icon} {current.name}</span>
+          <span aria-hidden>{menuOpen ? "▲" : "▼"}</span>
+        </button>
+        <nav className="nav">
+          {sections.map((x) => (
+            <a
+              key={x.id}
+              href={x.id ? `/developer/${x.id}` : "/developer"}
+              className={`nav-item ${x.id === section ? "active" : ""}`}
+              aria-current={x.id === section ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                go(x.id);
+              }}
+            >
+              <span className="nav-icon">{x.icon}</span>
+              {x.name}
+              {badge[x.id]}
+            </a>
+          ))}
+        </nav>
+      </aside>
+
+      <section className="guild-main dev-page">
       <div className="page-head">
         <div>
-          <h1>Developer</h1>
-          <p className="muted">
-            Post news about Number One. It goes to the {data.receiving} of {data.servers} servers that picked a channel in{" "}
-            <strong>Other → Number One updates</strong>, and mentions their chosen role.
-          </p>
+          <h1>{current.icon} {current.name}</h1>
+          <p className="muted">{intro[section]}</p>
         </div>
       </div>
 
+      {section === "" && (
+        <div className="dev-tiles">
+          <button className="card dev-tile" onClick={() => go("maintenance")}>
+            <span className="muted small">🛠️ Maintenance</span>
+            <strong className={data.maintenance.on ? "dev-warn" : ""}>{data.maintenance.on ? "On" : "Off"}</strong>
+            <small className="muted">{data.maintenance.on ? (maintenanceEnd ? `Until ${when(maintenanceEnd)}` : "No end time set") : "The bot is running normally"}</small>
+          </button>
+          <button className="card dev-tile" onClick={() => go("update")}>
+            <span className="muted small">📣 Servers getting updates</span>
+            <strong>{data.receiving.toLocaleString()} <small className="muted">of {data.servers.toLocaleString()}</small></strong>
+            <small className="muted">Write a new update →</small>
+          </button>
+          <button className="card dev-tile" onClick={() => go("sent")}>
+            <span className="muted small">📬 Last update</span>
+            <strong className="dev-tile-text">{last ? last.title : "None yet"}</strong>
+            <small className="muted">{last ? `${when(last.createdAt)} · ✅ ${last.sent}${last.failed ? ` · ⚠️ ${last.failed}` : ""}` : "Nothing sent yet"}</small>
+          </button>
+          <button className="card dev-tile" onClick={() => go("cards")}>
+            <span className="muted small">🃏 BLACKPINK Poker</span>
+            <strong>Cards</strong>
+            <small className="muted">Add photos and manage piles →</small>
+          </button>
+        </div>
+      )}
+
+      {section === "maintenance" && (
       <MaintenanceCard
         state={data.maintenance}
         onChange={setData}
         onAnnounce={(end) => applyTemplate(starterTemplates[data.maintenance.on ? 1 : 0], end)}
       />
+      )}
 
+      {section === "update" && (
       <div className="dev-grid">
         <div className="card dev-form">
-          <h2>New update</h2>
           <div className="field">
             <span>
               Start from a template <em className="muted">({data.templates.length}/{MAX_UPDATE_TEMPLATES} saved)</em>
@@ -223,8 +320,9 @@ export function DeveloperPage() {
         </div>
       </div>
 
-      <h2>Sent</h2>
-      {data.updates.length === 0 ? (
+      )}
+
+      {section === "sent" && (data.updates.length === 0 ? (
         <p className="muted">Nothing sent yet.</p>
       ) : (
         <div className="dev-history">
@@ -258,10 +356,11 @@ export function DeveloperPage() {
             </div>
           ))}
         </div>
-      )}
+      ))}
 
-      <CardManager />
-    </section>
+      {section === "cards" && <CardManager />}
+      </section>
+    </div>
   );
 }
 

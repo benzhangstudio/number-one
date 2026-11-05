@@ -6395,3 +6395,70 @@ select.chip-add {
     display: none;
   }
 }
+
+/* --- Developer console: sidebar and overview tiles --- */
+.dev-side-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 14px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.dev-side-title strong,
+.dev-side-title small {
+  display: block;
+}
+.dev-side-icon {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 800;
+}
+.nav-dot.warn {
+  background: var(--warning);
+  box-shadow: 0 0 8px var(--warning);
+}
+.nav-count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.dev-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.dev-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.dev-tile:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.dev-tile strong {
+  font-size: 1.5rem;
+}
+.dev-tile .dev-tile-text {
+  font-size: 1.05rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.dev-warn {
+  color: var(--warning);
+}
