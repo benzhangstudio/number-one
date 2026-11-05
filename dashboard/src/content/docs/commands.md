@@ -83,6 +83,7 @@ Part of the [BLACKPINK Poker](/docs/cards) module. Everyone can use these.
 | `/cards buy pack [amount]` | Buys up to 25 packs at once and keeps them in your bag (With Economy). |
 | `/cards open [pack]` | Opens one pack from your bag. Press **Open** under it to open the next one. |
 | `/cards packs` | Shows the packs and prices. |
+| `/cards catalog [pile]` | Every card in the game, by member, pairing and the group, with how many you've collected. Pick one to flip through its cards. |
 | `/cards collection [member] [card]` | Flips through a collection one card at a time, with ◀ Back and Next ▶ buttons. |
 | `/cards view card` | Shows a card up close. |
 | `/cards team [first] [second] [third]` | Shows or sets your battle team. |

@@ -10,6 +10,7 @@ import {
   type MessageComponentInteraction,
   MessageFlags,
   SlashCommandBuilder,
+  StringSelectMenuBuilder,
 } from "discord.js";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { isDeveloper } from "../bot-updates/developer.js";
@@ -301,6 +302,95 @@ export async function collectionPage(guildId: string, owner: { id: string; name:
   };
 }
 
+/* ------------------------------------------------------------ catalog: every card, by member, pairing and group */
+
+const kindHeading = { member: "👤 Members", ship: "💞 Pairings", group: "👯 Group" } as const;
+const kindEmoji = { member: "👤", ship: "💞", group: "👯" } as const;
+
+/** The cards shown in a pile: those in packs, plus retired ones the viewer still owns. Best rarity first. */
+function catalogCards(pile: string, owned: Map<string, number>) {
+  return pileCards(pile)
+    .filter((c) => c.active || owned.has(c.id))
+    .sort((a, b) => rarities.indexOf(b.rarity) - rarities.indexOf(a.rarity) || a.number - b.number);
+}
+
+function pileMenu(viewerId: string, current: string) {
+  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId(`${PREFIX}:cat:${viewerId}`)
+      .setPlaceholder("Pick a member, pairing or the group")
+      .addOptions(
+        { label: "All piles", value: "all", emoji: "📇", default: current === "all" },
+        ...piles.slice(0, 24).map((p) => ({ label: p.subject, value: p.key, description: p.about || (p.kind === "group" ? "The whole group" : undefined), emoji: kindEmoji[p.kind], default: current === p.key })),
+      ),
+  );
+}
+
+/** Every card in the game: the overview of all piles, or one pile's cards one at a time. */
+export async function catalogPage(guildId: string, viewerId: string, pile: string, index: number) {
+  const owned = store.collectionOf(guildId, viewerId);
+  if (pile === "all" || !pileByKey.has(pile)) {
+    const embed = new EmbedBuilder().setColor(PINK).setTitle("📇 Card catalog").setDescription("Every BLACKPINK Poker card, by member, pairing and the group. Pick one below to flip through its cards.");
+    for (const kind of ["member", "group", "ship"] as const) {
+      const lines = piles
+        .filter((p) => p.kind === kind)
+        .map((p) => {
+          const list = catalogCards(p.key, owned);
+          if (!list.length) return `**${p.subject}** · no cards yet`;
+          const have = list.filter((c) => owned.has(c.id)).length;
+          return `**${p.subject}** · ${have}/${list.length} collected${have === list.length ? " ✅" : ""}`;
+        });
+      if (lines.length) embed.addFields({ name: kindHeading[kind], value: lines.join("\n"), inline: kind !== "ship" });
+    }
+    const total = activeCards().length;
+    const have = activeCards().filter((c) => owned.has(c.id)).length;
+    embed.setFooter({ text: `You've collected ${have} of ${total} cards` });
+    return { embeds: [embed], files: [], components: [pileMenu(viewerId, "all")], allowedMentions: { parse: [] as never[] } };
+  }
+
+  const p = pileByKey.get(pile)!;
+  const list = catalogCards(pile, owned);
+  const back = new ButtonBuilder().setCustomId(`${PREFIX}:cat:${viewerId}:all:0:home`).setEmoji("📇").setLabel("All piles").setStyle(ButtonStyle.Secondary);
+  if (!list.length) {
+    const embed = new EmbedBuilder().setColor(PINK).setTitle(`${kindEmoji[p.kind]} ${p.subject}`).setDescription("No cards in this pile yet. More are added over time!");
+    return { embeds: [embed], files: [], components: [pileMenu(viewerId, pile), new ActionRowBuilder<ButtonBuilder>().addComponents(back)], allowedMentions: { parse: [] as never[] } };
+  }
+  const i = Math.max(0, Math.min(index, list.length - 1));
+  const card = list[i];
+  const qty = owned.get(card.id) ?? 0;
+  const t = typeInfo[card.type];
+  const have = list.filter((c) => owned.has(c.id)).length;
+  const embed = new EmbedBuilder()
+    .setColor(Number.parseInt(rarityInfo[card.rarity].color.slice(1), 16))
+    .setAuthor({ name: `📇 Catalog · ${p.subject}${p.about ? ` (${p.about})` : ""}` })
+    .setTitle(cardLabel(card))
+    .setDescription(
+      `${stars(card)} ${rarityInfo[card.rarity].name} · ${t.emoji} ${t.name}\nHP **${card.hp}** · ${t.move} **${card.power}**\n${qty ? `✅ You have **${qty}**` : "🔒 Not collected yet"}${card.active ? "" : " · no longer in packs"}`,
+    )
+    .setImage("attachment://card.png")
+    .setFooter({ text: `Card ${i + 1} of ${list.length} · You have ${have} of ${list.length} ${p.subject} cards` });
+  const go = (to: number) => `${PREFIX}:cat:${viewerId}:${pile}:${to}`;
+  const last = list.length - 1;
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder().setCustomId(`${go(i - 1)}:back`).setEmoji("◀️").setLabel("Back").setStyle(ButtonStyle.Primary).setDisabled(i === 0),
+    new ButtonBuilder().setCustomId(`${go(i)}:count`).setLabel(`${i + 1} / ${list.length}`).setStyle(ButtonStyle.Secondary).setDisabled(true),
+    new ButtonBuilder().setCustomId(`${go(i + 1)}:next`).setEmoji("▶️").setLabel("Next").setStyle(ButtonStyle.Primary).setDisabled(i === last),
+    back,
+  );
+  return {
+    embeds: [embed],
+    files: [new AttachmentBuilder(await renderCard(card), { name: "card.png" })],
+    components: [pileMenu(viewerId, pile), row],
+    allowedMentions: { parse: [] as never[] },
+  };
+}
+
+async function catalog(i: ChatInputCommandInteraction<"cached">) {
+  if (!cardCount()) return i.reply(notReady);
+  await i.deferReply();
+  return i.editReply(await catalogPage(i.guildId, i.user.id, i.options.getString("pile") ?? "all", 0));
+}
+
 async function collection(i: ChatInputCommandInteraction<"cached">) {
   const user = i.options.getUser("member") ?? i.user;
   const member = i.options.getMember("member") ?? (user.id === i.user.id ? i.member : null);
@@ -518,6 +608,17 @@ const cardsCommand: SlashCommand = {
     .addSubcommand((c) => c.setName("packs").setDescription("See the packs and what they cost"))
     .addSubcommand((c) =>
       c
+        .setName("catalog")
+        .setDescription("See every card, by member, pairing and the group")
+        .addStringOption((o) =>
+          o
+            .setName("pile")
+            .setDescription("Jump straight to a member, pairing or the group")
+            .addChoices(...piles.slice(0, 25).map((p) => ({ name: `${kindEmoji[p.kind]} ${p.subject}`, value: p.key }))),
+        ),
+    )
+    .addSubcommand((c) =>
+      c
         .setName("collection")
         .setDescription("See your cards (or someone else's)")
         .addUserOption((o) => o.setName("member").setDescription("Whose collection (yours if empty)"))
@@ -583,6 +684,7 @@ const cardsCommand: SlashCommand = {
     if (sub === "buy") return buy(interaction, s, mode);
     if (sub === "open") return open(interaction, s, mode);
     if (sub === "packs") return packs(interaction, s, mode);
+    if (sub === "catalog") return catalog(interaction);
     if (sub === "collection") return collection(interaction);
     if (sub === "view") return view(interaction);
     if (sub === "team") return team(interaction);
@@ -603,7 +705,19 @@ const cardsCommand: SlashCommand = {
 const answers: ComponentHandler = {
   prefix: PREFIX,
   async handle(interaction: MessageComponentInteraction) {
-    if (!interaction.inCachedGuild() || !interaction.isButton()) return;
+    if (!interaction.inCachedGuild()) return;
+    if (interaction.customId.startsWith(`${PREFIX}:cat:`)) {
+      // The catalog: the pile menu, or its buttons.
+      const [, , viewerId, btnPile, btnIndex] = interaction.customId.split(":");
+      if (interaction.user.id !== viewerId) {
+        return interaction.reply({ content: "Use `/cards catalog` to browse the cards yourself.", flags: MessageFlags.Ephemeral });
+      }
+      const pile = interaction.isStringSelectMenu() ? interaction.values[0] : btnPile;
+      const index = interaction.isStringSelectMenu() ? 0 : Number(btnIndex) || 0;
+      await interaction.deferUpdate();
+      return interaction.editReply({ ...(await catalogPage(interaction.guildId, viewerId, pile, index)), attachments: [] });
+    }
+    if (!interaction.isButton()) return;
     if (interaction.customId.startsWith(`${PREFIX}:open:`)) {
       // "Open another pack" buttons.
       const [, , ownerId, kind] = interaction.customId.split(":");
