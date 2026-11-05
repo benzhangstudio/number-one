@@ -21,7 +21,7 @@ With Economy needs the Economy module. While Economy is off, the game runs as Ca
 
 ## The cards
 
-There are **77 cards** in three piles, each with seven cards:
+Cards come in three kinds of **piles**:
 
 | Pile | Who |
 | --- | --- |
@@ -29,15 +29,17 @@ There are **77 cards** in three piles, each with seven cards:
 | 💞 Ships | Jensoo (Jisoo & Jennie), Chaesoo (Jisoo & Rosé), Lisoo (Jisoo & Lisa), Chaennie (Jennie & Rosé), Jenlisa (Jennie & Lisa) and Chaelisa (Rosé & Lisa) |
 | 👯 Group | BLACKPINK, all four together |
 
-| Card | Rarity |
-| --- | --- |
-| Debut Day, Practice Room | ★ Common |
-| Comeback, Live Stage | ★★ Rare |
-| Award Night | ★★★ Epic |
-| Legend | ★★★★ Legendary |
-| Pink Crown | ★★★★★ Mythic |
+Each pile can hold any number of cards, and new ones are added over time. Every card has its own photo and name (like "Airport" or "Coachella"), a rarity, a type, HP and a move.
 
-Each card shows a photo, the name, HP, a type and a move with its power. Cards appear in packs once they have a photo. Ship cards have 10 more HP and the group card 20 more.
+| Rarity | Stars |
+| --- | --- |
+| Common | ★ |
+| Rare | ★★ |
+| Epic | ★★★ |
+| Legendary | ★★★★ |
+| Mythic | ★★★★★ |
+
+Packs are a gacha: for each card, the pack rolls a rarity using its odds, then picks a random card of that rarity from every pile. Ship cards have 10 more HP and the group card 20 more.
 
 ## Packs
 

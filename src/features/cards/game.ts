@@ -1,18 +1,5 @@
-import {
-  type Card,
-  type CardSettings,
-  type PackKind,
-  type Rarity,
-  cardById,
-  cardScore,
-  packInfo,
-  packOdds,
-  packPool,
-  rarities,
-  typeBonus,
-  typeInfo,
-} from "../../shared/cards.js";
-import { hasPhoto } from "./photos.js";
+import { type Card, type CardSettings, type PackKind, type Rarity, cardScore, packInfo, packOdds, rarities, typeBonus, typeInfo } from "../../shared/cards.js";
+import { activeCards, getCard } from "./catalog.js";
 
 /** Pack opening and battles. No Discord here, so it's easy to follow and test. */
 
@@ -27,13 +14,16 @@ function rollRarity(odds: Record<Rarity, number>): Rarity {
   return "common";
 }
 
-/** Opens a pack: returns its cards, or null when no cards with photos are ready yet. */
-export function openPack(s: CardSettings, kind: PackKind): Card[] | null {
-  const pool = packPool(s, kind, hasPhoto);
+/**
+ * Opens a pack, gacha-style: each card's rarity is rolled with the pack's odds, then a random active card of that
+ * rarity is picked (from any pile). Returns null when no cards have been added yet.
+ */
+export function openPack(_s: CardSettings, kind: PackKind): Card[] | null {
+  const pool = activeCards();
   if (!pool.length) return null;
   const byRarity = new Map<Rarity, Card[]>(rarities.map((r) => [r, pool.filter((c) => c.rarity === r)]));
   const draw = (r: Rarity) => {
-    // Not every rarity is ready yet (only BLACKPINK has Mythics): fall back to the next rarity down, then up.
+    // Not every rarity has cards yet: fall back to the next rarity down, then up.
     const order = [...rarities.slice(0, rarities.indexOf(r) + 1).reverse(), ...rarities.slice(rarities.indexOf(r) + 1)];
     for (const x of order) if (byRarity.get(x)!.length) return pick(byRarity.get(x)!);
     return pick(pool);
@@ -49,17 +39,17 @@ export function openPack(s: CardSettings, kind: PackKind): Card[] | null {
 
 /** A member's team: the 3 cards they picked (that they still own), topped up with their strongest. */
 export function teamOf(saved: string[], owned: Map<string, number>) {
-  const chosen = saved.filter((id) => owned.has(id) && cardById.has(id)).slice(0, 3);
+  const chosen = saved.filter((id) => owned.has(id) && getCard(id)).slice(0, 3);
   const rest = [...owned.keys()]
-    .filter((id) => !chosen.includes(id) && cardById.has(id))
-    .map((id) => cardById.get(id)!)
+    .filter((id) => !chosen.includes(id) && getCard(id))
+    .map((id) => getCard(id)!)
     .sort((a, b) => cardScore(b) - cardScore(a));
-  return [...chosen.map((id) => cardById.get(id)!), ...rest].slice(0, 3);
+  return [...chosen.map((id) => getCard(id)!), ...rest].slice(0, 3);
 }
 
 /** Number One's team: random ready cards about as strong as the player's. */
-export function rivalTeam(s: CardSettings, player: Card[]) {
-  const pool = packPool(s, "standard", hasPhoto);
+export function rivalTeam(_s: CardSettings, player: Card[]) {
+  const pool = activeCards();
   const target = player.reduce((a, c) => a + cardScore(c), 0) / Math.max(1, player.length);
   const near = pool.filter((c) => Math.abs(cardScore(c) - target) <= 25);
   const from = near.length >= 3 ? near : pool;
@@ -99,11 +89,11 @@ export function battle(teams: [Card[], Card[]], names: [string, string]): Battle
     const damage = Math.max(1, Math.round(a.power * bonus * (0.85 + Math.random() * 0.3)));
     hp[other][active[other]] = Math.max(0, hp[other][active[other]] - damage);
     const note = bonus > 1 ? " It's super effective!" : bonus < 1 ? " It's not very effective…" : "";
-    log.push(`${typeInfo[a.type].emoji} **${a.memberName}** used ${typeInfo[a.type].move} for **${damage}**.${note}`);
+    log.push(`${typeInfo[a.type].emoji} **${a.subject}** used ${typeInfo[a.type].move} for **${damage}**.${note}`);
     if (hp[other][active[other]] === 0) {
-      log.push(`💫 ${names[other]}'s **${d.memberName}** is out!`);
+      log.push(`💫 ${names[other]}'s **${d.subject}** is out!`);
       active[other]++;
-      if (active[other] < teams[other].length) log.push(`➡️ ${names[other]} sends out **${teams[other][active[other]].memberName}**.`);
+      if (active[other] < teams[other].length) log.push(`➡️ ${names[other]} sends out **${teams[other][active[other]].subject}**.`);
     }
     turn = other;
   }

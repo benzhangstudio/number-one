@@ -367,8 +367,33 @@ export const cardPlayers = sqliteTable(
 );
 
 /**
- * Card game: the photos the bot's developer uploaded (the same for every server). The file is
- * data/card-photos/<key>.jpg; key is a member ("blackpink.jennie") or one card ("blackpink.jennie.legend").
+ * Card game: every card, added by the bot's developer on the Developer page (the same for every server).
+ * Its photo is data/card-photos/<id>.jpg. See src/features/cards/catalog.ts.
+ */
+export const cardDefs = sqliteTable(
+  "card_defs",
+  {
+    id: text("id").primaryKey(),
+    number: integer("number").notNull(),
+    /** "group.subject", like "blackpink.jennie". */
+    pile: text("pile").notNull(),
+    name: text("name").notNull(),
+    rarity: text("rarity").notNull(),
+    type: text("type").notNull(),
+    hp: integer("hp").notNull(),
+    power: integer("power").notNull(),
+    credit: text("credit").notNull().default(""),
+    active: integer("active", { mode: "boolean" }).notNull().default(true),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    createdBy: text("created_by").notNull(),
+  },
+  (t) => [index("card_defs_pile_idx").on(t.pile)],
+);
+
+/**
+ * Card game: photos from before cards had their own rows (card_defs). Turned into cards once, on start-up,
+ * by src/features/cards/catalog.ts. Kept only so that can happen; nothing new is saved here.
  */
 export const cardPhotos = sqliteTable("card_photos", {
   key: text("key").primaryKey(),

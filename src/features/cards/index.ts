@@ -19,24 +19,26 @@ import { getFeatureState, isFeatureEnabled, saveFeatureState } from "../../serve
 import { type EconomySettings, formatMoney } from "../../shared/economy.js";
 import { cardsFeature, economyFeature } from "../../shared/features.js";
 import {
-  CARD_COUNT,
   CARD_PHOTO,
   type Card,
+  type CardAdminResponse,
   type CardMode,
-  type CardPhotosResponse,
   type CardSettings,
   type CardsResponse,
   type PackKind,
-  cardById,
+  type PileCardsResponse,
+  type Rarity,
+  cardEdit,
   cardSettings,
-  cards,
   packInfo,
+  pileByKey,
+  piles,
   rarities,
   rarityInfo,
   typeInfo,
 } from "../../shared/cards.js";
 import { battle, openPack, rivalTeam, shortLog, teamOf } from "./game.js";
-import { deletePhoto, hasPhoto, isPhotoKey, loadPhotoList, photoFile, photoList, readyCount, savePhoto, setCredit } from "./photos.js";
+import { activeCards, activeCount, addCard, allCards, cardCount, deleteCard, editCard, getCard, loadCatalog, ownersByCard, photoFile, pileCards, replacePhoto } from "./catalog.js";
 import { renderCard, renderRow } from "./render.js";
 import * as store from "./store.js";
 
@@ -44,7 +46,7 @@ import * as store from "./store.js";
  * BLACKPINK Poker: /cards to open packs, collect, build a team, battle, trade and gift.
  * With Economy, packs cost the server's currency and duplicates sell for it; in Cards only mode there's
  * no money, just a free daily pack (and a bonus card for beating Number One).
- * Photos are uploaded by the bot's developer on the Developer page (registerCardsDeveloperApi below).
+ * Cards are added by the bot's developer on the Developer page (registerCardsDeveloperApi below).
  */
 
 type Req = FastifyRequest<{ Params: { guildId: string } }>;
@@ -64,32 +66,32 @@ async function modeOf(guildId: string, s: CardSettings): Promise<CardMode> {
 }
 
 const stars = (c: Card) => "★".repeat(rarityInfo[c.rarity].stars);
-const line = (c: Card, qty?: number) => `${stars(c)} **${c.memberName}** · ${c.version} (${c.groupName})${qty && qty > 1 ? ` ×${qty}` : ""}`;
-const notReady = "The cards aren't ready yet: photos are still being added. Check back soon!";
+const line = (c: Card, qty?: number) => `${stars(c)} **${c.subject}** · ${c.name} (${c.groupName})${qty && qty > 1 ? ` ×${qty}` : ""}`;
+const notReady = "There aren't any cards to collect yet. They're being added, so check back soon!";
 
 /* ------------------------------------------------------------ suggestions while typing */
 
 function searchCards(list: { card: Card; qty?: number }[], typed: string) {
   const words = typed.toLowerCase().split(/\s+/).filter(Boolean);
   return list
-    .filter(({ card }) => words.every((w) => `${card.memberName} ${card.groupName} ${card.version} ${card.rarity}`.toLowerCase().includes(w)))
+    .filter(({ card }) => words.every((w) => `${card.subject} ${card.groupName} ${card.name} ${card.rarity}`.toLowerCase().includes(w)))
     .sort((a, b) => rarities.indexOf(b.card.rarity) - rarities.indexOf(a.card.rarity) || a.card.number - b.card.number)
     .slice(0, 25)
     .map(({ card, qty }) => ({
-      name: `${card.memberName} · ${card.version} (${card.groupName}) ${"★".repeat(rarityInfo[card.rarity].stars)}${qty && qty > 1 ? ` ×${qty}` : ""}`.slice(0, 100),
+      name: `${card.subject} · ${card.name} (${card.groupName}) ${"★".repeat(rarityInfo[card.rarity].stars)}${qty && qty > 1 ? ` ×${qty}` : ""}`.slice(0, 100),
       value: card.id,
     }));
 }
 
 const ownedList = (guildId: string, userId: string) =>
-  [...store.collectionOf(guildId, userId)].filter(([id]) => cardById.has(id)).map(([id, qty]) => ({ card: cardById.get(id)!, qty }));
+  [...store.collectionOf(guildId, userId)].filter(([id]) => Boolean(getCard(id))).map(([id, qty]) => ({ card: getCard(id)!, qty }));
 
 async function autocomplete(interaction: AutocompleteInteraction) {
   if (!interaction.inCachedGuild()) return interaction.respond([]);
   const focused = interaction.options.getFocused(true);
   const typed = String(focused.value);
   const sub = interaction.options.getSubcommand();
-  if (sub === "view") return interaction.respond(searchCards(cards.filter(hasPhoto).map((card) => ({ card })), typed));
+  if (sub === "view") return interaction.respond(searchCards(activeCards().map((card) => ({ card })), typed));
   if (sub === "trade" && focused.name === "get") {
     const other = interaction.options.get("member")?.value;
     return interaction.respond(typeof other === "string" ? searchCards(ownedList(interaction.guildId, other), typed) : []);
@@ -117,7 +119,7 @@ async function cardReply(card: Card, note = "") {
   const t = typeInfo[card.type];
   const embed = new EmbedBuilder()
     .setColor(Number.parseInt(rarityInfo[card.rarity].color.slice(1), 16))
-    .setTitle(`${card.memberName} · ${card.version}`)
+    .setTitle(`${card.subject} · ${card.name}`)
     .setDescription(`${card.groupName} · ${rarityInfo[card.rarity].name} · ${t.emoji} ${t.name}\nHP **${card.hp}** · ${t.move} **${card.power}**${note ? `\n${note}` : ""}`)
     .setImage("attachment://card.png");
   return { embeds: [embed], files: [new AttachmentBuilder(png, { name: "card.png" })], allowedMentions: { parse: [] as never[] } };
@@ -155,7 +157,7 @@ async function open(i: ChatInputCommandInteraction<"cached">, s: CardSettings, m
 }
 
 async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
-  const ready = readyCount();
+  const ready = activeCount();
   const embed = new EmbedBuilder().setColor(PINK).setTitle("🖤💗 BLACKPINK Poker");
   if (mode === "economy") {
     const eco = await economyOf(i.guildId);
@@ -174,7 +176,7 @@ async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, 
       [`${packInfo.daily.emoji} **Daily pack** · free\n${packInfo.daily.about} Open it with \`/cards daily\`.`, "Beat Number One in `/cards battle` for a bonus card (a few times a day)."].join("\n\n"),
     );
   }
-  embed.setFooter({ text: `${ready.toLocaleString("en-US")} of ${CARD_COUNT.toLocaleString("en-US")} cards are ready so far · Stars: ★ Common to ★★★★★ Mythic` });
+  embed.setFooter({ text: `${ready.toLocaleString("en-US")} cards to collect, with more added over time · ★ Common to ★★★★★ Mythic` });
   return i.reply({ embeds: [embed], allowedMentions: { parse: [] } });
 }
 
@@ -191,13 +193,13 @@ async function collection(i: ChatInputCommandInteraction<"cached">) {
     .setColor(PINK)
     .setAuthor({ name: `${user.displayName}'s collection`, iconURL: user.displayAvatarURL({ size: 64 }) })
     .setDescription(list.slice((page - 1) * PAGE, page * PAGE).map(({ card, qty }) => line(card, qty)).join("\n"))
-    .setFooter({ text: `${list.length} of ${CARD_COUNT} cards · Page ${page} of ${pages} · See one with /cards view` });
+    .setFooter({ text: `${list.length} of ${cardCount()} cards · Page ${page} of ${pages} · See one with /cards view` });
   return i.reply({ embeds: [embed], allowedMentions: { parse: [] } });
 }
 
 async function view(i: ChatInputCommandInteraction<"cached">) {
-  const card = cardById.get(i.options.getString("card", true));
-  if (!card || !hasPhoto(card)) return i.reply("I couldn't find that card. Pick one from the list.");
+  const card = getCard(i.options.getString("card", true));
+  if (!card) return i.reply("I couldn't find that card. Pick one from the list.");
   await i.deferReply();
   const qty = store.ownedCount(i.guildId, i.user.id, card.id);
   return i.editReply(await cardReply(card, qty ? `You have ${qty}.` : "You don't have this one yet."));
@@ -207,7 +209,7 @@ async function team(i: ChatInputCommandInteraction<"cached">) {
   const picked = ["first", "second", "third"].map((n) => i.options.getString(n)).filter((x): x is string => Boolean(x));
   const owned = store.collectionOf(i.guildId, i.user.id);
   if (picked.length) {
-    const bad = picked.find((id) => !owned.has(id) || !cardById.has(id));
+    const bad = picked.find((id) => !owned.has(id) || !Boolean(getCard(id)));
     if (bad) return i.reply("You can only put cards you own in your team. Pick them from the list.");
     if (new Set(picked).size !== picked.length) return i.reply("Pick three different cards.");
     store.setTeam(i.guildId, i.user.id, picked);
@@ -225,7 +227,7 @@ async function team(i: ChatInputCommandInteraction<"cached">) {
 }
 
 function battleEmbed(names: [string, string], teams: [Card[], Card[]], result: ReturnType<typeof battle>, extra: string) {
-  const side = (n: 0 | 1) => teams[n].map((c, k) => `${typeInfo[c.type].emoji} ${c.memberName} (${result.left[n][k]}/${c.hp} HP)`).join("\n");
+  const side = (n: 0 | 1) => teams[n].map((c, k) => `${typeInfo[c.type].emoji} ${c.subject} (${result.left[n][k]}/${c.hp} HP)`).join("\n");
   return new EmbedBuilder()
     .setColor(result.winner === 0 ? 0x3ba55d : 0xed4245)
     .setTitle(`⚔️ ${names[0]} vs ${names[1]}`)
@@ -293,8 +295,8 @@ async function trade(i: ChatInputCommandInteraction<"cached">, s: CardSettings) 
   if (!s.trading) return i.reply("Trading is switched off in this server.");
   const other = i.options.getMember("member");
   if (!other || other.user.bot || other.id === i.user.id) return i.reply("Pick another member to trade with.");
-  const give = cardById.get(i.options.getString("give", true));
-  const get = cardById.get(i.options.getString("get", true));
+  const give = getCard(i.options.getString("give", true));
+  const get = getCard(i.options.getString("get", true));
   if (!give || !store.ownedCount(i.guildId, i.user.id, give.id)) return i.reply("You can only offer a card you own. Pick it from the list.");
   if (!get || !store.ownedCount(i.guildId, other.id, get.id)) return i.reply(`<@${other.id}> doesn't have that card. Pick one from the list.`);
   const id = String(nextId++);
@@ -310,7 +312,7 @@ async function gift(i: ChatInputCommandInteraction<"cached">, s: CardSettings) {
   if (!s.trading) return i.reply("Trading and gifts are switched off in this server.");
   const other = i.options.getMember("member");
   if (!other || other.user.bot || other.id === i.user.id) return i.reply("Pick another member to give it to.");
-  const card = cardById.get(i.options.getString("card", true));
+  const card = getCard(i.options.getString("card", true));
   if (!card || !store.swap(i.guildId, i.user.id, card.id, other.id, null)) return i.reply("You can only give a card you own. Pick it from the list.");
   return i.reply({ content: `🎀 <@${i.user.id}> gave ${line(card)} to <@${other.id}>!`, allowedMentions: { users: [other.id] } });
 }
@@ -323,11 +325,11 @@ async function sell(i: ChatInputCommandInteraction<"cached">, s: CardSettings, m
   if (duplicates) {
     const maxRarity = i.options.getString("up_to") ?? "epic";
     sales = [...owned]
-      .filter(([id, qty]) => qty > 1 && cardById.has(id) && rarities.indexOf(cardById.get(id)!.rarity) <= rarities.indexOf(maxRarity as Card["rarity"]))
-      .map(([id, qty]) => ({ cardId: id, quantity: qty - 1, each: s.sell[cardById.get(id)!.rarity] }));
+      .filter(([id, qty]) => qty > 1 && Boolean(getCard(id)) && rarities.indexOf(getCard(id)!.rarity) <= rarities.indexOf(maxRarity as Card["rarity"]))
+      .map(([id, qty]) => ({ cardId: id, quantity: qty - 1, each: s.sell[getCard(id)!.rarity] }));
     if (!sales.length) return i.reply("You don't have any duplicates to sell.");
   } else {
-    const card = cardById.get(i.options.getString("card", true));
+    const card = getCard(i.options.getString("card", true));
     const quantity = i.options.getInteger("quantity") ?? 1;
     if (!card || (owned.get(card.id) ?? 0) < quantity) return i.reply("You don't have that many of that card.");
     sales = [{ cardId: card.id, quantity, each: s.sell[card.rarity] }];
@@ -479,7 +481,7 @@ const answers: ComponentHandler = {
       const ok = store.swap(p.guildId, p.from, p.give!, p.to, p.get!);
       if (!ok) return interaction.update({ content: "The trade didn't go through: one of the cards isn't there anymore.", components: [] });
       return interaction.update({
-        content: `🔁 Trade done! <@${p.from}> got ${line(cardById.get(p.get!)!)} and <@${p.to}> got ${line(cardById.get(p.give!)!)}.`,
+        content: `🔁 Trade done! <@${p.from}> got ${line(getCard(p.get!)!)} and <@${p.to}> got ${line(getCard(p.give!)!)}.`,
         components: [],
         allowedMentions: { parse: [] },
       });
@@ -528,9 +530,9 @@ async function respond(guild: Guild): Promise<CardsResponse> {
   const rows = store.topCollectors(guild.id, 10);
   const members = rows.length ? await guild.members.fetch({ user: rows.map((r) => r.userId) }).catch(() => null) : null;
   const stats = store.serverStats(guild.id);
-  const ready = readyCount();
+  const ready = activeCount();
   const problems: string[] = [];
-  if (!ready) problems.push("No cards have photos yet, so packs are empty. Cards appear as soon as photos are added.");
+  if (!ready) problems.push("No cards have been added yet, so packs are empty. They appear as soon as cards are added.");
   if (s.mode === "economy" && economyOff) problems.push("Economy is switched off, so the game runs as Cards only (free daily packs, no buying or selling) until you switch it on.");
   return {
     settings: s,
@@ -538,19 +540,37 @@ async function respond(guild: Guild): Promise<CardsResponse> {
     economyOff,
     ready,
     currency: { singular: eco.currency.singular, plural: eco.currency.plural, emoji: eco.currency.emoji },
-    stats: { ...stats, catalog: CARD_COUNT },
+    stats: { ...stats, catalog: cardCount() },
     top: rows.map((r) => ({ ...r, name: members?.get(r.userId)?.displayName ?? "Someone" })),
     problems,
   };
 }
 
-/* ------------------------------------------------------------ Developer page: photos */
+/* ------------------------------------------------------------ Developer page: managing cards */
 
-const photosResponse = (): CardPhotosResponse => ({ photos: photoList(), ready: readyCount(), total: CARD_COUNT });
+function adminResponse(): CardAdminResponse {
+  const cardsNow = allCards();
+  return {
+    piles: piles.map((p) => {
+      const mine = cardsNow.filter((c) => c.pile === p.key);
+      const newest = mine.reduce<Card | null>((a, c) => (!a || c.number > a.number ? c : a), null);
+      return { ...p, count: mine.length, active: mine.filter((c) => c.active).length, cover: newest ? { id: newest.id, updatedAt: newest.updatedAt } : null };
+    }),
+    total: cardsNow.length,
+    active: cardsNow.filter((c) => c.active).length,
+  };
+}
 
-/** The Developer page's card photo routes. Only the bot's developer can use them. */
+function pileResponse(pile: string): PileCardsResponse {
+  const owners = ownersByCard();
+  return { cards: pileCards(pile).reverse().map((c) => ({ ...c, owned: owners.get(c.id) ?? 0 })) };
+}
+
+type DevReq = FastifyRequest<{ Params: { pile?: string; id?: string }; Querystring: { name?: string; rarity?: string; credit?: string } }>;
+
+/** The Developer page's card routes: piles, adding cards from photos, editing and deleting. Developer only. */
 export function registerCardsDeveloperApi(api: FastifyInstance) {
-  void loadPhotoList();
+  void loadCatalog();
   api.register(async (dev) => {
     dev.addHook("preHandler", async (request: FastifyRequest, reply: FastifyReply) => {
       if (!(await isDeveloper(request.session!.userId))) return reply.code(403).send({ error: "Only the bot's developer can use this." });
@@ -559,45 +579,70 @@ export function registerCardsDeveloperApi(api: FastifyInstance) {
     dev.addContentTypeParser(["image/jpeg", "image/png", "image/webp", "image/gif"], { parseAs: "buffer", bodyLimit: CARD_PHOTO.maxBytes }, (_req, body, done) =>
       done(null, body),
     );
+    const isImage = (body: unknown): body is Buffer => Buffer.isBuffer(body) && body.length > 0;
 
-    dev.get("/api/developer/cards", async () => photosResponse());
-
-    dev.get<{ Params: { key: string } }>("/api/developer/cards/photos/:key", async (request, reply) => {
-      if (!isPhotoKey(request.params.key)) return reply.code(404).send({ error: "No such photo." });
-      try {
-        return reply.type("image/jpeg").header("cache-control", "private, max-age=60").send(photoFile(request.params.key));
-      } catch {
-        return reply.code(404).send({ error: "No such photo." });
-      }
+    dev.get("/api/developer/cards", async () => {
+      await loadCatalog();
+      return adminResponse();
     });
 
-    dev.put<{ Params: { key: string }; Querystring: { credit?: string } }>("/api/developer/cards/photos/:key", async (request, reply) => {
-      const key = request.params.key;
-      if (!isPhotoKey(key)) return reply.code(400).send({ error: "That isn't a member or card I know." });
-      if (!Buffer.isBuffer(request.body) || !request.body.length) return reply.code(400).send({ error: "Send a JPG, PNG, WebP or GIF picture." });
+    dev.get("/api/developer/cards/pile/:pile", async (request: DevReq, reply) => {
+      if (!pileByKey.has(request.params.pile!)) return reply.code(404).send({ error: "No such pile." });
+      return pileResponse(request.params.pile!);
+    });
+
+    /** Adds a card to a pile. The photo is the body; name, rarity and credit are in the address. */
+    dev.post("/api/developer/cards/pile/:pile", async (request: DevReq, reply) => {
+      const pile = request.params.pile!;
+      if (!pileByKey.has(pile)) return reply.code(400).send({ error: "That isn't a pile I know." });
+      if (!isImage(request.body)) return reply.code(400).send({ error: "Send a JPG, PNG, WebP or GIF picture." });
+      const rarity = (rarities as readonly string[]).includes(request.query.rarity ?? "") ? (request.query.rarity as Rarity) : "common";
       try {
-        await savePhoto(key, request.body, String(request.query.credit ?? "").trim().slice(0, CARD_PHOTO.credit), request.session!.userId);
+        await addCard(pile, request.body, { name: request.query.name ?? "", rarity, credit: request.query.credit ?? "", by: request.session!.userId });
       } catch {
         return reply.code(400).send({ error: "That file couldn't be read as a picture." });
       }
-      return photosResponse();
+      return { ...adminResponse(), ...pileResponse(pile) };
     });
 
-    dev.patch<{ Params: { key: string } }>("/api/developer/cards/photos/:key", async (request, reply) => {
-      const credit = String((request.body as { credit?: string })?.credit ?? "").trim().slice(0, CARD_PHOTO.credit);
-      if (!isPhotoKey(request.params.key)) return reply.code(400).send({ error: "That isn't a member or card I know." });
-      await setCredit(request.params.key, credit);
-      return photosResponse();
+    dev.patch("/api/developer/cards/card/:id", async (request: DevReq, reply) => {
+      const parsed = cardEdit.safeParse(request.body);
+      if (!parsed.success) return reply.code(400).send({ error: parsed.error.issues[0]?.message ?? "Check the card and try again." });
+      const card = await editCard(request.params.id!, parsed.data);
+      if (!card) return reply.code(404).send({ error: "That card isn't there anymore. Reload the page." });
+      return { ...adminResponse(), ...pileResponse(card.pile) };
     });
 
-    dev.delete<{ Params: { key: string } }>("/api/developer/cards/photos/:key", async (request) => {
-      if (isPhotoKey(request.params.key)) await deletePhoto(request.params.key);
-      return photosResponse();
+    /** Swaps a card's photo (the body), keeping its name, rarity and owners. */
+    dev.put("/api/developer/cards/card/:id/photo", async (request: DevReq, reply) => {
+      if (!isImage(request.body)) return reply.code(400).send({ error: "Send a JPG, PNG, WebP or GIF picture." });
+      try {
+        const card = await replacePhoto(request.params.id!, request.body);
+        if (!card) return reply.code(404).send({ error: "That card isn't there anymore. Reload the page." });
+        return { ...adminResponse(), ...pileResponse(card.pile) };
+      } catch {
+        return reply.code(400).send({ error: "That file couldn't be read as a picture." });
+      }
     });
 
-    /** A finished card as a picture, to preview on the Developer page. */
-    dev.get<{ Params: { id: string } }>("/api/developer/cards/preview/:id", async (request, reply) => {
-      const card = cardById.get(request.params.id);
+    dev.delete("/api/developer/cards/card/:id", async (request: DevReq) => {
+      const card = getCard(request.params.id!);
+      if (card) await deleteCard(card.id);
+      return { ...adminResponse(), ...(card ? pileResponse(card.pile) : { cards: [] }) };
+    });
+
+    dev.get("/api/developer/cards/card/:id/photo", async (request: DevReq, reply) => {
+      if (!getCard(request.params.id!)) return reply.code(404).send({ error: "No such card." });
+      try {
+        return reply.type("image/jpeg").header("cache-control", "private, max-age=300").send(photoFile(request.params.id!));
+      } catch {
+        return reply.code(404).send({ error: "No photo." });
+      }
+    });
+
+    /** The finished card as a picture, to preview. */
+    dev.get("/api/developer/cards/card/:id/preview", async (request: DevReq, reply) => {
+      const card = getCard(request.params.id!);
       if (!card) return reply.code(404).send({ error: "No such card." });
       return reply.type("image/png").header("cache-control", "no-store").send(await renderCard(card));
     });
@@ -612,7 +657,7 @@ export const cardsBot: BotFeature = {
   components: [answers],
 
   setup() {
-    void loadPhotoList();
+    void loadCatalog();
     setInterval(prune, 60_000).unref();
   },
 

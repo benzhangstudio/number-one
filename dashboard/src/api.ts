@@ -16,7 +16,7 @@ import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/
 import type { PollInput, PollSettings, PollView, PollVoterView, PollsResponse } from "../../src/shared/polls";
 import type { SuggestionSettings, SuggestionStatusInput, SuggestionsResponse } from "../../src/shared/suggestions";
 import type { ForumAutomation, ForumInput, ForumsResponse, PostAction } from "../../src/shared/forums";
-import type { CardPhotosResponse, CardSettings, CardsResponse } from "../../src/shared/cards";
+import type { CardAdminResponse, CardEdit, CardSettings, CardsResponse, PileCardsResponse, Rarity } from "../../src/shared/cards";
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
 import type { RuleVerificationResponse, RuleVerificationSettings } from "../../src/shared/ruleVerification";
@@ -52,6 +52,14 @@ export class ApiError extends Error {
   ) {
     super(message);
   }
+}
+
+/** Sends a picture file as it is (for card photos). */
+async function sendImage<T>(method: string, path: string, file: File): Promise<T> {
+  const res = await fetch(path, { method, body: file, headers: { "Content-Type": file.type || "image/jpeg" }, credentials: "same-origin" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new ApiError(res.status, (data as { error?: string }).error ?? `Upload failed (${res.status})`);
+  return data as T;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -256,22 +264,19 @@ export const api = {
       (s) => request<CardsResponse>(`/api/guilds/${guildId}/cards/settings`, { method: "PUT", body: JSON.stringify(s) }),
       settings,
     ),
-  cardPhotos: () => request<CardPhotosResponse>("/api/developer/cards"),
-  /** Uploads one photo file as it is (the server crops it). */
-  uploadCardPhoto: async (key: string, file: File, credit: string) => {
-    const res = await fetch(`/api/developer/cards/photos/${encodeURIComponent(key)}?credit=${encodeURIComponent(credit)}`, {
-      method: "PUT",
-      body: file,
-      headers: { "Content-Type": file.type || "image/jpeg" },
-      credentials: "same-origin",
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new ApiError(res.status, (data as { error?: string }).error ?? `Upload failed (${res.status})`);
-    return data as CardPhotosResponse;
-  },
-  setCardPhotoCredit: (key: string, credit: string) =>
-    request<CardPhotosResponse>(`/api/developer/cards/photos/${encodeURIComponent(key)}`, { method: "PATCH", body: JSON.stringify({ credit }) }),
-  deleteCardPhoto: (key: string) => request<CardPhotosResponse>(`/api/developer/cards/photos/${encodeURIComponent(key)}`, { method: "DELETE" }),
+  cardAdmin: () => request<CardAdminResponse>("/api/developer/cards"),
+  pileCards: (pile: string) => request<PileCardsResponse>(`/api/developer/cards/pile/${encodeURIComponent(pile)}`),
+  /** Adds a card to a pile from a photo file (sent as it is; the server crops it). */
+  addCard: (pile: string, file: File, opts: { name: string; rarity: Rarity; credit: string }) =>
+    sendImage<CardAdminResponse & PileCardsResponse>(
+      "POST",
+      `/api/developer/cards/pile/${encodeURIComponent(pile)}?name=${encodeURIComponent(opts.name)}&rarity=${opts.rarity}&credit=${encodeURIComponent(opts.credit)}`,
+      file,
+    ),
+  editCard: (id: string, edit: CardEdit) =>
+    request<CardAdminResponse & PileCardsResponse>(`/api/developer/cards/card/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(edit) }),
+  replaceCardPhoto: (id: string, file: File) => sendImage<CardAdminResponse & PileCardsResponse>("PUT", `/api/developer/cards/card/${encodeURIComponent(id)}/photo`, file),
+  deleteCard: (id: string) => request<CardAdminResponse & PileCardsResponse>(`/api/developer/cards/card/${encodeURIComponent(id)}`, { method: "DELETE" }),
   forums: (guildId: string) => request<ForumsResponse>(`/api/guilds/${guildId}/forums`),
   createForum: (guildId: string, input: ForumInput) => request<ForumsResponse>(`/api/guilds/${guildId}/forums`, { method: "POST", body: JSON.stringify(input) }),
   updateForum: (guildId: string, id: string, input: ForumInput) =>

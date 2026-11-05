@@ -269,7 +269,7 @@ export const cardsFeature = defineFeature({
   id: "cards",
   name: "BLACKPINK Poker",
   icon: "🃏",
-  description: "Collect BLACKPINK photo cards (members, ships like Chaelisa, and the whole group) from Common to Mythic. Open packs, build a team and battle Pokémon-style, and trade with friends. Works with Economy or on its own.",
+  description: "Collect random BLACKPINK photo cards (members, ships like Chaelisa, and the whole group) from Common to Mythic, with new cards added over time. Open packs, build a team and battle Pokémon-style, and trade with friends. Works with Economy or on its own.",
   category: "kpop",
   recommended: true,
   settings: cardSettings,

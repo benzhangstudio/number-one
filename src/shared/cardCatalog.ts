@@ -100,44 +100,41 @@ function findSubject(g: CardGroup, words: string[]) {
 }
 
 /**
- * Works out which card a photo is for from its file name, like "jennie.jpg" or "blackpink-jennie.jpg" (all of
- * Jennie's cards), or "jennie-legend.png" (just that version). Spaces, dashes, dots and underscores all work, and
- * so do accents and capitals. Returns the photo key ("blackpink.jennie" or "blackpink.jennie.legend"), or null.
+ * Works out which pile a photo is for from its file name, and a name for the card from any words after that:
+ * "jennie.jpg" → Jennie's pile; "blackpink-jennie-pink-venom.jpg" → Jennie's pile, card "Pink Venom";
+ * "rose-lisa airport.png" → Chaelisa's pile, card "Airport"; "ot4.jpg" → the group pile.
+ * Spaces, dashes, dots and underscores all work, and so do accents and capitals. Returns null when no pile matches.
  */
-export function photoKeyFromFileName(fileName: string, versionIds: { id: string; name: string }[]): string | null {
+export function pileFromFileName(fileName: string): { pile: string; name: string } | null {
   const base = fileName.replace(/\.[a-z0-9]+$/i, "").replace(/\s*\(\d+\)$/, "");
   const parts = base
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter(Boolean);
-  for (let g = 1; g <= Math.min(4, parts.length - 1); g++) {
+  const named = (rest: string[]) => {
+    // Plain numbers ("jennie-2.jpg") aren't a name; the card gets a default one instead.
+    if (!rest.length || rest.every((w) => /^\d+$/.test(w))) return "";
+    return rest.map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
+  };
+  // Longer matches first, so "jennie-lisa" is Jenlisa's pile rather than Jennie's pile with a card called "Lisa".
+  for (let g = Math.min(4, parts.length - 1); g >= 1; g--) {
     const joined = parts.slice(0, g).join("");
     const group = groupById.get(groupAliases[joined] ?? joined);
     if (!group) continue;
-    for (let m = 1; m <= Math.min(3, parts.length - g); m++) {
-      const memberId = parts.slice(g, g + m).join("");
-      const member = findSubject(group, parts.slice(g, g + m));
-      if (!member) continue;
-      const rest = parts.slice(g + m).join("");
-      if (!rest) return `${group.id}.${member.id}`;
-      const version = versionIds.find((v) => v.id === rest || slug(v.name) === rest);
-      if (version) return `${group.id}.${member.id}.${version.id}`;
+    for (let m = Math.min(3, parts.length - g); m >= 1; m--) {
+      const subject = findSubject(group, parts.slice(g, g + m));
+      if (subject) return { pile: `${group.id}.${subject.id}`, name: named(parts.slice(g + m)) };
     }
   }
-  // Just the member's name ("jennie.jpg", "lisa-legend.png") works when only one group has that member.
-  for (let m = 1; m <= Math.min(3, parts.length); m++) {
+  // Just the name ("jennie.jpg", "chaelisa-airport.png", "blackpink.jpg") works when only one group has it.
+  for (let m = Math.min(3, parts.length); m >= 1; m--) {
     const found = cardGroups.flatMap((g) => {
       const x = findSubject(g, parts.slice(0, m));
       return x ? [{ g, x }] : [];
     });
-    if (found.length !== 1) continue;
-    const { g, x } = found[0];
-    const rest = parts.slice(m).join("");
-    if (!rest) return `${g.id}.${x.id}`;
-    const version = versionIds.find((v) => v.id === rest || slug(v.name) === rest);
-    if (version) return `${g.id}.${x.id}.${version.id}`;
+    if (found.length === 1) return { pile: `${found[0].g.id}.${found[0].x.id}`, name: named(parts.slice(m)) };
   }
   return null;
 }

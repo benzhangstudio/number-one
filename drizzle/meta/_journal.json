@@ -239,6 +239,13 @@
       "when": 1793849831749,
       "tag": "0033_cards",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "6",
+      "when": 1793855473849,
+      "tag": "0034_card_defs",
+      "breakpoints": true
     }
   ]
 }

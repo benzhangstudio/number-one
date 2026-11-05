@@ -1,12 +1,12 @@
 import { createRequire } from "node:module";
 import { type SKRSContext2D, GlobalFonts, createCanvas } from "@napi-rs/canvas";
-import { CARD_COUNT, type Card, cardTypes, rarityInfo, typeInfo } from "../../shared/cards.js";
-import { photoImage, photoOf } from "./photos.js";
+import { type Card, cardTypes, rarityInfo, typeInfo } from "../../shared/cards.js";
+import { cardCount, photoImage } from "./catalog.js";
 
 /**
  * Draws a card as a picture: the uploaded photo in a frame coloured by rarity, with the member's name, HP,
  * type, move and power, like a Pokémon card. Nothing is drawn in place of a person: a card without a photo
- * shows "Photo coming soon".
+ * shows "Photo unavailable".
  */
 
 const require = createRequire(import.meta.url);
@@ -101,7 +101,7 @@ async function drawCard(ctx: SKRSContext2D, card: Card) {
   ctx.textAlign = "left";
   ctx.fillStyle = TEXT;
   ctx.font = `800 26px ${FONT}`;
-  ctx.fillText(fit(ctx, card.memberName, CARD_W - 110 - hpW), 24, 50);
+  ctx.fillText(fit(ctx, card.subject, CARD_W - 110 - hpW), 24, 50);
 
   // Photo.
   const px = 24;
@@ -110,8 +110,7 @@ async function drawCard(ctx: SKRSContext2D, card: Card) {
   ctx.save();
   rounded(ctx, px, py, ps, ps, 12);
   ctx.clip();
-  const photo = photoOf(card);
-  const img = photo ? await photoImage(photo.key) : null;
+  const img = await photoImage(card.id);
   if (img) ctx.drawImage(img, px, py, ps, ps);
   else {
     const bg = ctx.createLinearGradient(px, py, px + ps, py + ps);
@@ -122,7 +121,7 @@ async function drawCard(ctx: SKRSContext2D, card: Card) {
     ctx.fillStyle = "rgba(255,255,255,0.75)";
     ctx.font = `700 18px ${FONT}`;
     ctx.textAlign = "center";
-    ctx.fillText("Photo coming soon", px + ps / 2, py + ps / 2 + 6);
+    ctx.fillText("Photo unavailable", px + ps / 2, py + ps / 2 + 6);
     ctx.textAlign = "left";
   }
   // Soft shade at the top so the labels stay readable on bright photos.
@@ -155,9 +154,9 @@ async function drawCard(ctx: SKRSContext2D, card: Card) {
   ctx.font = `400 14px ${FONT}`;
   ctx.fillStyle = MUTED;
   const who = card.kind === "group" ? "Group" : card.about;
-  ctx.fillText(fit(ctx, who ? `${who} · ${card.version}` : card.version, 230), 24, 400);
+  ctx.fillText(fit(ctx, who ? `${card.name} · ${who}` : card.name, 230), 24, 400);
   ctx.textAlign = "right";
-  ctx.fillText(`#${String(card.number).padStart(4, "0")} / ${CARD_COUNT}`, CARD_W - 24, 400);
+  ctx.fillText(`#${String(card.number).padStart(3, "0")} / ${cardCount()}`, CARD_W - 24, 400);
   ctx.textAlign = "left";
 
   // Move.
@@ -191,14 +190,14 @@ async function drawCard(ctx: SKRSContext2D, card: Card) {
   ctx.font = `700 13px ${FONT}`;
   const after = 32 + rarityInfo[card.rarity].stars * 18;
   ctx.fillText(rarityInfo[card.rarity].name, after, 529);
-  if (photo?.credit) {
+  if (card.credit) {
     ctx.font = `400 11px ${FONT}`;
     ctx.fillStyle = MUTED;
     ctx.textAlign = "right";
     ctx.font = `700 13px ${FONT}`;
     const used = after + ctx.measureText(rarityInfo[card.rarity].name).width + 14;
     ctx.font = `400 11px ${FONT}`;
-    ctx.fillText(fit(ctx, photo.credit, CARD_W - 24 - used), CARD_W - 24, 529);
+    ctx.fillText(fit(ctx, card.credit, CARD_W - 24 - used), CARD_W - 24, 529);
     ctx.textAlign = "left";
   }
 }
@@ -210,8 +209,7 @@ const MAX_CACHE = 200;
 
 /** One card, as a PNG. */
 export async function renderCard(card: Card) {
-  const photo = photoOf(card);
-  const key = `${card.id}@${photo?.updatedAt ?? 0}`;
+  const key = `${card.id}@${card.updatedAt}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const canvas = createCanvas(CARD_W, CARD_H);

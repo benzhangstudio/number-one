@@ -1,18 +1,19 @@
 import { z } from "zod";
-import { type CardGroup, cardGroups, photoKeyFromFileName } from "./cardCatalog.js";
+import { type CardGroup, cardGroups } from "./cardCatalog.js";
 
 /**
  * The BLACKPINK card game: shapes shared by the bot and the dashboard.
  * Members open packs, collect cards, build a team of 3 and battle Number One or each other, Pokémon-style:
  * each card has a type, HP and a move, and types beat each other in a cycle. Cards can be traded and gifted.
  *
+ * Cards live in piles: one per member, ship (like Chaelisa) and the whole group (src/shared/cardCatalog.ts).
+ * The bot's developer adds cards on the Developer page: every uploaded photo becomes a card in its pile, with
+ * its own name, rarity and type, and a pile can have any number of them. Packs pull at random from every
+ * active card, weighted by rarity, like a gacha.
+ *
  * Two modes, picked per server:
  * - With Economy: packs cost the server's Economy currency, duplicates sell for it, and battle wins pay it.
  * - Cards only: no money at all. Members get a free daily pack and play just for fun.
- *
- * Every card is made from the catalog (src/shared/cardCatalog.ts): seven versions, from Common to Mythic, for each
- * BLACKPINK member, each ship (like Chaelisa) and the whole group. Stats come from a hash of the card's ID, so they never change between restarts.
- * Each card shows a photo the bot's developer uploaded; cards without a photo aren't in packs yet.
  */
 
 /* ------------------------------------------------------------ rarities, types and versions */
@@ -49,45 +50,54 @@ export function typeBonus(attacker: CardType, defender: CardType) {
   return 1;
 }
 
-export const versions = [
-  { id: "debut", name: "Debut Day", rarity: "common" },
-  { id: "practice", name: "Practice Room", rarity: "common" },
-  { id: "comeback", name: "Comeback", rarity: "rare" },
-  { id: "stage", name: "Live Stage", rarity: "rare" },
-  { id: "award", name: "Award Night", rarity: "epic" },
-  { id: "legend", name: "Legend", rarity: "legendary" },
-] as const satisfies readonly { id: string; name: string; rarity: Rarity }[];
+/* ------------------------------------------------------------ piles and cards */
 
-/** Extra versions only some groups have. */
-const specialVersions: Record<string, { id: string; name: string; rarity: Rarity }[]> = {
-  blackpink: [{ id: "crown", name: "Pink Crown", rarity: "mythic" }],
-};
-
-/* ------------------------------------------------------------ cards */
-
-export interface Card {
-  /** "group.member.version", like "blackpink.jennie.legend". Never changes. */
-  id: string;
-  /** 1, 2, 3… across the whole catalog. */
-  number: number;
+/** A pile: a member, ship or the group, like "blackpink.jennie" or "blackpink.chaelisa". */
+export interface Pile {
+  key: string;
   groupId: string;
   groupName: string;
-  gen: CardGroup["gen"];
-  memberName: string;
-  /** "member", "ship" or "group". */
+  subject: string;
   kind: "member" | "ship" | "group";
   /** Who's on a ship or group card, like "Rosé & Lisa". Empty for members. */
   about: string;
-  version: string;
+  color: string;
+}
+
+export const piles: Pile[] = cardGroups.flatMap((g) =>
+  g.members.map((m) => ({ key: `${g.id}.${m.id}`, groupId: g.id, groupName: g.name, subject: m.name, kind: m.kind, about: m.about, color: g.color })),
+);
+export const pileByKey = new Map(piles.map((p) => [p.key, p]));
+
+export interface Card {
+  /** Never changes, like "blackpink.jennie.k3f9x2" (the pile, then a random part). */
+  id: string;
+  /** 1, 2, 3… in the order cards were added. */
+  number: number;
+  pile: string;
+  groupId: string;
+  groupName: string;
+  /** Who's on it: "Jennie", "Chaelisa" or "BLACKPINK". */
+  subject: string;
+  kind: Pile["kind"];
+  about: string;
+  /** The card's own name, like "Pink Venom" or "Airport". */
+  name: string;
   rarity: Rarity;
   type: CardType;
   hp: number;
   power: number;
   color: string;
+  /** Photo credit, shown small on the card. */
+  credit: string;
+  /** Only active cards come out of packs. Members keep the ones they have either way. */
+  active: boolean;
+  /** ms since 1970: the photo or details last changed. */
+  updatedAt: number;
 }
 
 /** A small, steady hash: the same text always gives the same number. */
-function hash(text: string) {
+export function hash(text: string) {
   let h = 2166136261;
   for (let i = 0; i < text.length; i++) {
     h ^= text.charCodeAt(i);
@@ -98,43 +108,24 @@ function hash(text: string) {
 
 const between = ([lo, hi]: [number, number], seed: number) => lo + (seed % (hi - lo + 1));
 
-function makeCards() {
-  const cards: Card[] = [];
-  for (const g of cardGroups) {
-    for (const m of g.members) {
-      for (const v of [...versions, ...(specialVersions[g.id] ?? [])]) {
-        const id = `${g.id}.${m.id}.${v.id}`;
-        const h = hash(id);
-        const r = rarityInfo[v.rarity];
-        cards.push({
-          id,
-          number: cards.length + 1,
-          groupId: g.id,
-          groupName: g.name,
-          gen: g.gen,
-          memberName: m.name,
-          kind: m.kind,
-          about: m.about,
-          version: v.name,
-          rarity: v.rarity,
-          type: cardTypes[h % cardTypes.length],
-          // Ship and group cards are a little sturdier: more people, more HP.
-          hp: Math.round(between(r.hp, h >>> 3) / 5) * 5 + (m.kind === "ship" ? 10 : m.kind === "group" ? 20 : 0),
-          power: between(r.power, h >>> 11),
-          color: g.color,
-        });
-      }
-    }
-  }
-  return cards;
+/**
+ * A card's HP and power, from its rarity (and a hash of its ID, so they don't change). Ship cards get 10 more HP
+ * and the group card 20 more: more people, more HP.
+ */
+export function statsFor(id: string, rarity: Rarity, kind: Pile["kind"]) {
+  const h = hash(id);
+  const r = rarityInfo[rarity];
+  return {
+    hp: Math.round(between(r.hp, h >>> 3) / 5) * 5 + (kind === "ship" ? 10 : kind === "group" ? 20 : 0),
+    power: between(r.power, h >>> 11),
+  };
 }
 
-export const cards: Card[] = makeCards();
-export const cardById = new Map(cards.map((c) => [c.id, c]));
-export const CARD_COUNT = cards.length;
+/** A type for a new card, picked from a hash of its ID. */
+export const typeFor = (id: string): CardType => cardTypes[hash(id) % cardTypes.length];
 
-/** "Jennie · Legend (BLACKPINK)" */
-export const cardLabel = (c: Card) => `${c.memberName} · ${c.version} (${c.groupName})`;
+/** "Jennie · Pink Venom" */
+export const cardLabel = (c: Card) => `${c.subject} · ${c.name}`;
 
 /** How strong a card is overall, for sorting and picking teams. */
 export const cardScore = (c: Card) => c.hp + c.power * 3;
@@ -200,14 +191,6 @@ export const cardSettings = z.object({
 });
 export type CardSettings = z.infer<typeof cardSettings>;
 
-/** The member a card belongs to, like "blackpink.jennie": a photo uploaded for it is used for all their cards. */
-export const memberKey = (cardId: string) => cardId.split(".").slice(0, 2).join(".");
-
-/** The cards packs can give: only cards with a photo. */
-export function packPool(_s: CardSettings, _kind: PackKind, hasPhoto: (c: Card) => boolean) {
-  return cards.filter(hasPhoto);
-}
-
 /* ------------------------------------------------------------ dashboard */
 
 export interface CardCollectorView {
@@ -222,7 +205,7 @@ export interface CardsResponse {
   /** The mode actually in use: With Economy falls back to Cards only while Economy is switched off. */
   mode: CardMode;
   economyOff: boolean;
-  /** Cards that have a photo and can come out of packs, in this server. */
+  /** Active cards that can come out of packs. */
   ready: number;
   currency: { singular: string; plural: string; emoji: string };
   stats: { owned: number; collectors: number; catalog: number };
@@ -230,7 +213,7 @@ export interface CardsResponse {
   problems: string[];
 }
 
-/* ------------------------------------------------------------ photos (Developer page) */
+/* ------------------------------------------------------------ managing cards (Developer page) */
 
 export const CARD_PHOTO = {
   /** The photo area on a card, in pixels (photos are cropped to fill it). */
@@ -238,24 +221,35 @@ export const CARD_PHOTO = {
   height: 624,
   /** Largest upload. */
   maxBytes: 8 * 1024 * 1024,
+  name: 40,
   credit: 60,
 } as const;
 
-export interface CardPhotoInfo {
-  credit: string;
-  updatedAt: number;
+/** What the developer can change about a card. */
+export const cardEdit = z.object({
+  name: z.string().trim().min(1, "Give the card a name").max(CARD_PHOTO.name),
+  rarity: z.enum(rarities),
+  type: z.enum(cardTypes),
+  credit: z.string().trim().max(CARD_PHOTO.credit).default(""),
+  active: z.boolean(),
+});
+export type CardEdit = z.infer<typeof cardEdit>;
+
+export interface PileView extends Pile {
+  /** Cards in the pile, and how many of them are active. */
+  count: number;
+  active: number;
+  /** The newest card, to show on the pile's tile. */
+  cover: { id: string; updatedAt: number } | null;
 }
 
-export interface CardPhotosResponse {
-  /** Photo key ("group.member" or a card ID) → its info. */
-  photos: Record<string, CardPhotoInfo>;
-  /** Cards that have a photo (their own or their member's). */
-  ready: number;
+export interface CardAdminResponse {
+  piles: PileView[];
   total: number;
+  active: number;
 }
 
-/** Every version a card can have, for matching photo file names. */
-export const allVersions = [...versions, ...Object.values(specialVersions).flat()];
-
-/** The photo key a file is for, from its name (see photoKeyFromFileName). */
-export const photoKeyForFile = (fileName: string) => photoKeyFromFileName(fileName, allVersions);
+/** A pile's cards, newest first, and how many members own each. */
+export interface PileCardsResponse {
+  cards: (Card & { owned: number })[];
+}
