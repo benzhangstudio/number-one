@@ -28,7 +28,7 @@ export const announcements: Announcement[] = [
     emoji: "🃏",
     body: `Collect random BLACKPINK photo cards: each member, all six ships like Chaelisa, and the whole group, from Common to Mythic, with new cards added over time. Find it in the new **K-pop** section.
 
-- Open packs with **/cards daily** and **/cards open**.
+- Open packs with **/cards daily** and **/cards buy**.
 - Build a team of 3 and **battle** Number One or your friends, Pokémon-style.
 - **Trade** and gift cards, and play **With Economy** or **Cards only**.`,
   },

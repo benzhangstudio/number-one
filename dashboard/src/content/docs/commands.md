@@ -80,7 +80,7 @@ Part of the [BLACKPINK Poker](/docs/cards) module. Everyone can use these.
 | Command | What it does |
 | --- | --- |
 | `/cards daily` | Opens your free daily pack. |
-| `/cards open pack` | Buys and opens a pack (With Economy). |
+| `/cards buy pack` | Buys a pack and opens it (With Economy). |
 | `/cards packs` | Shows the packs and prices. |
 | `/cards collection [member] [card]` | Flips through a collection one card at a time, with ◀ Back and Next ▶ buttons. |
 | `/cards view card` | Shows a card up close. |

@@ -193,7 +193,7 @@ async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, 
         s.pullRewards.enabled
           ? `💰 **Every card you pull pays coins**\n${rarities.map((r) => `${rarityInfo[r].name}: ${pullRange(s, r)}`).join(" · ")}`
           : "",
-        "Open one with `/cards open`. Sell duplicates with `/cards sell-duplicates`.",
+        "Buy one with `/cards buy`. Sell duplicates with `/cards sell-duplicates`.",
       ]
         .filter(Boolean)
         .join("\n\n"),
@@ -441,8 +441,8 @@ const cardsCommand: SlashCommand = {
     .addSubcommand((c) => c.setName("daily").setDescription("Open your free daily pack"))
     .addSubcommand((c) =>
       c
-        .setName("open")
-        .setDescription("Buy and open a pack")
+        .setName("buy")
+        .setDescription("Buy a card pack and open it")
         .addStringOption((o) =>
           o
             .setName("pack")
@@ -516,7 +516,7 @@ const cardsCommand: SlashCommand = {
     const mode = await modeOf(interaction.guildId, s);
     const sub = interaction.options.getSubcommand();
     if (sub === "daily") return daily(interaction, s, mode);
-    if (sub === "open") return open(interaction, s, mode);
+    if (sub === "buy") return open(interaction, s, mode);
     if (sub === "packs") return packs(interaction, s, mode);
     if (sub === "collection") return collection(interaction);
     if (sub === "view") return view(interaction);
