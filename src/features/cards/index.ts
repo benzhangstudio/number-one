@@ -32,6 +32,9 @@ import {
   cardEdit,
   cardLabel,
   cardSettings,
+  type GiveMember,
+  type GiveServer,
+  givePacksInput,
   packInfo,
   pileByKey,
   piles,
@@ -863,6 +866,46 @@ export function registerCardsDeveloperApi(api: FastifyInstance) {
       done(null, body),
     );
     const isImage = (body: unknown): body is Buffer => Buffer.isBuffer(body) && body.length > 0;
+
+    /* Giving packs to a member by hand. */
+    dev.get("/api/developer/cards/servers", async (): Promise<GiveServer[]> =>
+      [...client.guilds.cache.values()]
+        .map((g) => ({ id: g.id, name: g.name, icon: g.iconURL({ size: 64 }), members: g.memberCount }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    );
+
+    dev.get("/api/developer/cards/servers/:guildId/members", async (request: FastifyRequest<{ Params: { guildId: string }; Querystring: { q?: string } }>, reply) => {
+      const guild = client.guilds.cache.get(request.params.guildId);
+      if (!guild) return reply.code(404).send({ error: "Number One isn't in that server anymore." });
+      const q = (request.query.q ?? "").trim().replace(/^<@!?(\d+)>$/, "$1");
+      if (!q) return [];
+      const found = /^\d{15,20}$/.test(q)
+        ? [await guild.members.fetch(q).catch(() => null)].filter((m) => m !== null)
+        : [...(await guild.members.search({ query: q.slice(0, 32), limit: 10 }).catch(() => new Map())).values()];
+      return found
+        .filter((m) => !m.user.bot)
+        .map((m): GiveMember => ({ id: m.id, name: m.displayName, username: m.user.username, avatar: m.displayAvatarURL({ size: 64 }) }));
+    });
+
+    dev.post("/api/developer/cards/give", async (request, reply) => {
+      const parsed = givePacksInput.safeParse(request.body);
+      if (!parsed.success) return reply.code(400).send({ error: "Pick a server, a member, a pack and how many (1–100)." });
+      const { guildId, userId, kind, amount, dm } = parsed.data;
+      const guild = client.guilds.cache.get(guildId);
+      if (!guild) return reply.code(404).send({ error: "Number One isn't in that server anymore." });
+      const member = await guild.members.fetch(userId).catch(() => null);
+      if (!member || member.user.bot) return reply.code(404).send({ error: "That member isn't in the server." });
+      const bag = store.givePacks(guildId, userId, kind, amount);
+      let dmSent = false;
+      if (dm) {
+        const what = `${amount} ${packInfo[kind].name.toLowerCase()}${amount === 1 ? "" : "s"}`;
+        dmSent = await member
+          .send(`🎁 You got **${what}** ${packInfo[kind].emoji} for BLACKPINK Poker in **${guild.name}**! Open them one at a time with \`/cards open\` there.`)
+          .then(() => true)
+          .catch(() => false);
+      }
+      return { bag, dmSent };
+    });
 
     dev.get("/api/developer/cards", async () => {
       await loadCatalog();

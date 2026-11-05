@@ -15,6 +15,7 @@ import {
 import { api } from "../api";
 import { navigate } from "../router";
 import { CardManager } from "./CardManager";
+import { GivePacks } from "./GivePacks";
 import { Toggle } from "../components/pickers";
 import { DiscordText } from "../components/DiscordText";
 
@@ -44,6 +45,7 @@ const sections = [
   { id: "update", icon: "📣", name: "New update" },
   { id: "sent", icon: "📬", name: "Sent updates" },
   { id: "cards", icon: "🃏", name: "BLACKPINK Poker cards" },
+  { id: "give", icon: "🎁", name: "Give packs" },
 ] as const;
 type SectionId = (typeof sections)[number]["id"];
 
@@ -155,6 +157,7 @@ export function DeveloperPage({ section: asked = "" }: { section?: string }) {
     ),
     sent: "Updates you've posted, with how many servers got them.",
     cards: "Add, edit and remove the cards members can pull.",
+    give: "Put BLACKPINK Poker packs straight into a member's bag, for free. They open them with /cards open.",
   };
   const last = data.updates[0];
 
@@ -359,6 +362,7 @@ export function DeveloperPage({ section: asked = "" }: { section?: string }) {
       ))}
 
       {section === "cards" && <CardManager />}
+      {section === "give" && <GivePacks />}
       </section>
     </div>
   );

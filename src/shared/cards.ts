@@ -275,3 +275,32 @@ export interface CardAdminResponse {
 export interface PileCardsResponse {
   cards: (Card & { owned: number })[];
 }
+
+/* ------------------------------------------------------------ developer: giving packs */
+
+export interface GiveServer {
+  id: string;
+  name: string;
+  icon: string | null;
+  members: number;
+}
+export interface GiveMember {
+  id: string;
+  name: string;
+  username: string;
+  avatar: string;
+}
+export const MAX_GIFT_PACKS = 100;
+export const givePacksInput = z.object({
+  guildId: z.string().regex(/^\d{15,20}$/),
+  userId: z.string().regex(/^\d{15,20}$/),
+  kind: z.enum(["standard", "premium"]),
+  amount: z.number().int().min(1).max(MAX_GIFT_PACKS),
+  /** Send them a DM saying they got packs. */
+  dm: z.boolean().default(true),
+});
+export type GivePacksInput = z.infer<typeof givePacksInput>;
+export interface GivePacksResult {
+  bag: { standard: number; premium: number };
+  dmSent: boolean;
+}

@@ -6462,3 +6462,69 @@ select.chip-add {
 .dev-warn {
   color: var(--warning);
 }
+
+/* --- Developer console: give packs --- */
+.give-packs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 560px;
+}
+.give-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.give-member {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+button.give-member {
+  cursor: pointer;
+}
+button.give-member:hover {
+  border-color: var(--accent);
+}
+.give-member img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex: none;
+}
+.give-member > span {
+  flex: 1;
+  min-width: 0;
+}
+.give-member.picked {
+  border-color: var(--accent);
+}
+.give-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.give-kinds .chip {
+  padding: 6px 14px;
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+}
+.give-kinds .chip.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.give-done {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+}

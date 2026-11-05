@@ -100,6 +100,15 @@ export function buyPacks(guildId: string, userId: string, kind: StoredPack, amou
   });
 }
 
+/** Puts packs in a member's bag for free (the developer giving them out). Returns the new bag. */
+export function givePacks(guildId: string, userId: string, kind: StoredPack, amount: number): Bag {
+  return atomic(() => {
+    q("makePlayer").run(guildId, userId);
+    q(kind === "standard" ? "addStandard" : "addPremium").run(amount, guildId, userId);
+    return bagOf(guildId, userId);
+  });
+}
+
 /** Opens one pack from the bag: takes it out and adds its cards. Null when they have none of that kind. */
 export function openFromBag(guildId: string, userId: string, kind: StoredPack, cardIds: string[]): Bag | null {
   return atomic(() => {

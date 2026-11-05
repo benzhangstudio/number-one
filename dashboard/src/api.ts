@@ -16,7 +16,7 @@ import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/
 import type { PollInput, PollSettings, PollView, PollVoterView, PollsResponse } from "../../src/shared/polls";
 import type { SuggestionSettings, SuggestionStatusInput, SuggestionsResponse } from "../../src/shared/suggestions";
 import type { ForumAutomation, ForumInput, ForumsResponse, PostAction } from "../../src/shared/forums";
-import type { CardAdminResponse, CardEdit, CardSettings, CardsResponse, PileCardsResponse, Rarity } from "../../src/shared/cards";
+import type { CardAdminResponse, CardEdit, CardSettings, CardsResponse, GiveMember, GivePacksInput, GivePacksResult, GiveServer, PileCardsResponse, Rarity } from "../../src/shared/cards";
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
 import type { RuleVerificationResponse, RuleVerificationSettings } from "../../src/shared/ruleVerification";
@@ -265,6 +265,9 @@ export const api = {
       settings,
     ),
   cardAdmin: () => request<CardAdminResponse>("/api/developer/cards"),
+  giveServers: () => request<GiveServer[]>("/api/developer/cards/servers"),
+  giveMembers: (guildId: string, q: string) => request<GiveMember[]>(`/api/developer/cards/servers/${guildId}/members?q=${encodeURIComponent(q)}`),
+  givePacks: (input: GivePacksInput) => request<GivePacksResult>("/api/developer/cards/give", { method: "POST", body: JSON.stringify(input) }),
   pileCards: (pile: string) => request<PileCardsResponse>(`/api/developer/cards/pile/${encodeURIComponent(pile)}`),
   /** Adds a card to a pile from a photo file (sent as it is; the server crops it). */
   addCard: (pile: string, file: File, opts: { name: string; rarity: Rarity; credit: string }) =>
