@@ -146,6 +146,12 @@ export function EconomyPanel({ guild }: { guild: Guild }) {
             checked={draft.payEnabled}
             onChange={(v) => set((d) => { d.payEnabled = v; })}
           />
+          <Toggle
+            label="🔔 Cooldown reminders"
+            hint="Members can press a button under /daily or /work to be mentioned when it's ready again. Off by default for each member."
+            checked={draft.reminders}
+            onChange={(v) => set((d) => { d.reminders = v; })}
+          />
         </section>
       </div>
 

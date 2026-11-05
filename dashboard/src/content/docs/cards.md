@@ -61,6 +61,10 @@ With Economy, every card pulled from a pack (including the daily pack) pays a ra
 | Legendary | 50–120 |
 | Mythic | 250–500 |
 
+### Daily pack reminders
+
+Under the daily pack there's a **🔔 Remind me when it's ready** button. Members who press it get mentioned in that channel each time their next daily pack is ready, until they press **🔕 Stop reminders**. You can switch the button off on the dashboard.
+
 ## Battles
 
 Each member has a **team of 3**, picked with `/cards team`. Empty spots are filled with their strongest cards.

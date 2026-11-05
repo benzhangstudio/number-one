@@ -20,6 +20,7 @@ import { economyFeature, levelsFeature } from "../../shared/features.js";
 import { blackjackButtons, blackjackCommand, coinflipCommand, pruneGameCooldowns, slotsCommand } from "./games.js";
 import { buyCommand, inventoryCommand, registerShopApi, shopCommand, shopItemsView, shopProblems, takeItem, takeItemSuggestions } from "./shop.js";
 import * as store from "./store.js";
+import { afterClaim, registerReminderKind, reminderButtons, startReminders } from "../reminders/cooldowns.js";
 
 /**
  * Economy: a currency each server names itself. Members earn it by chatting, with /daily, /work and
@@ -145,7 +146,8 @@ const dailyCommand: SlashCommand = {
           .filter((l, i) => l || i !== 1)
           .join("\n"),
       );
-    return interaction.reply({ embeds: [embed], allowedMentions: { parse: [] } });
+    const components = await afterClaim(interaction.guildId, interaction.user.id, "daily", interaction.channelId, Date.now() + DAILY_COOLDOWN_HOURS * 3600_000);
+    return interaction.reply({ embeds: [embed], components, allowedMentions: { parse: [] } });
   },
 };
 
@@ -174,7 +176,8 @@ const workCommand: SlashCommand = {
     const r = store.claimWork(interaction.guildId, interaction.user.id, s.startingBalance, s.work.cooldownMinutes, between(s.work.min, s.work.max));
     if (!r.ok) return interaction.reply(`You're still tired from your last job. You can work again ${relative(r.nextAt)}.`);
     const job = JOBS[Math.floor(Math.random() * JOBS.length)].replace("{money}", formatMoney(s.currency, r.amount));
-    return interaction.reply({ content: `💼 ${job}\n-# Balance: ${formatMoney(s.currency, r.balance, false)}`, allowedMentions: { parse: [] } });
+    const components = await afterClaim(interaction.guildId, interaction.user.id, "work", interaction.channelId, Date.now() + s.work.cooldownMinutes * 60_000);
+    return interaction.reply({ content: `💼 ${job}\n-# Balance: ${formatMoney(s.currency, r.balance, false)}`, components, allowedMentions: { parse: [] } });
   },
 };
 
@@ -366,10 +369,18 @@ export const economyBot: BotFeature = {
     blackjackCommand,
     adminCommand,
   ],
-  components: [blackjackButtons],
+  components: [blackjackButtons, reminderButtons],
   events: [messageSent],
 
   setup() {
+    const allowed = (pick: (s: EconomySettings) => boolean) => async (guildId: string) => {
+      if (!(await isFeatureEnabled(guildId, economyFeature))) return false;
+      const s = await settingsOf(guildId);
+      return s.reminders && pick(s);
+    };
+    registerReminderKind("daily", { command: "/daily", what: "daily reward", allowed: allowed((s) => s.daily.enabled) });
+    registerReminderKind("work", { command: "/work", what: "next shift at work", allowed: allowed((s) => s.work.enabled) });
+    startReminders(client);
     const hourly = () => {
       const cutoff = Date.now() - 60 * 60 * 1000;
       for (const [key, at] of lastChat) if (at < cutoff) lastChat.delete(key);

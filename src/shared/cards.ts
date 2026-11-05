@@ -199,6 +199,8 @@ export const cardSettings = z.object({
     .prefault({}),
   /** A free pack of 3 cards every 20 hours. */
   daily: z.boolean().default(true),
+  /** Members can ask to be @mentioned when their daily pack is ready again (opt-in, with a button). */
+  reminders: z.boolean().default(true),
   battles: z
     .object({
       enabled: z.boolean().default(true),

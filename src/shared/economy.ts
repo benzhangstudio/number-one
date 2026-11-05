@@ -65,6 +65,8 @@ export const economySettings = z.object({
   levelUpReward: amount(1_000_000).default(50),
   /** Members can send each other money with /pay. */
   payEnabled: z.boolean().default(true),
+  /** Members can ask to be @mentioned when /daily or /work is ready again (opt-in, with a button). */
+  reminders: z.boolean().default(true),
   /** The shop: /shop, /buy and /inventory. Items are set up on the dashboard. */
   shop: z
     .object({

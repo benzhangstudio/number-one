@@ -786,3 +786,20 @@ export const economyInventory = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.guildId, t.userId, t.itemId] }), index("economy_inventory_item_idx").on(t.itemId)],
 );
+
+/**
+ * Members who asked to be @mentioned when a cooldown ends (/daily, /work, /cards daily).
+ * `always` = they turned reminders on for this command; `dueAt` = when the next reminder goes out (null = none waiting).
+ */
+export const cooldownReminders = sqliteTable(
+  "cooldown_reminders",
+  {
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    kind: text("kind").notNull(),
+    always: integer("always", { mode: "boolean" }).notNull().default(false),
+    channelId: text("channel_id"),
+    dueAt: integer("due_at"),
+  },
+  (t) => [primaryKey({ columns: [t.guildId, t.userId, t.kind] }), index("cooldown_reminders_due").on(t.dueAt)],
+);

@@ -47,6 +47,7 @@ import { battle, openPack, rivalTeam, shortLog, teamOf } from "./game.js";
 import { activeCards, activeCount, addCard, allCards, cardCount, deleteCard, editCard, getCard, loadCatalog, ownersByCard, photoFile, pileCards, replacePhoto } from "./catalog.js";
 import { renderCard, renderRow } from "./render.js";
 import * as store from "./store.js";
+import { afterClaim, registerReminderKind, startReminders } from "../reminders/cooldowns.js";
 
 /**
  * BLACKPINK Poker: /cards to open packs, collect, build a team, battle, trade and gift.
@@ -158,7 +159,8 @@ async function daily(i: ChatInputCommandInteraction<"cached">, s: CardSettings, 
   const before = store.collectionOf(i.guildId, i.user.id);
   if (!store.claimDaily(i.guildId, i.user.id, DAILY_MS, list.map((c) => c.id))) return i.editReply("You already opened today's pack.");
   const paid = await payPulls(i.guildId, i.user.id, s, mode, list);
-  return i.editReply(await packReply(i.user.id, "🎁 Daily pack", list, before, "Come back in 20 hours for another one.", paid.note));
+  const components = await afterClaim(i.guildId, i.user.id, "cards", i.channelId, Date.now() + DAILY_MS);
+  return i.editReply({ ...(await packReply(i.user.id, "🎁 Daily pack", list, before, "Come back in 20 hours for another one.", paid.note)), components });
 }
 
 const bagText = (bag: store.Bag) =>
@@ -982,8 +984,18 @@ export const cardsBot: BotFeature = {
   commands: [cardsCommand],
   components: [answers],
 
-  setup() {
+  setup(client) {
     void loadCatalog();
+    registerReminderKind("cards", {
+      command: "/cards daily",
+      what: "free daily card pack",
+      allowed: async (guildId) => {
+        if (!(await isFeatureEnabled(guildId, cardsFeature))) return false;
+        const s = await settingsOf(guildId);
+        return s.daily && s.reminders;
+      },
+    });
+    startReminders(client);
     setInterval(prune, 60_000).unref();
   },
 

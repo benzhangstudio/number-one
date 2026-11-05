@@ -30,6 +30,10 @@ Your server's own currency. Members earn it by chatting, with `/daily` and `/wor
 
 Each one can be switched off or changed on the dashboard.
 
+### Cooldown reminders
+
+Under `/daily` and `/work` there's a **🔔 Remind me when it's ready** button. Pressing it turns reminders on for that member: from then on, every time they claim, Number One mentions them in that channel when the cooldown ends (or DMs them if it can't post there). **🔕 Stop reminders** turns them off. Reminders are off for each member until they press the button, and you can switch the button off for the whole server on the dashboard.
+
 ## The shop
 
 Add items on the dashboard under **Shop**. Members see them with `/shop`, buy with `/buy` and check what they own with `/inventory`.

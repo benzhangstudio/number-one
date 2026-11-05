@@ -87,6 +87,9 @@ export function CardsPanel({ guild }: { guild: Guild }) {
         <section className="sub">
           <div className="sub-head"><strong>📦 Packs</strong></div>
           <Toggle label={`${packInfo.daily.emoji} Free daily pack`} hint="3 cards every 20 hours, in both modes." checked={draft.daily} onChange={(v) => set((d) => { d.daily = v; })} />
+          {draft.daily && (
+            <Toggle label="🔔 Daily pack reminders" hint="Members can press a button under /cards daily to be mentioned when their next pack is ready." checked={draft.reminders} onChange={(v) => set((d) => { d.reminders = v; })} />
+          )}
           {economy && (
             <div className="mod-row">
               {(["standard", "premium"] as const).map((k) => (

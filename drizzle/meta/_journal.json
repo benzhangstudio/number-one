@@ -253,6 +253,13 @@
       "when": 1793861612349,
       "tag": "0035_card_pack_bag",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "6",
+      "when": 1793864982285,
+      "tag": "0036_cooldown_reminders",
+      "breakpoints": true
     }
   ]
 }
