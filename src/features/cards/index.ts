@@ -29,6 +29,7 @@ import {
   type PileCardsResponse,
   type Rarity,
   cardEdit,
+  cardLabel,
   cardSettings,
   packInfo,
   pileByKey,
@@ -54,7 +55,6 @@ type Req = FastifyRequest<{ Params: { guildId: string } }>;
 const PINK = 0xff4fa3;
 const PREFIX = "kc";
 const DAILY_MS = 20 * 60 * 60 * 1000;
-const PAGE = 15;
 const CHALLENGE_MS = 2 * 60_000;
 
 const settingsOf = async (guildId: string) => (await getFeatureState(guildId, cardsFeature)).settings as CardSettings;
@@ -180,21 +180,59 @@ async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, 
   return i.reply({ embeds: [embed], allowedMentions: { parse: [] } });
 }
 
+/** A member's cards in browsing order: best rarity first, then newest card first. */
+function collectionOrder(guildId: string, userId: string) {
+  return ownedList(guildId, userId).sort((a, b) => rarities.indexOf(b.card.rarity) - rarities.indexOf(a.card.rarity) || b.card.number - a.card.number);
+}
+
+/**
+ * One card of a collection, shown big, with ⏮ ◀ ▶ ⏭ buttons to flip through. Only the person who opened it can
+ * flip (the buttons carry whose collection it is, who's browsing and which card is showing).
+ */
+export async function collectionPage(guildId: string, owner: { id: string; name: string; avatar: string }, viewerId: string, index: number) {
+  const list = collectionOrder(guildId, owner.id);
+  if (!list.length) return null;
+  const i = Math.max(0, Math.min(index, list.length - 1));
+  const { card, qty } = list[i];
+  const t = typeInfo[card.type];
+  const png = await renderCard(card);
+  const embed = new EmbedBuilder()
+    .setColor(Number.parseInt(rarityInfo[card.rarity].color.slice(1), 16))
+    .setAuthor({ name: `${owner.name}'s collection`, iconURL: owner.avatar || undefined })
+    .setTitle(cardLabel(card))
+    .setDescription(
+      `${stars(card)} ${rarityInfo[card.rarity].name} · ${t.emoji} ${t.name}${card.about ? ` · ${card.about}` : ""}\nHP **${card.hp}** · ${t.move} **${card.power}**${qty > 1 ? ` · You have **${qty}**` : ""}`,
+    )
+    .setImage("attachment://card.png")
+    .setFooter({ text: `Card ${i + 1} of ${list.length} · ${list.length} of ${cardCount()} cards collected` });
+  const go = (to: number) => `${PREFIX}:col:${owner.id}:${viewerId}:${to}`;
+  const last = list.length - 1;
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder().setCustomId(`${go(0)}:first`).setEmoji("⏮️").setStyle(ButtonStyle.Secondary).setDisabled(i === 0),
+    new ButtonBuilder().setCustomId(`${go(i - 1)}:back`).setEmoji("◀️").setLabel("Back").setStyle(ButtonStyle.Primary).setDisabled(i === 0),
+    new ButtonBuilder().setCustomId(`${go(i)}:count`).setLabel(`${i + 1} / ${list.length}`).setStyle(ButtonStyle.Secondary).setDisabled(true),
+    new ButtonBuilder().setCustomId(`${go(i + 1)}:next`).setEmoji("▶️").setLabel("Next").setStyle(ButtonStyle.Primary).setDisabled(i === last),
+    new ButtonBuilder().setCustomId(`${go(last)}:last`).setEmoji("⏭️").setStyle(ButtonStyle.Secondary).setDisabled(i === last),
+  );
+  return {
+    embeds: [embed],
+    files: [new AttachmentBuilder(png, { name: "card.png" })],
+    components: list.length > 1 ? [row] : [],
+    allowedMentions: { parse: [] as never[] },
+  };
+}
+
 async function collection(i: ChatInputCommandInteraction<"cached">) {
   const user = i.options.getUser("member") ?? i.user;
-  const list = ownedList(i.guildId, user.id).sort((a, b) => a.card.number - b.card.number);
-  const self = user.id === i.user.id;
-  if (!list.length) {
+  const member = i.options.getMember("member") ?? (user.id === i.user.id ? i.member : null);
+  const owner = { id: user.id, name: member?.displayName ?? user.displayName, avatar: user.displayAvatarURL({ size: 64 }) };
+  const start = (i.options.getInteger("card") ?? 1) - 1;
+  if (!store.collectionOf(i.guildId, user.id).size) {
+    const self = user.id === i.user.id;
     return i.reply({ content: self ? "You don't have any cards yet. Try `/cards daily`!" : `<@${user.id}> doesn't have any cards yet.`, allowedMentions: { parse: [] } });
   }
-  const pages = Math.ceil(list.length / PAGE);
-  const page = Math.min(i.options.getInteger("page") ?? 1, pages);
-  const embed = new EmbedBuilder()
-    .setColor(PINK)
-    .setAuthor({ name: `${user.displayName}'s collection`, iconURL: user.displayAvatarURL({ size: 64 }) })
-    .setDescription(list.slice((page - 1) * PAGE, page * PAGE).map(({ card, qty }) => line(card, qty)).join("\n"))
-    .setFooter({ text: `${list.length} of ${cardCount()} cards · Page ${page} of ${pages} · See one with /cards view` });
-  return i.reply({ embeds: [embed], allowedMentions: { parse: [] } });
+  await i.deferReply();
+  return i.editReply((await collectionPage(i.guildId, owner, i.user.id, start))!);
 }
 
 async function view(i: ChatInputCommandInteraction<"cached">) {
@@ -379,7 +417,7 @@ const cardsCommand: SlashCommand = {
         .setName("collection")
         .setDescription("See your cards (or someone else's)")
         .addUserOption((o) => o.setName("member").setDescription("Whose collection (yours if empty)"))
-        .addIntegerOption((o) => o.setName("page").setDescription("Which page").setMinValue(1)),
+        .addIntegerOption((o) => o.setName("card").setDescription("Start at this card number (1 if empty)").setMinValue(1)),
     )
     .addSubcommand((c) => c.setName("view").setDescription("Look at a card up close").addStringOption((o) => cardOpt(o, "card", "Which card")))
     .addSubcommand((c) =>
@@ -461,6 +499,19 @@ const answers: ComponentHandler = {
   prefix: PREFIX,
   async handle(interaction: MessageComponentInteraction) {
     if (!interaction.inCachedGuild() || !interaction.isButton()) return;
+    if (interaction.customId.startsWith(`${PREFIX}:col:`)) {
+      // Flipping through a collection.
+      const [, , ownerId, viewerId, index] = interaction.customId.split(":");
+      if (interaction.user.id !== viewerId) {
+        return interaction.reply({ content: "Use `/cards collection` to browse cards yourself.", flags: MessageFlags.Ephemeral });
+      }
+      const user = await client.users.fetch(ownerId).catch(() => null);
+      const member = interaction.guild.members.cache.get(ownerId);
+      const owner = { id: ownerId, name: member?.displayName ?? user?.displayName ?? "Someone", avatar: (member ?? user)?.displayAvatarURL({ size: 64 }) ?? "" };
+      const page = await collectionPage(interaction.guildId, owner, viewerId, Number(index) || 0);
+      if (!page) return interaction.update({ content: "This collection is empty now.", embeds: [], files: [], attachments: [], components: [] });
+      return interaction.update({ ...page, attachments: [] });
+    }
     const [, answer, id] = interaction.customId.split(":");
     const p = pending.get(id);
     if (!p || p.expires < Date.now()) {
