@@ -39,6 +39,11 @@ export function CardPhotos() {
   const [error, setError] = useState("");
   const pickFiles = useRef<HTMLInputElement>(null);
   const pickFolder = useRef<HTMLInputElement>(null);
+  // Uploading to one pile by clicking its tile: which pile, and (optionally) which of its cards.
+  const pickOne = useRef<HTMLInputElement>(null);
+  const [target, setTarget] = useState<string | null>(null);
+  const [versionFor, setVersionFor] = useState<Record<string, string>>({});
+  const [busyKey, setBusyKey] = useState<string | null>(null);
 
   useEffect(() => {
     api
@@ -92,6 +97,29 @@ export function CardPhotos() {
     setProgress(null);
   };
 
+  /** Opens the file picker for one pile (or one card of it, when a card is picked under the tile). */
+  const choose = (pileKey: string) => {
+    const v = versionFor[pileKey];
+    setTarget(v ? `${pileKey}.${v}` : pileKey);
+    pickOne.current?.click();
+  };
+
+  const uploadOne = async (file: File | undefined) => {
+    if (!file || !target) return;
+    if (file.size > CARD_PHOTO.maxBytes) return setError(`${file.name} is too big (8 MB max).`);
+    setBusyKey(target);
+    setError("");
+    try {
+      setData(await api.uploadCardPhoto(target, file, credit.trim()));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusyKey(null);
+      setTarget(null);
+      if (pickOne.current) pickOne.current.value = "";
+    }
+  };
+
   const remove = async (key: string) => {
     if (
       !confirm(
@@ -133,19 +161,15 @@ export function CardPhotos() {
         </span>
       </div>
       <p className="muted small">
-        Only cards with a photo appear in packs. Name each file after who's in
-        it: a member (<code>jennie.jpg</code>), a ship (<code>chaelisa.jpg</code>{" "}
-        or <code>rose-lisa.jpg</code>) or the whole
-        group (<code>blackpink.jpg</code> or <code>ot4.jpg</code>). Each photo
-        is used on all seven of that pile's cards. To give one card its own
-        photo, add the card's name, like <code>jennie-legend.jpg</code> or{" "}
-        <code>chaelisa-pink-crown.jpg</code>. Photos are cropped to a square,
-        keeping the top part where faces usually are.
+        Only cards with a photo appear in packs. <strong>Click a tile below</strong> to choose a photo for that member, ship or the group. It's used on
+        all seven of their cards, or just one if you pick it under the tile. To add lots at once, choose a folder: files are matched by name, like{" "}
+        <code>jennie.jpg</code>, <code>chaelisa.jpg</code>, <code>rose-lisa.jpg</code>, <code>blackpink.jpg</code> or <code>jennie-legend.jpg</code>.
+        Photos are cropped to a square, keeping the top part where faces usually are.
       </p>
 
       <div className="kc-upload">
         <label className="field">
-          <span>Photo credit for this batch (optional)</span>
+          <span>Photo credit (optional, shown on the card)</span>
           <input
             value={credit}
             maxLength={CARD_PHOTO.credit}
@@ -175,6 +199,13 @@ export function CardPhotos() {
           multiple
           hidden
           onChange={(e) => setFiles([...(e.target.files ?? [])])}
+        />
+        <input
+          ref={pickOne}
+          type="file"
+          hidden
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={(e) => void uploadOne(e.target.files?.[0])}
         />
         <input
           ref={pickFiles}
@@ -323,16 +354,51 @@ export function CardPhotos() {
                             const p = data.photos[key];
                             return (
                               <div key={key} className="kc-member">
-                                {p ? (
-                                  <img
-                                    src={photoUrl(key, p.updatedAt)}
-                                    alt=""
-                                  />
-                                ) : (
-                                  <div className="kc-empty small muted">
-                                    No photo
-                                  </div>
-                                )}
+                                <button
+                                  className="kc-tile"
+                                  title={`Choose a photo for ${m.name}`}
+                                  disabled={Boolean(busyKey)}
+                                  onClick={() => choose(key)}
+                                >
+                                  {p ? (
+                                    <img
+                                      src={photoUrl(key, p.updatedAt)}
+                                      alt=""
+                                    />
+                                  ) : (
+                                    <div className="kc-empty small muted">
+                                      ＋ Add photo
+                                    </div>
+                                  )}
+                                  {busyKey?.startsWith(key) && (
+                                    <span className="kc-tile-busy small">
+                                      Uploading…
+                                    </span>
+                                  )}
+                                  {p && !busyKey && (
+                                    <span className="kc-tile-hint small">
+                                      Change photo
+                                    </span>
+                                  )}
+                                </button>
+                                <select
+                                  className="kc-version small"
+                                  value={versionFor[key] ?? ""}
+                                  title="Which of this pile's cards the next photo is for"
+                                  onChange={(e) =>
+                                    setVersionFor({
+                                      ...versionFor,
+                                      [key]: e.target.value,
+                                    })
+                                  }
+                                >
+                                  <option value="">For all 7 cards</option>
+                                  {allVersions.map((v) => (
+                                    <option key={v.id} value={v.id}>
+                                      Only {v.name}
+                                    </option>
+                                  ))}
+                                </select>
                                 <strong className="small">{m.name}</strong>
                                 {m.about && (
                                   <span className="small muted">{m.about}</span>

@@ -37,7 +37,7 @@ There are **77 cards** in three piles, each with seven cards:
 | Legend | ★★★★ Legendary |
 | Pink Crown | ★★★★★ Mythic |
 
-Each card shows a photo, the name, HP, a type and a move with its power. Ship cards have 10 more HP and the group card 20 more.
+Each card shows a photo, the name, HP, a type and a move with its power. Cards appear in packs once they have a photo. Ship cards have 10 more HP and the group card 20 more.
 
 ## Packs
 

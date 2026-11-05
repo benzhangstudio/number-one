@@ -3945,6 +3945,51 @@ select.chip-add {
   gap: 3px;
   min-width: 0;
 }
+.kc-tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  line-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.kc-tile:disabled {
+  cursor: wait;
+}
+.kc-tile:hover .kc-empty,
+.kc-tile:focus-visible .kc-empty {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.kc-tile .kc-empty {
+  line-height: 1.4;
+}
+.kc-tile-hint,
+.kc-tile-busy {
+  line-height: 1.4;
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 6px;
+  text-align: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+}
+.kc-tile-hint {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.kc-tile:hover .kc-tile-hint,
+.kc-tile:focus-visible .kc-tile-hint {
+  opacity: 1;
+}
+.kc-version {
+  width: 100%;
+  padding: 3px 6px;
+}
 .kc-member img,
 .kc-empty {
   width: 100%;
