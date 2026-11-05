@@ -14,6 +14,7 @@ import { guidesSettings } from "./guides.js";
 import { levelsSettings } from "./levels.js";
 import { economySettings } from "./economy.js";
 import { forumSettings } from "./forums.js";
+import { cardSettings } from "./cards.js";
 import { pollSettings } from "./polls.js";
 import { suggestionSettings } from "./suggestions.js";
 import { ticketSettings } from "./tickets.js";
@@ -258,6 +259,16 @@ export const forumsFeature = defineFeature({
   settings: forumSettings,
 });
 
+export const cardsFeature = defineFeature({
+  id: "cards",
+  name: "K-pop Cards",
+  icon: "🃏",
+  description: "Collect K-pop photo cards from 2nd gen to today, starring BLACKPINK. Open packs, build a team and battle Pokémon-style, and trade with friends. Works with Economy or on its own.",
+  category: "engagement",
+  recommended: true,
+  settings: cardSettings,
+});
+
 export const levelsFeature = defineFeature({
   id: "levels",
   name: "Levels",
@@ -414,6 +425,7 @@ export const featureCatalog: FeatureInfo[] = [
   // Engagement & Fun
   levelsFeature,
   economyFeature,
+  cardsFeature,
   eventsFeature,
   suggestionsFeature,
   pollsFeature,
@@ -491,6 +503,8 @@ export * from "./guides.js";
 export * from "./levels.js";
 export * from "./economy.js";
 export * from "./polls.js";
+export * from "./cards.js";
+export * from "./cardCatalog.js";
 export * from "./forums.js";
 export * from "./suggestions.js";
 export * from "./communityTools.js";

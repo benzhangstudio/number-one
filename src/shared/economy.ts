@@ -112,6 +112,7 @@ export const transactionKinds = {
   shop: "Shop",
   refund: "Refund",
   game: "Games",
+  cards: "Card game",
 } as const;
 export type TransactionKind = keyof typeof transactionKinds;
 

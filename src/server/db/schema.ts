@@ -333,6 +333,51 @@ export const eventRsvps = sqliteTable(
   (t) => [primaryKey({ columns: [t.eventId, t.userId] }), index("event_rsvps_guild_idx").on(t.guildId)],
 );
 
+/** Card game: how many of each card a member owns, per server. */
+export const cardInventory = sqliteTable(
+  "card_inventory",
+  {
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    /** "group.member.version", see src/shared/cards.ts. */
+    cardId: text("card_id").notNull(),
+    quantity: integer("quantity").notNull(),
+    /** When they first got it. */
+    firstAt: integer("first_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.guildId, t.userId, t.cardId] }), index("card_inventory_guild_idx").on(t.guildId)],
+);
+
+/** Card game: each member's team, daily pack and battle rewards, per server. */
+export const cardPlayers = sqliteTable(
+  "card_players",
+  {
+    guildId: text("guild_id").notNull(),
+    userId: text("user_id").notNull(),
+    /** Up to 3 card IDs (JSON). Empty = their 3 strongest cards. */
+    team: text("team", { mode: "json" }).$type<string[]>().notNull(),
+    lastDailyAt: integer("last_daily_at"),
+    /** The day (YYYY-MM-DD, UTC) winsToday counts. */
+    winsDay: text("wins_day"),
+    winsToday: integer("wins_today").notNull().default(0),
+    wins: integer("wins").notNull().default(0),
+    losses: integer("losses").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.guildId, t.userId] })],
+);
+
+/**
+ * Card game: the photos the bot's developer uploaded (the same for every server). The file is
+ * data/card-photos/<key>.jpg; key is a member ("blackpink.jennie") or one card ("blackpink.jennie.legend").
+ */
+export const cardPhotos = sqliteTable("card_photos", {
+  key: text("key").primaryKey(),
+  /** Shown small on the card, like "© YG Entertainment". */
+  credit: text("credit").notNull().default(""),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  updatedBy: text("updated_by").notNull(),
+});
+
 /** Suggestions: one row per idea a member sent with /suggest. */
 export const suggestions = sqliteTable(
   "suggestions",
