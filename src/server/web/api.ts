@@ -8,6 +8,7 @@ import { config, loginReady } from "../config.js";
 import { getAccessState } from "../../features/onboarding/access.js";
 import { deleteGuildData } from "../guildData.js";
 import { registerDeveloperApi } from "../../features/bot-updates/index.js";
+import { registerCardsDeveloperApi } from "../../features/cards/index.js";
 import { isDeveloper } from "../../features/bot-updates/developer.js";
 import { getMaintenance } from "../maintenance.js";
 import { applySetup, getAllFeatureStates, getFeatureState, getSetup, saveFeatureState } from "../settings.js";
@@ -117,6 +118,7 @@ export function registerApiRoutes(app: FastifyInstance) {
 
     // The Developer page (bot updates). Only for the owner of the bot's Discord application.
     registerDeveloperApi(api);
+    registerCardsDeveloperApi(api);
 
     api.register(async (guildApi) => {
       guildApi.addHook("preHandler", requireManagedGuild);

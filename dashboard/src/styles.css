@@ -3817,6 +3817,155 @@ select.chip-add {
   }
 }
 
+/* --- K-pop Cards --- */
+.kc-modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+.kc-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.kc-mode.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.kc-gens,
+.kc-sell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.kc-sell .field {
+  flex: 1 1 120px;
+}
+.kc-top {
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kc-photos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+.kc-photos h2,
+.kc-photos p {
+  margin: 0;
+}
+.kc-upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+.kc-upload .field {
+  flex: 1 1 260px;
+}
+.kc-batch {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+.kc-matches {
+  margin: 0;
+  padding-left: 18px;
+  max-height: 240px;
+  overflow: auto;
+}
+.kc-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.kc-group {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.kc-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.kc-group-head strong {
+  flex: 1;
+}
+.kc-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.kc-done {
+  color: #3ba55d;
+  font-weight: 700;
+}
+.kc-members {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  padding: 4px 12px 12px;
+}
+.kc-member {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.kc-member img,
+.kc-empty {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+.kc-empty {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--border);
+}
+.kc-member code {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kc-member-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.kc-versions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
 /* --- Forums (also uses the Events styles) --- */
 .fr-card {
   display: flex;

@@ -73,6 +73,25 @@ Part of the [Economy](/docs/economy) module.
 | `/economy history member` | Manage Server | Shows a member's latest balance changes. |
 | `/economy take-item member item [quantity]` | Manage Server | Takes a shop item from a member, like when they use it. |
 
+## K-pop Cards
+
+Part of the [K-pop Cards](/docs/cards) module. Everyone can use these.
+
+| Command | What it does |
+| --- | --- |
+| `/cards daily` | Opens your free daily pack. |
+| `/cards open pack` | Buys and opens a pack (With Economy). |
+| `/cards packs` | Shows the packs and prices. |
+| `/cards collection [member] [group] [page]` | Shows a collection. |
+| `/cards view card` | Shows a card up close. |
+| `/cards team [first] [second] [third]` | Shows or sets your battle team. |
+| `/cards battle [opponent] [bet]` | Battles Number One, or challenges a member. |
+| `/cards trade member give get` | Offers a card swap. |
+| `/cards gift member card` | Gives a card away. |
+| `/cards sell card [quantity]` | Sells a card (With Economy). |
+| `/cards sell-duplicates [up_to]` | Sells extra copies (With Economy). |
+| `/cards top` | Shows the top collectors. |
+
 ## Suggestions
 
 Part of the [Suggestions](/docs/suggestions) module.

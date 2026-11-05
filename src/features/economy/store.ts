@@ -236,11 +236,14 @@ export const inventoryOf = (guildId: string, userId: string) =>
 export type BetResult = { ok: true; balance: number } | { ok: false; balance: number };
 
 /** Takes a bet, only if they have enough. Winnings are paid back with credit(…, "game"). */
-export function placeBet(guildId: string, userId: string, amount: number, startingBalance: number): BetResult {
+export const placeBet = (guildId: string, userId: string, amount: number, startingBalance: number): BetResult => spend(guildId, userId, amount, "game", startingBalance);
+
+/** Takes money, only if they have enough. Safe to call inside another transaction. */
+export function spend(guildId: string, userId: string, amount: number, kind: TransactionKind, startingBalance: number): BetResult {
   return atomic(() => {
     const w = load(guildId, userId, startingBalance);
     if (w.balance < amount) return { ok: false, balance: w.balance };
-    apply(guildId, userId, w, -amount, "game");
+    apply(guildId, userId, w, -amount, kind);
     return { ok: true, balance: w.balance };
   });
 }
