@@ -1,12 +1,12 @@
-# BLACKPINK Cards
+# BLACKPINK Poker
 
-**Category:** 🎉 Engagement & Fun · **Recommended:** yes
+**Category:** 💖 K-pop · **Recommended:** yes
 
 Collect BLACKPINK photo cards from Common to Mythic. Open packs, build a team of 3 and battle Pokémon-style, and trade with friends.
 
 ## Quick setup
 
-1. Switch on **BLACKPINK Cards** on the dashboard.
+1. Switch on **BLACKPINK Poker** on the dashboard (under **K-pop**).
 2. Pick a mode: **With Economy** or **Cards only**.
 3. Click **Save changes**. Members can start with `/cards daily`.
 

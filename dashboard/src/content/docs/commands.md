@@ -73,9 +73,9 @@ Part of the [Economy](/docs/economy) module.
 | `/economy history member` | Manage Server | Shows a member's latest balance changes. |
 | `/economy take-item member item [quantity]` | Manage Server | Takes a shop item from a member, like when they use it. |
 
-## BLACKPINK Cards
+## BLACKPINK Poker
 
-Part of the [BLACKPINK Cards](/docs/cards) module. Everyone can use these.
+Part of the [BLACKPINK Poker](/docs/cards) module. Everyone can use these.
 
 | Command | What it does |
 | --- | --- |

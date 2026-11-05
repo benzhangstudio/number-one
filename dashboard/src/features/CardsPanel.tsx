@@ -8,7 +8,7 @@ type Guild = GuildDetails["guild"];
 const n = (x: number) => x.toLocaleString("en-US");
 const clamp = (v: number, max: number) => (Number.isFinite(v) ? Math.max(0, Math.min(max, Math.round(v))) : 0);
 
-/** Dashboard section for BLACKPINK Cards: the mode, prices, rewards and the top collectors. */
+/** Dashboard section for BLACKPINK Poker: the mode, prices, rewards and the top collectors. */
 export function CardsPanel({ guild }: { guild: Guild }) {
   const [data, setData] = useState<CardsResponse | null>(null);
   const [draft, setDraft] = useState<CardSettings | null>(null);

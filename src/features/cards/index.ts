@@ -41,7 +41,7 @@ import { renderCard, renderRow } from "./render.js";
 import * as store from "./store.js";
 
 /**
- * BLACKPINK Cards: /cards to open packs, collect, build a team, battle, trade and gift.
+ * BLACKPINK Poker: /cards to open packs, collect, build a team, battle, trade and gift.
  * With Economy, packs cost the server's currency and duplicates sell for it; in Cards only mode there's
  * no money, just a free daily pack (and a bonus card for beating Number One).
  * Photos are uploaded by the bot's developer on the Developer page (registerCardsDeveloperApi below).
@@ -156,7 +156,7 @@ async function open(i: ChatInputCommandInteraction<"cached">, s: CardSettings, m
 
 async function packs(i: ChatInputCommandInteraction<"cached">, s: CardSettings, mode: CardMode) {
   const ready = readyCount();
-  const embed = new EmbedBuilder().setColor(PINK).setTitle("🖤💗 BLACKPINK Cards");
+  const embed = new EmbedBuilder().setColor(PINK).setTitle("🖤💗 BLACKPINK Poker");
   if (mode === "economy") {
     const eco = await economyOf(i.guildId);
     embed.setDescription(

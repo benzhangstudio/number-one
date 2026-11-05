@@ -79,6 +79,12 @@ export const categories = [
     description: "Cute designs for your server, like decorated channel names and easy-to-read server and staff guides",
   },
   {
+    id: "kpop",
+    name: "K-pop",
+    emoji: "💖",
+    description: "Games for K-pop fans, like BLACKPINK Poker: collect photo cards, battle and trade",
+  },
+  {
     id: "other",
     name: "Other",
     emoji: "🧩",
@@ -261,10 +267,10 @@ export const forumsFeature = defineFeature({
 
 export const cardsFeature = defineFeature({
   id: "cards",
-  name: "BLACKPINK Cards",
+  name: "BLACKPINK Poker",
   icon: "🃏",
   description: "Collect BLACKPINK photo cards from Common to Mythic. Open packs, build a team and battle Pokémon-style, and trade with friends. Works with Economy or on its own.",
-  category: "engagement",
+  category: "kpop",
   recommended: true,
   settings: cardSettings,
 });
@@ -425,7 +431,6 @@ export const featureCatalog: FeatureInfo[] = [
   // Engagement & Fun
   levelsFeature,
   economyFeature,
-  cardsFeature,
   eventsFeature,
   suggestionsFeature,
   pollsFeature,
@@ -438,6 +443,8 @@ export const featureCatalog: FeatureInfo[] = [
   // Cosmetics
   guidesFeature,
   channelDesignsFeature,
+  // K-pop
+  cardsFeature,
   // Other
   botUpdatesFeature,
 ];
