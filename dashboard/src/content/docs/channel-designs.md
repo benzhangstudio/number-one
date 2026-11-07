@@ -15,7 +15,7 @@ Adds a cute design around every channel's name in one click, like `general` → 
 | Design | Looks like | Emoji when nothing fits |
 | --- | --- | --- |
 | Soft dot | `💬・general` | 🌸 |
-| Outer space | `🪐💬✦general` | 🚀 |
+| Outer space | `🪐💬🌠general` | 🚀 |
 | Fairy dust | `˚₊‧💬‧₊˚general` | 🧚 |
 | Corner brackets | `「💬」general` | 🍡 |
 | Heart line | `💬♡general` | 💗 |

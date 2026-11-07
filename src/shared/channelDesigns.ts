@@ -24,7 +24,7 @@ export interface DesignTemplate {
 
 export const designTemplates: DesignTemplate[] = [
   { id: "dot", name: "Soft dot", pattern: "{emoji}・{name}", fallback: "🌸" },
-  { id: "space", name: "Outer space", pattern: "🪐{emoji}✦{name}", fallback: "🚀" },
+  { id: "space", name: "Outer space", pattern: "🪐{emoji}🌠{name}", fallback: "🚀" },
   { id: "fairy", name: "Fairy dust", pattern: "˚₊‧{emoji}‧₊˚{name}", fallback: "🧚" },
   { id: "bracket", name: "Corner brackets", pattern: "「{emoji}」{name}", fallback: "🍡" },
   { id: "heart", name: "Heart line", pattern: "{emoji}♡{name}", fallback: "💗" },
