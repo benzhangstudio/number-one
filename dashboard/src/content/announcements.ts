@@ -25,10 +25,10 @@ export const announcements: Announcement[] = [
     date: "2026-11-06",
     title: "New channel designs",
     tag: "Improved",
-    emoji: "🎀",
-    body: `Five new designs in **Cosmetics → Channel designs** that look cleaner in Discord and fit long names better.
+    emoji: "🪐",
+    body: `New designs in **Cosmetics → Channel designs** that look cleaner in Discord and fit long names better.
 
-- **Ribbon** \`୨💬୧general\`, **Moonlight** \`☾💬・general\`, **Clean bar** \`💬｜general\`, **Soft wave** \`💬〜general\` and **Arrow** \`💬➜general\`.
+- **Outer space** \`🪐💬✦general\`, **Heart line** \`💬♡general\`, **Petal** \`💬❀general\` and **Arrow** \`💬➜general\`.
 - They replace Cloud frame, Sparkle trail, Dotted line, Little hearts and Butterfly wings. If you used one of those, click **Apply design** once to switch.
 - Soft dot, Fairy dust and Corner brackets stay the same.`,
   },

@@ -2,7 +2,7 @@
 
 **Category:** 🎨 Cosmetics · **Recommended:** yes
 
-Adds a cute design around every channel's name in one click, like `general` → `💬・general` or `୨💬୧general`. Only the design is added. Everything else about your channels stays the same, and you can remove it any time.
+Adds a cute design around every channel's name in one click, like `general` → `💬・general` or `「💬」general`. Only the design is added. Everything else about your channels stays the same, and you can remove it any time.
 
 ## Quick setup
 
@@ -15,12 +15,11 @@ Adds a cute design around every channel's name in one click, like `general` → 
 | Design | Looks like | Emoji when nothing fits |
 | --- | --- | --- |
 | Soft dot | `💬・general` | 🌸 |
-| Ribbon | `୨💬୧general` | 🎀 |
-| Moonlight | `☾💬・general` | 🌙 |
+| Outer space | `🪐💬✦general` | 🚀 |
 | Fairy dust | `˚₊‧💬‧₊˚general` | 🧚 |
 | Corner brackets | `「💬」general` | 🍡 |
-| Clean bar | `💬｜general` | 📌 |
-| Soft wave | `💬〜general` | 🐚 |
+| Heart line | `💬♡general` | 💗 |
+| Petal | `💬❀general` | 🌷 |
 | Arrow | `💬➜general` | 📍 |
 
 Each design picks an emoji that fits the channel's name: 💬 for general, 📜 for rules, 📢 for announcements, 🎮 for gaming, and about 30 more. When nothing fits, the design's own emoji is used.
@@ -72,11 +71,11 @@ Switching the module off leaves names as they are. Use **Remove design** first i
 
 ## Replaced designs
 
-Cloud frame, Sparkle trail, Dotted line, Little hearts and Butterfly wings were replaced with new designs that look cleaner in Discord and fit long names better. Servers that used one now have its replacement picked: click **Apply design** to switch the channels over.
+Some older designs were replaced with ones that look cleaner in Discord and fit long names better. Servers that used one now have its replacement picked: click **Apply design** to switch the channels over.
 
 | Old design | Now |
 | --- | --- |
-| Cloud frame, Butterfly wings, Bows | Ribbon |
-| Sparkle trail | Moonlight |
-| Dotted line | Clean bar |
-| Little hearts | Soft wave |
+| Cloud frame, Butterfly wings, Bows, Ribbon | Corner brackets |
+| Sparkle trail, Moonlight | Outer space |
+| Dotted line, Clean bar | Petal |
+| Little hearts, Soft wave | Heart line |
