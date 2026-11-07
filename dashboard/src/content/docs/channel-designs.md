@@ -2,7 +2,7 @@
 
 **Category:** 🎨 Cosmetics · **Recommended:** yes
 
-Adds a cute design around every channel's name in one click, like `general` → `💬・general` or `꒰💬꒱general`. Only the design is added. Everything else about your channels stays the same, and you can remove it any time.
+Adds a cute design around every channel's name in one click, like `general` → `💬・general` or `୨💬୧general`. Only the design is added. Everything else about your channels stays the same, and you can remove it any time.
 
 ## Quick setup
 
@@ -15,13 +15,13 @@ Adds a cute design around every channel's name in one click, like `general` → 
 | Design | Looks like | Emoji when nothing fits |
 | --- | --- | --- |
 | Soft dot | `💬・general` | 🌸 |
-| Cloud frame | `꒰💬꒱general` | ☁️ |
-| Sparkle trail | `⋆˚💬˖°general` | ✨ |
+| Ribbon | `୨💬୧general` | 🎀 |
+| Moonlight | `☾💬・general` | 🌙 |
 | Fairy dust | `˚₊‧💬‧₊˚general` | 🧚 |
 | Corner brackets | `「💬」general` | 🍡 |
-| Dotted line | `💬┊general` | 🌷 |
-| Little hearts | `♡💬︰general` | 💗 |
-| Butterfly wings | `ʚ💬ɞgeneral` | 🦋 |
+| Clean bar | `💬｜general` | 📌 |
+| Soft wave | `💬〜general` | 🐚 |
+| Arrow | `💬➜general` | 📍 |
 
 Each design picks an emoji that fits the channel's name: 💬 for general, 📜 for rules, 📢 for announcements, 🎮 for gaming, and about 30 more. When nothing fits, the design's own emoji is used.
 
@@ -70,6 +70,13 @@ Switching the module off leaves names as they are. Use **Remove design** first i
 
 **Manage Channels**, for both Number One and the admin applying the design.
 
-## Bows
+## Replaced designs
 
-The Bows design was replaced by **Butterfly wings**. Servers that used Bows now have Butterfly wings picked: click **Apply design** to switch the channels over.
+Cloud frame, Sparkle trail, Dotted line, Little hearts and Butterfly wings were replaced with new designs that look cleaner in Discord and fit long names better. Servers that used one now have its replacement picked: click **Apply design** to switch the channels over.
+
+| Old design | Now |
+| --- | --- |
+| Cloud frame, Butterfly wings, Bows | Ribbon |
+| Sparkle trail | Moonlight |
+| Dotted line | Clean bar |
+| Little hearts | Soft wave |
