@@ -24,25 +24,20 @@ export interface DesignTemplate {
 
 export const designTemplates: DesignTemplate[] = [
   { id: "dot", name: "Soft dot", pattern: "{emoji}・{name}", fallback: "🌸" },
-  { id: "space", name: "Outer space", pattern: "🪐{emoji}🌠{name}", fallback: "🚀" },
   { id: "fairy", name: "Fairy dust", pattern: "˚₊‧{emoji}‧₊˚{name}", fallback: "🧚" },
   { id: "bracket", name: "Corner brackets", pattern: "「{emoji}」{name}", fallback: "🍡" },
-  { id: "heart", name: "Heart line", pattern: "{emoji}♡{name}", fallback: "💗" },
-  { id: "petal", name: "Petal", pattern: "{emoji}❀{name}", fallback: "🌷" },
   { id: "arrow", name: "Arrow", pattern: "{emoji}➜{name}", fallback: "📍" },
+  { id: "colon", name: "Colon", pattern: "{emoji}︰{name}", fallback: "💗" },
 ];
 
-/** Designs that were replaced, and the one servers that had them now get. */
+/** Designs that were removed, and the one servers that had them now get. */
 const replacedTemplates: Record<string, string> = {
   bow: "bracket",
   butterfly: "bracket",
   cloud: "bracket",
-  ribbon: "bracket",
-  sparkle: "space",
-  moon: "space",
-  line: "petal",
-  bar: "petal",
-  wave: "heart",
+  sparkle: "fairy",
+  line: "colon",
+  heart: "colon",
 };
 
 /** Emojis picked from words in a channel's name. The first match wins, so more specific words come first. */
@@ -106,8 +101,8 @@ export function plainName(name: string): string {
       // Keycaps like 1️⃣, then emoji, flags and the invisible characters that join or style them.
       .replace(/[#*0-9]\uFE0F?\u20E3/gu, "")
       .replace(/\p{Extended_Pictographic}|\p{Regional_Indicator}|[\u200B-\u200D\u2060\uFE0E\uFE0F\u{1F3FB}-\u{1F3FF}\u{E0020}-\u{E007F}]/gu, "")
-      // Decorative letters that are really pictures (୨୧ ribbons, ʚɞ wings and friends).
-      .replace(/[ʚɞʕʔᐟᐠᐡᐢᵔᴗ˖ᵕ୨୧]/gu, " ")
+      // Decorative letters that are really pictures (ʚɞ wings and friends).
+      .replace(/[ʚɞʕʔᐟᐠᐡᐢᵔᴗ˖ᵕ]/gu, " ")
       // Decorations: symbols, and any punctuation that isn't on a normal keyboard (・ 「 」 ┊ ︰ ‧ ˚ ₊ ꒰ ꒱ …).
       .replace(/[\p{S}\p{P}]/gu, (ch) => (/^[\x20-\x7E]$/.test(ch) && ch !== "|" && ch !== "~" && ch !== "^" && ch !== "`" ? ch : " "))
       // Tidy up what's left: no separators at the ends, no doubled ones in the middle.

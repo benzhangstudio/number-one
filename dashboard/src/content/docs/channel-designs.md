@@ -15,12 +15,10 @@ Adds a cute design around every channel's name in one click, like `general` → 
 | Design | Looks like | Emoji when nothing fits |
 | --- | --- | --- |
 | Soft dot | `💬・general` | 🌸 |
-| Outer space | `🪐💬🌠general` | 🚀 |
 | Fairy dust | `˚₊‧💬‧₊˚general` | 🧚 |
 | Corner brackets | `「💬」general` | 🍡 |
-| Heart line | `💬♡general` | 💗 |
-| Petal | `💬❀general` | 🌷 |
 | Arrow | `💬➜general` | 📍 |
+| Colon | `💬︰general` | 💗 |
 
 Each design picks an emoji that fits the channel's name: 💬 for general, 📜 for rules, 📢 for announcements, 🎮 for gaming, and about 30 more. When nothing fits, the design's own emoji is used.
 
@@ -40,7 +38,7 @@ Categories and forums are never renamed. Names that would go over Discord's 100-
 
 If your channels already have emojis or decorations (added by hand, by another bot, or by an old design), a new design would be added on top of them. **Make names text-only** cleans them up first, so every channel starts from the same plain name:
 
-`💬・general` → `general` · `꒰🎮꒱gaming-chat` → `gaming-chat` · `🔊 | Music Room` → `Music Room`
+`💬・general` → `general` · `「🎮」gaming-chat` → `gaming-chat` · `🔊 | Music Room` → `Music Room`
 
 1. Under **Make names text-only**, pick which channels to clean (text channels are always included, announcement and voice channels are on by default) and any channels or categories to leave alone.
 2. Check the preview.
@@ -69,13 +67,12 @@ Switching the module off leaves names as they are. Use **Remove design** first i
 
 **Manage Channels**, for both Number One and the admin applying the design.
 
-## Replaced designs
+## Removed designs
 
-Some older designs were replaced with ones that look cleaner in Discord and fit long names better. Servers that used one now have its replacement picked: click **Apply design** to switch the channels over.
+Some older designs were removed. Servers that used one now have the closest remaining design picked: click **Apply design** to switch the channels over.
 
 | Old design | Now |
 | --- | --- |
-| Cloud frame, Butterfly wings, Bows, Ribbon | Corner brackets |
-| Sparkle trail, Moonlight | Outer space |
-| Dotted line, Clean bar | Petal |
-| Little hearts, Soft wave | Heart line |
+| Cloud frame, Butterfly wings, Bows | Corner brackets |
+| Sparkle trail | Fairy dust |
+| Dotted line, Little hearts | Colon |
