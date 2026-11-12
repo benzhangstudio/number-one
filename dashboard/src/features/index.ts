@@ -23,6 +23,7 @@ import { PollsPanel } from "./PollsPanel";
 import { ReactionRolesPanel } from "./ReactionRolesPanel";
 import { RuleVerificationPanel } from "./RuleVerificationPanel";
 import { ServerLogsPanel } from "./ServerLogsPanel";
+import { StickyMessagesPanel } from "./StickyMessagesPanel";
 import { StaffApplicationsPanel } from "./StaffApplicationsPanel";
 import { SuggestionsPanel } from "./SuggestionsPanel";
 import { TicketsPanel } from "./TicketsPanel";
@@ -53,6 +54,7 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   "rule-verification": RuleVerificationPanel,
   tickets: TicketsPanel,
   forums: ForumsPanel,
+  "sticky-messages": StickyMessagesPanel,
   "staff-applications": StaffApplicationsPanel,
   "community-tools": CommunityToolsPanel,
   guides: GuidesPanel,

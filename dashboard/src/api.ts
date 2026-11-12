@@ -14,6 +14,7 @@ import type { CustomCommandInput, CustomCommandsResponse, RulesSettings } from "
 import type { EmbedMessageInput, EmbedMessageView } from "../../src/shared/embeds";
 import type { EventInput, EventView, EventsResponse, RsvpView } from "../../src/shared/events";
 import type { PollInput, PollSettings, PollView, PollVoterView, PollsResponse } from "../../src/shared/polls";
+import type { StickiesResponse, StickyInput, StickyView } from "../../src/shared/stickyMessages";
 import type { SuggestionSettings, SuggestionStatusInput, SuggestionsResponse } from "../../src/shared/suggestions";
 import type { ForumAutomation, ForumInput, ForumsResponse, PostAction } from "../../src/shared/forums";
 import type { CardAdminResponse, CardEdit, CardSettings, CardsResponse, GiveMember, GivePacksInput, GivePacksResult, GiveServer, PileCardsResponse, Rarity } from "../../src/shared/cards";
@@ -313,6 +314,14 @@ export const api = {
   pollVoters: (guildId: string, id: number) => request<PollVoterView[]>(`/api/guilds/${guildId}/polls/${id}/voters`),
   endPoll: (guildId: string, id: number) => request<PollView>(`/api/guilds/${guildId}/polls/${id}/end`, { method: "POST", body: "{}" }),
   deletePoll: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/polls/${id}`, { method: "DELETE" }),
+  stickies: (guildId: string) => request<StickiesResponse>(`/api/guilds/${guildId}/sticky-messages`),
+  createSticky: (guildId: string, input: StickyInput) =>
+    request<StickyView>(`/api/guilds/${guildId}/sticky-messages`, { method: "POST", body: JSON.stringify(input) }),
+  updateSticky: (guildId: string, id: number, input: StickyInput) =>
+    request<StickyView>(`/api/guilds/${guildId}/sticky-messages/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  pauseSticky: (guildId: string, id: number, paused: boolean) =>
+    request<StickyView>(`/api/guilds/${guildId}/sticky-messages/${id}/pause`, { method: "POST", body: JSON.stringify({ paused }) }),
+  deleteSticky: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/sticky-messages/${id}`, { method: "DELETE" }),
   channelDesigns: (guildId: string) => request<ChannelDesignsResponse>(`/api/guilds/${guildId}/channel-designs`),
   cleanChannelNames: (guildId: string, cleanup: CleanupSettings) =>
     request<ChannelDesignsResponse>(`/api/guilds/${guildId}/channel-designs/clean`, { method: "POST", body: JSON.stringify(cleanup) }),

@@ -37,6 +37,7 @@ If Number One doesn't have Administrator, a channel's own permission settings ca
 | [Tickets](/docs/tickets) | Manage Channels | View Channel, Send Messages, Embed Links, Attach Files |
 | [Channel designs](/docs/channel-designs) | Manage Channels | |
 | [Guides](/docs/guides) | | View Channel, Send Messages, Embed Links, Read Message History |
+| [Sticky messages](/docs/sticky-messages) | | View Channel, Send Messages, Embed Links (embeds) |
 
 ## Who can use what
 

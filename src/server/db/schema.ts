@@ -490,6 +490,26 @@ export const pollVotes = sqliteTable(
   (t) => [primaryKey({ columns: [t.pollId, t.userId, t.answer] }), index("poll_votes_guild_idx").on(t.guildId)],
 );
 
+/** Sticky messages: one per channel, reposted at the bottom after new messages. */
+export const stickyMessages = sqliteTable(
+  "sticky_messages",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    guildId: text("guild_id").notNull(),
+    channelId: text("channel_id").notNull(),
+    /** The copy that's posted now. */
+    messageId: text("message_id"),
+    /** What it says and how often it's reposted (JSON, validated by stickyInput in src/shared/stickyMessages.ts). */
+    details: text("details", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    paused: integer("paused", { mode: "boolean" }).notNull().default(false),
+    createdBy: text("created_by").notNull(),
+    createdByTag: text("created_by_tag").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [uniqueIndex("sticky_messages_channel_idx").on(t.channelId), index("sticky_messages_guild_idx").on(t.guildId)],
+);
+
 /**
  * Channel designs: the name each channel had before Number One added a design, and the name it set,
  * so designs can be swapped or removed without changing the channel's own name.

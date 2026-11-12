@@ -123,6 +123,18 @@ Part of the [Forums](/docs/forums) module. Used inside a forum post.
 | `/post lock` / `/post unlock` | Manage Threads | Locks or unlocks the post. |
 | `/post pin` / `/post unpin` | Manage Threads | Pins or unpins the post. |
 
+## Sticky messages
+
+Part of the [Sticky messages](/docs/sticky-messages) module. `channel` is the current channel if left empty.
+
+| Command | Who | What it does |
+| --- | --- | --- |
+| `/sticky set [channel] [embed] [after] [wait]` | Manage Messages | Opens a form to add or change a channel's sticky message. |
+| `/sticky pause [channel]` | Manage Messages | Stops reposting it for now. |
+| `/sticky resume [channel]` | Manage Messages | Starts reposting it again. |
+| `/sticky remove [channel]` | Manage Messages | Deletes the sticky message. |
+| `/sticky list` | Manage Messages | Lists the server's sticky messages. |
+
 ## Tickets
 
 Part of the [Tickets](/docs/tickets) module. Used inside a ticket channel.

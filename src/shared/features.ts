@@ -16,6 +16,7 @@ import { economySettings } from "./economy.js";
 import { forumSettings } from "./forums.js";
 import { cardSettings } from "./cards.js";
 import { pollSettings } from "./polls.js";
+import { stickySettings } from "./stickyMessages.js";
 import { suggestionSettings } from "./suggestions.js";
 import { ticketSettings } from "./tickets.js";
 import { voiceLogSettings } from "./voiceLogs.js";
@@ -265,6 +266,16 @@ export const forumsFeature = defineFeature({
   settings: forumSettings,
 });
 
+export const stickyMessagesFeature = defineFeature({
+  id: "sticky-messages",
+  name: "Sticky messages",
+  icon: "📌",
+  description: "Keep a message at the bottom of a channel, like rules or a how-to. Number One posts it again after new messages so it's always the last thing people see.",
+  category: "utility",
+  recommended: true,
+  settings: stickySettings,
+});
+
 export const cardsFeature = defineFeature({
   id: "cards",
   name: "BLACKPINK Poker",
@@ -437,6 +448,7 @@ export const featureCatalog: FeatureInfo[] = [
   // Utilities & Automation
   ticketsFeature,
   forumsFeature,
+  stickyMessagesFeature,
   announcementsFeature,
   customCommandsFeature,
   embedsFeature,
@@ -515,3 +527,4 @@ export * from "./cardCatalog.js";
 export * from "./forums.js";
 export * from "./suggestions.js";
 export * from "./communityTools.js";
+export * from "./stickyMessages.js";
