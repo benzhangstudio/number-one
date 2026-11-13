@@ -5,7 +5,7 @@ import { config } from "../config.js";
 import { sqlite } from "./client.js";
 
 const BACKUP_DIR = join(config.dataDir, "backups");
-const KEEP = 7; // days of backups to keep
+const KEEP = 3; // days of backups to keep (each one is a full copy of the database, so fewer saves disk space)
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function listBackups() {
@@ -27,7 +27,7 @@ async function backupIfDue() {
 }
 
 /**
- * Keeps a daily copy of the database in data/backups (last 7 days),
+ * Keeps a daily copy of the database in data/backups (last 3 days),
  * downloadable from the Wispbyte file manager.
  */
 export function startBackups() {

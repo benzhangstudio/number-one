@@ -2,7 +2,9 @@
 // The TypeScript source is compiled into dist/ when it starts (see scripts/build.mjs).
 
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
 const [major, minor] = process.versions.node.split(".").map(Number);
 if (major < 22 || (major === 22 && minor < 13)) {
@@ -30,6 +32,17 @@ if (build.status !== 0) {
     process.exit(1);
   }
   console.error("[build] The new version couldn't be built, so the previous version is starting instead.");
+}
+
+// npm keeps a copy of every package it has ever downloaded (~/.npm/_cacache) plus its logs. On Wispbyte the home
+// folder is the server folder, so that cache uses up the server's disk and grows with every update. npm install has
+// already finished by now, so it's safe to delete; the only cost is that the next install downloads packages again.
+for (const dir of ["_cacache", "_logs"]) {
+  try {
+    rmSync(join(homedir(), ".npm", dir), { recursive: true, force: true });
+  } catch {
+    // not important: the bot runs fine with the cache still there
+  }
 }
 
 await import("./dist/server/index.js");
