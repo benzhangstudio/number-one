@@ -24,6 +24,10 @@ export const client = new Client({
   allowedMentions: { parse: ["users"], repliedUser: false },
 });
 
+// Each feature adds its own event listeners (11 features watch for deleted messages), which is more than Node's
+// default warning limit of 10. That's expected, not a leak, so raise the limit to stop the false warning.
+client.setMaxListeners(50);
+
 // Without a listener, a connection error would crash the whole program (bot and dashboard).
 client.on("error", (err) => console.error("[bot] Discord client error:", err));
 
