@@ -32,18 +32,6 @@ export const announcements: Announcement[] = [
 - Cloud frame, Sparkle trail, Dotted line, Little hearts and Butterfly wings were removed. If you used one, the closest design is now picked: click **Apply design** once to switch.`,
   },
   {
-    id: "2026-11-04-cards",
-    date: "2026-11-04",
-    title: "BLACKPINK Poker",
-    tag: "New",
-    emoji: "🃏",
-    body: `Collect random BLACKPINK photo cards: each member, all six ships like Chaelisa, and the whole group, from Common to Mythic, with new cards added over time. Find it in the new **K-pop** section.
-
-- Open packs with **/cards daily**, or buy them with **/cards buy** and open them one by one with **/cards open**.
-- Build a team of 3 and **battle** Number One or your friends, Pokémon-style.
-- **Trade** and gift cards, and play **With Economy** or **Cards only**.`,
-  },
-  {
     id: "2026-11-04-forums",
     date: "2026-11-04",
     title: "Forums",
@@ -93,13 +81,12 @@ export const announcements: Announcement[] = [
   {
     id: "2026-11-03-economy-shop",
     date: "2026-11-03",
-    title: "Shop and games",
+    title: "Shop",
     tag: "New",
     emoji: "🛍️",
     body: `Your server's money finally has something to spend on. Find it in **Economy**.
 
-- **Shop:** sell roles and fun items. Members use **/shop**, **/buy** and **/inventory**.
-- **Games:** **/coinflip**, **/slots** and **/blackjack**, with the bet limits you choose.`,
+- **Shop:** sell roles and fun items. Members use **/shop**, **/buy** and **/inventory**.`,
   },
   {
     id: "2026-11-03-polls",

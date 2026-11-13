@@ -231,12 +231,9 @@ export const ownedCount = (guildId: string, userId: string, itemId: number) =>
 export const inventoryOf = (guildId: string, userId: string) =>
   (q.inventory.all(guildId, userId) as { item_id: number; quantity: number }[]).map((r) => ({ itemId: r.item_id, quantity: r.quantity }));
 
-/* ------------------------------------------------------------ games */
+/* ------------------------------------------------------------ spending */
 
 export type BetResult = { ok: true; balance: number } | { ok: false; balance: number };
-
-/** Takes a bet, only if they have enough. Winnings are paid back with credit(…, "game"). */
-export const placeBet = (guildId: string, userId: string, amount: number, startingBalance: number): BetResult => spend(guildId, userId, amount, "game", startingBalance);
 
 /** Takes money, only if they have enough. Safe to call inside another transaction. */
 export function spend(guildId: string, userId: string, amount: number, kind: TransactionKind, startingBalance: number): BetResult {

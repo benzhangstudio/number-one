@@ -17,7 +17,6 @@ import type { PollInput, PollSettings, PollView, PollVoterView, PollsResponse } 
 import type { StickiesResponse, StickyInput, StickyView } from "../../src/shared/stickyMessages";
 import type { SuggestionSettings, SuggestionStatusInput, SuggestionsResponse } from "../../src/shared/suggestions";
 import type { ForumAutomation, ForumInput, ForumsResponse, PostAction } from "../../src/shared/forums";
-import type { CardAdminResponse, CardEdit, CardSettings, CardsResponse, GiveMember, GivePacksInput, GivePacksResult, GiveServer, PileCardsResponse, Rarity } from "../../src/shared/cards";
 import type { MemberLogResponse, MemberLogSettings } from "../../src/shared/memberLogs";
 import type { MessageLogResponse, MessageLogSettings } from "../../src/shared/messageLogs";
 import type { RuleVerificationResponse, RuleVerificationSettings } from "../../src/shared/ruleVerification";
@@ -53,14 +52,6 @@ export class ApiError extends Error {
   ) {
     super(message);
   }
-}
-
-/** Sends a picture file as it is (for card photos). */
-async function sendImage<T>(method: string, path: string, file: File): Promise<T> {
-  const res = await fetch(path, { method, body: file, headers: { "Content-Type": file.type || "image/jpeg" }, credentials: "same-origin" });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(res.status, (data as { error?: string }).error ?? `Upload failed (${res.status})`);
-  return data as T;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -257,30 +248,6 @@ export const api = {
     request<EventResult>(`/api/guilds/${guildId}/events/${id}/discord`, { method: "POST", body: "{}" }),
   cancelEvent: (guildId: string, id: number) => request<EventResult>(`/api/guilds/${guildId}/events/${id}/cancel`, { method: "POST", body: "{}" }),
   deleteEvent: (guildId: string, id: number) => request<{ ok: true }>(`/api/guilds/${guildId}/events/${id}`, { method: "DELETE" }),
-  cards: (guildId: string) => request<CardsResponse>(`/api/guilds/${guildId}/cards`),
-  saveCardSettings: (guildId: string, settings: CardSettings) =>
-    undoable<CardsResponse, CardSettings>(
-      () => request<CardsResponse>(`/api/guilds/${guildId}/cards`),
-      (r) => r.settings,
-      (s) => request<CardsResponse>(`/api/guilds/${guildId}/cards/settings`, { method: "PUT", body: JSON.stringify(s) }),
-      settings,
-    ),
-  cardAdmin: () => request<CardAdminResponse>("/api/developer/cards"),
-  giveServers: () => request<GiveServer[]>("/api/developer/cards/servers"),
-  giveMembers: (guildId: string, q: string) => request<GiveMember[]>(`/api/developer/cards/servers/${guildId}/members?q=${encodeURIComponent(q)}`),
-  givePacks: (input: GivePacksInput) => request<GivePacksResult>("/api/developer/cards/give", { method: "POST", body: JSON.stringify(input) }),
-  pileCards: (pile: string) => request<PileCardsResponse>(`/api/developer/cards/pile/${encodeURIComponent(pile)}`),
-  /** Adds a card to a pile from a photo file (sent as it is; the server crops it). */
-  addCard: (pile: string, file: File, opts: { name: string; rarity: Rarity; credit: string }) =>
-    sendImage<CardAdminResponse & PileCardsResponse>(
-      "POST",
-      `/api/developer/cards/pile/${encodeURIComponent(pile)}?name=${encodeURIComponent(opts.name)}&rarity=${opts.rarity}&credit=${encodeURIComponent(opts.credit)}`,
-      file,
-    ),
-  editCard: (id: string, edit: CardEdit) =>
-    request<CardAdminResponse & PileCardsResponse>(`/api/developer/cards/card/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(edit) }),
-  replaceCardPhoto: (id: string, file: File) => sendImage<CardAdminResponse & PileCardsResponse>("PUT", `/api/developer/cards/card/${encodeURIComponent(id)}/photo`, file),
-  deleteCard: (id: string) => request<CardAdminResponse & PileCardsResponse>(`/api/developer/cards/card/${encodeURIComponent(id)}`, { method: "DELETE" }),
   forums: (guildId: string) => request<ForumsResponse>(`/api/guilds/${guildId}/forums`),
   createForum: (guildId: string, input: ForumInput) => request<ForumsResponse>(`/api/guilds/${guildId}/forums`, { method: "POST", body: JSON.stringify(input) }),
   updateForum: (guildId: string, id: string, input: ForumInput) =>

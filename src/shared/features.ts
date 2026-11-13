@@ -14,7 +14,6 @@ import { guidesSettings } from "./guides.js";
 import { levelsSettings } from "./levels.js";
 import { economySettings } from "./economy.js";
 import { forumSettings } from "./forums.js";
-import { cardSettings } from "./cards.js";
 import { pollSettings } from "./polls.js";
 import { stickySettings } from "./stickyMessages.js";
 import { suggestionSettings } from "./suggestions.js";
@@ -78,12 +77,6 @@ export const categories = [
     name: "Cosmetics",
     emoji: "🎨",
     description: "Cute designs for your server, like decorated channel names and easy-to-read server and staff guides",
-  },
-  {
-    id: "kpop",
-    name: "K-pop",
-    emoji: "💖",
-    description: "Games for K-pop fans, like BLACKPINK Poker: collect photo cards, battle and trade",
   },
   {
     id: "other",
@@ -276,16 +269,6 @@ export const stickyMessagesFeature = defineFeature({
   settings: stickySettings,
 });
 
-export const cardsFeature = defineFeature({
-  id: "cards",
-  name: "BLACKPINK Poker",
-  icon: "🃏",
-  description: "Collect random BLACKPINK photo cards (members, ships like Chaelisa, and the whole group) from Common to Mythic, with new cards added over time. Open packs, build a team and battle Pokémon-style, and trade with friends. Works with Economy or on its own.",
-  category: "kpop",
-  recommended: true,
-  settings: cardSettings,
-});
-
 export const levelsFeature = defineFeature({
   id: "levels",
   name: "Levels",
@@ -300,7 +283,7 @@ export const economyFeature = defineFeature({
   id: "economy",
   name: "Economy",
   icon: "🪙",
-  description: "Your server's own currency. Members earn it by chatting, /daily and /work, spend it in your shop on roles and items, and bet it on games.",
+  description: "Your server's own currency. Members earn it by chatting, /daily and /work, spend it in your shop on roles and items.",
   category: "engagement",
   recommended: true,
   settings: economySettings,
@@ -455,8 +438,6 @@ export const featureCatalog: FeatureInfo[] = [
   // Cosmetics
   guidesFeature,
   channelDesignsFeature,
-  // K-pop
-  cardsFeature,
   // Other
   botUpdatesFeature,
 ];
@@ -522,8 +503,6 @@ export * from "./guides.js";
 export * from "./levels.js";
 export * from "./economy.js";
 export * from "./polls.js";
-export * from "./cards.js";
-export * from "./cardCatalog.js";
 export * from "./forums.js";
 export * from "./suggestions.js";
 export * from "./communityTools.js";

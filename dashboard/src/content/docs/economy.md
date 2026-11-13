@@ -2,7 +2,7 @@
 
 **Category:** 🎉 Engagement & Fun · **Recommended:** yes
 
-Your server's own currency. Members earn it by chatting, with `/daily` and `/work`, and when they level up. They can send it to each other with `/pay`, spend it in your server's shop, bet it on games, and compare with `/richest`.
+Your server's own currency. Members earn it by chatting, with `/daily` and `/work`, and when they level up. They can send it to each other with `/pay`, spend it in your server's shop, and compare with `/richest`.
 
 ## Quick setup
 
@@ -51,24 +51,6 @@ Items without a role are things like "Custom nickname" or "Pick the next movie n
 
 Role items need Number One's **Manage Roles** permission, and Number One's highest role has to be above the role it gives.
 
-## Games
-
-Members bet their money. The bet is taken first and winnings are paid back.
-
-| Game | How it works |
-| --- | --- |
-| `/coinflip bet side` | Pick heads or tails. Right guess wins your bet again. |
-| `/slots bet` | Three reels. Three in a row pays ×5 (🍒) up to ×100 (7️⃣). Two in a row gives your bet back. |
-| `/blackjack bet` | Play against Number One with **Hit**, **Stand** and **Double**. Number One draws to 17. Blackjack pays 3 to 2, a tie gives your bet back. After 2 minutes with no move, it stands for you. |
-
-| Setting | Default |
-| --- | --- |
-| Smallest bet | 10 |
-| Biggest bet | 1,000 |
-| Wait between games | 5 seconds |
-
-Each game can be switched off on its own.
-
 ## Commands
 
 | Command | Who | What it does |
@@ -81,9 +63,6 @@ Each game can be switched off on its own.
 | `/shop [page]` | Everyone | Shows what's for sale. |
 | `/buy item [quantity]` | Everyone | Buys an item from the shop. |
 | `/inventory [member]` | Everyone | Shows what you, or someone else, bought. |
-| `/coinflip bet side` | Everyone | Bets on heads or tails. |
-| `/slots bet` | Everyone | Spins the slot machine. |
-| `/blackjack bet` | Everyone | Plays blackjack against Number One. |
 | `/economy give member amount` | Manage Server | Gives a member money. |
 | `/economy take member amount` | Manage Server | Takes money away (never below zero). |
 | `/economy set member amount` | Manage Server | Sets a member's balance. |
@@ -92,7 +71,7 @@ Each game can be switched off on its own.
 
 ## History
 
-Every balance change is recorded for 90 days: daily rewards, work, level-ups, payments, shop purchases, games and staff changes. Chatting isn't recorded, because there's far too much of it. Staff can see a member's history with `/economy history`, and the dashboard shows the latest activity in the server.
+Every balance change is recorded for 90 days: daily rewards, work, level-ups, payments, shop purchases and staff changes. Chatting isn't recorded, because there's far too much of it. Staff can see a member's history with `/economy history`, and the dashboard shows the latest activity in the server.
 
 ## Good to know
 

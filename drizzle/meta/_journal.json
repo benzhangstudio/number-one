@@ -267,6 +267,13 @@
       "when": 1794457603070,
       "tag": "0037_sticky_messages",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "6",
+      "when": 1794534741265,
+      "tag": "0038_remove_cards",
+      "breakpoints": true
     }
   ]
 }

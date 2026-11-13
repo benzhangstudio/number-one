@@ -66,33 +66,9 @@ Part of the [Economy](/docs/economy) module.
 | `/shop [page]` | Everyone | Shows what's for sale in the server's shop. |
 | `/buy item [quantity]` | Everyone | Buys an item from the shop. |
 | `/inventory [member]` | Everyone | Shows what you, or someone else, bought. |
-| `/coinflip bet side` | Everyone | Bets on heads or tails. |
-| `/slots bet` | Everyone | Spins the slot machine. |
-| `/blackjack bet` | Everyone | Plays blackjack against Number One. |
 | `/economy give/take/set member amount` | Manage Server | Changes a member's balance. |
 | `/economy history member` | Manage Server | Shows a member's latest balance changes. |
 | `/economy take-item member item [quantity]` | Manage Server | Takes a shop item from a member, like when they use it. |
-
-## BLACKPINK Poker
-
-Part of the [BLACKPINK Poker](/docs/cards) module. Everyone can use these.
-
-| Command | What it does |
-| --- | --- |
-| `/cards daily` | Opens your free daily pack. |
-| `/cards buy pack [amount]` | Buys up to 25 packs at once and keeps them in your bag (With Economy). |
-| `/cards open [pack]` | Opens one pack from your bag. Press **Open** under it to open the next one. |
-| `/cards packs` | Shows the packs and prices. |
-| `/cards catalog [pile]` | Every card in the game, by member, pairing and the group, with how many you've collected. Pick one to flip through its cards. |
-| `/cards collection [member] [card]` | Flips through a collection one card at a time, with ◀ Back and Next ▶ buttons. |
-| `/cards view card` | Shows a card up close. |
-| `/cards team [first] [second] [third]` | Shows or sets your battle team. |
-| `/cards battle [opponent] [bet]` | Battles Number One, or challenges a member. |
-| `/cards trade member give get` | Offers a card swap. |
-| `/cards gift member card` | Gives a card away. |
-| `/cards sell card [quantity]` | Sells a card (With Economy). |
-| `/cards sell-duplicates [up_to]` | Sells extra copies (With Economy). |
-| `/cards top` | Shows the top collectors. |
 
 ## Suggestions
 

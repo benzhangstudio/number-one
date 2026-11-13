@@ -17,14 +17,13 @@ import {
   transactionKinds,
 } from "../../shared/economy.js";
 import { economyFeature, levelsFeature } from "../../shared/features.js";
-import { blackjackButtons, blackjackCommand, coinflipCommand, pruneGameCooldowns, slotsCommand } from "./games.js";
 import { buyCommand, inventoryCommand, registerShopApi, shopCommand, shopItemsView, shopProblems, takeItem, takeItemSuggestions } from "./shop.js";
 import * as store from "./store.js";
 import { afterClaim, registerReminderKind, reminderButtons, startReminders } from "../reminders/cooldowns.js";
 
 /**
  * Economy: a currency each server names itself. Members earn it by chatting, with /daily, /work and
- * level-ups, send it with /pay, spend it in the shop (shop.ts) and bet it on games (games.ts). Balances live in economy_balances; every change except chatting
+ * level-ups, send it with /pay, and spend it in the shop (shop.ts). Balances live in economy_balances; every change except chatting
  * is recorded in economy_transactions for 90 days.
  */
 
@@ -349,7 +348,6 @@ async function respond(guild: Guild, settings: EconomySettings): Promise<Economy
   const problems: string[] = [];
   if (settings.levelUpReward > 0 && !(await isFeatureEnabled(guild.id, levelsFeature))) problems.push("Level-up rewards only pay out when Levels is switched on.");
   if (settings.shop.enabled) problems.push(...(await shopProblems(guild)));
-  if (settings.games.minBet > settings.games.maxBet) problems.push("The smallest bet is bigger than the biggest bet.");
   return { settings, shopItems: await shopItemsView(guild.id), problems, holders: count, totalMoney: total, richest, activity };
 }
 
@@ -364,12 +362,9 @@ export const economyBot: BotFeature = {
     shopCommand,
     buyCommand,
     inventoryCommand,
-    coinflipCommand,
-    slotsCommand,
-    blackjackCommand,
     adminCommand,
   ],
-  components: [blackjackButtons, reminderButtons],
+  components: [reminderButtons],
   events: [messageSent],
 
   setup() {
@@ -384,7 +379,6 @@ export const economyBot: BotFeature = {
     const hourly = () => {
       const cutoff = Date.now() - 60 * 60 * 1000;
       for (const [key, at] of lastChat) if (at < cutoff) lastChat.delete(key);
-      pruneGameCooldowns();
       try {
         store.pruneHistory();
       } catch (err) {
@@ -410,8 +404,6 @@ export const economyBot: BotFeature = {
       const s = parsed.data;
       if (s.chat.min > s.chat.max) [s.chat.min, s.chat.max] = [s.chat.max, s.chat.min];
       if (s.work.min > s.work.max) [s.work.min, s.work.max] = [s.work.max, s.work.min];
-      if (s.games.minBet > s.games.maxBet) [s.games.minBet, s.games.maxBet] = [s.games.maxBet, s.games.minBet];
-      s.games.minBet = Math.max(1, s.games.minBet);
       s.chat.noEarnChannelIds = s.chat.noEarnChannelIds.filter((id) => guild.channels.cache.has(id));
       const state = await getFeatureState(guild.id, economyFeature);
       await saveFeatureState(guild.id, economyFeature, { enabled: state.enabled, settings: s }, request.session!.userId);

@@ -17,8 +17,6 @@ import {
   pollVotes,
   stickyMessages,
   suggestions,
-  cardInventory,
-  cardPlayers,
   suggestionVotes,
   suggestionCounters,
   channelDesigns,
@@ -53,7 +51,7 @@ import {
 const GRACE_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** Every table that holds data for a server, by its guild_id column. */
-const guildTables = [featureSettings, guildSetup, reactionRoleMessages, reactionRoleTimers, onboardingProgress, onboardingState, moderationCases, raidState, embedMessages, announcementTemplates, announcements, eventRsvps, events, pollVotes, polls, stickyMessages, suggestionVotes, suggestions, suggestionCounters, cardInventory, cardPlayers, channelDesigns, customCommands, ruleVerificationPosts, ticketPanels, tickets, ticketCounters, guidePosts, devUpdateDeliveries, applicationPanels, staffApplications, memberLevels, economyBalances, economyTransactions, economyInventory, economyShopItems];
+const guildTables = [featureSettings, guildSetup, reactionRoleMessages, reactionRoleTimers, onboardingProgress, onboardingState, moderationCases, raidState, embedMessages, announcementTemplates, announcements, eventRsvps, events, pollVotes, polls, stickyMessages, suggestionVotes, suggestions, suggestionCounters, channelDesigns, customCommands, ruleVerificationPosts, ticketPanels, tickets, ticketCounters, guidePosts, devUpdateDeliveries, applicationPanels, staffApplications, memberLevels, economyBalances, economyTransactions, economyInventory, economyShopItems];
 
 /** Deletes everything stored about a server. */
 export async function deleteGuildData(guildId: string) {

@@ -14,8 +14,6 @@ import {
 } from "../../../src/shared/botUpdates";
 import { api } from "../api";
 import { navigate } from "../router";
-import { CardManager } from "./CardManager";
-import { GivePacks } from "./GivePacks";
 import { Toggle } from "../components/pickers";
 import { DiscordText } from "../components/DiscordText";
 
@@ -44,8 +42,6 @@ const sections = [
   { id: "maintenance", icon: "🛠️", name: "Maintenance" },
   { id: "update", icon: "📣", name: "New update" },
   { id: "sent", icon: "📬", name: "Sent updates" },
-  { id: "cards", icon: "🃏", name: "BLACKPINK Poker cards" },
-  { id: "give", icon: "🎁", name: "Give packs" },
 ] as const;
 type SectionId = (typeof sections)[number]["id"];
 
@@ -156,8 +152,6 @@ export function DeveloperPage({ section: asked = "" }: { section?: string }) {
       </>
     ),
     sent: "Updates you've posted, with how many servers got them.",
-    cards: "Add, edit and remove the cards members can pull.",
-    give: "Put BLACKPINK Poker packs straight into a member's bag, for free. They open them with /cards open.",
   };
   const last = data.updates[0];
 
@@ -219,11 +213,6 @@ export function DeveloperPage({ section: asked = "" }: { section?: string }) {
             <span className="muted small">📬 Last update</span>
             <strong className="dev-tile-text">{last ? last.title : "None yet"}</strong>
             <small className="muted">{last ? `${when(last.createdAt)} · ✅ ${last.sent}${last.failed ? ` · ⚠️ ${last.failed}` : ""}` : "Nothing sent yet"}</small>
-          </button>
-          <button className="card dev-tile" onClick={() => go("cards")}>
-            <span className="muted small">🃏 BLACKPINK Poker</span>
-            <strong>Cards</strong>
-            <small className="muted">Add photos and manage piles →</small>
           </button>
         </div>
       )}
@@ -361,8 +350,6 @@ export function DeveloperPage({ section: asked = "" }: { section?: string }) {
         </div>
       ))}
 
-      {section === "cards" && <CardManager />}
-      {section === "give" && <GivePacks />}
       </section>
     </div>
   );

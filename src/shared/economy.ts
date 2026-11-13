@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Economy: a currency each server names itself, earned by chatting, /daily, /work and level-ups,
  * and moved between members with /pay. Settings shared by the bot and the dashboard.
- * Members spend it in the shop (items and roles that admins set up) and on games: /coinflip, /slots and /blackjack.
+ * Members spend it in the shop (items and roles that admins set up).
  */
 
 const snowflake = z.string().regex(/^\d{17,20}$/);
@@ -73,19 +73,6 @@ export const economySettings = z.object({
       enabled: z.boolean().default(true),
     })
     .prefault({}),
-  /** Betting games. */
-  games: z
-    .object({
-      enabled: z.boolean().default(true),
-      coinflip: z.boolean().default(true),
-      slots: z.boolean().default(true),
-      blackjack: z.boolean().default(true),
-      minBet: amount(MAX_CHANGE).default(10),
-      maxBet: amount(MAX_CHANGE).default(1000),
-      /** Seconds between games for each member, so channels don't fill up with games. */
-      cooldownSeconds: z.number().int().min(0).max(3600).default(5),
-    })
-    .prefault({}),
 });
 
 export type EconomySettings = z.infer<typeof economySettings>;
@@ -113,6 +100,7 @@ export const transactionKinds = {
   admin: "Changed by staff",
   shop: "Shop",
   refund: "Refund",
+  /** Removed features, kept so their past history entries still show a name. */
   game: "Games",
   cards: "Card game",
 } as const;
@@ -151,18 +139,6 @@ export interface ShopItemView extends ShopItemInput {
   /** How many have been bought in total. */
   sold: number;
 }
-
-/* ------------------------------------------------------------ games */
-
-/** Slot machine symbols, from most to least common, with what three in a row pays (times the bet). */
-export const slotSymbols = [
-  { emoji: "🍒", weight: 6, pays: 5 },
-  { emoji: "🍋", weight: 5, pays: 10 },
-  { emoji: "🍇", weight: 4, pays: 15 },
-  { emoji: "🔔", weight: 3, pays: 25 },
-  { emoji: "💎", weight: 2, pays: 50 },
-  { emoji: "7️⃣", weight: 1, pays: 100 },
-] as const;
 
 /* ------------------------------------------------------------ dashboard */
 

@@ -21,8 +21,7 @@ Number One only keeps what it needs for its features to work. This may include:
 - Moderation records (cases), such as warnings and bans, with the reason staff gave.
 - Staff applications: the answers a member sends, and the staff's decision and note.
 - Levels: how much XP each member has earned in a server and how many messages earned it (never what the messages said).
-- Economy: each member's balance in a server, what they bought from the server's shop, and a history of balance changes (like daily rewards, payments between members, purchases and games), kept for 90 days.
-- BLACKPINK Poker: which cards each member owns in a server, their battle team, when they last opened the daily pack, and their battle wins and losses.
+- Economy: each member's balance in a server, what they bought from the server's shop, and a history of balance changes (like daily rewards, payments between members, and purchases), kept for 90 days.
 - Suggestions: the ideas members send, who sent them, how each member voted, and staff's responses.
 - Polls: which answers each member picked, so they can vote only once and change their vote. On anonymous polls this isn't shown to anyone.
 

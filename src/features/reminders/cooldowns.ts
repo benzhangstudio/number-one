@@ -3,7 +3,7 @@ import { sqlite } from "../../server/db/client.js";
 import type { ComponentHandler } from "../../server/bot/types.js";
 
 /**
- * Cooldown reminders: members can ask to be @mentioned when /daily, /work or /cards daily is ready again.
+ * Cooldown reminders: members can ask to be @mentioned when /daily or /work is ready again.
  * It's opt-in per member and per command, with the 🔔 button under those replies. Once on, every claim queues
  * a reminder in the channel they used the command in (or a DM if the bot can't post there). Saved in the
  * database, so reminders survive restarts.

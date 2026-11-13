@@ -8,7 +8,6 @@ import { EventsPanel } from "./EventsPanel";
 import { ForumsPanel } from "./ForumsPanel";
 import { GuidesPanel } from "./GuidesPanel";
 import { AutomodPanel } from "./AutomodPanel";
-import { CardsPanel } from "./CardsPanel";
 import { BotUpdatesPanel } from "./BotUpdatesPanel";
 import { ChannelDesignsPanel } from "./ChannelDesignsPanel";
 import { CommunityToolsPanel } from "./CommunityToolsPanel";
@@ -44,7 +43,6 @@ export const featurePanels: Record<string, ComponentType<{ guild: GuildDetails["
   polls: PollsPanel,
   levels: LevelsPanel,
   economy: EconomyPanel,
-  cards: CardsPanel,
   "channel-designs": ChannelDesignsPanel,
   "message-logs": MessageLogsPanel,
   "member-logs": MemberLogsPanel,
